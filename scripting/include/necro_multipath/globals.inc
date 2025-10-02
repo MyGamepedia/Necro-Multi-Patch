@@ -1,0 +1,27 @@
+#define MAX_FORMAT 256
+
+ConVar mp_flashlight;
+//ConVar mp_forcerespawn;
+
+ConVar g_ConvarNecroGiveDefaultItems;
+ConVar g_ConvarNecroOverrideDefaultWeaponParams;
+ConVar g_ConvarNecroBoltSpriteTrail;
+//ConVar g_pConvarDmRespawnTime;
+ConVar g_ConvarNecroClassicFrags;
+ConVar g_ConvarNecroClassicLaserDot;
+//ConVar g_ConvarNecroMp5ContactParticles;
+
+DynamicDetour hkToggleIronsights;
+DynamicDetour hkGiveDefaultItems;
+DynamicDetour hkBaseCombatWeaponPrecache;
+
+DynamicHook hkFAllowFlashlight;
+DynamicHook hkBlackMesaBaseDetonatorDetonate;
+DynamicHook hkForceRespawn;
+DynamicHook hkIsMultiplayer;
+DynamicHook hkAcceptInput;
+
+bool g_bPostTeamSelect[MAXPLAYERS+1];
+//int g_bUnblockRespawn[MAXPLAYERS+1];
+//bool g_bHideEntity[MAXPLAYERS + 1];
+bool g_bIsMultiplayerOverride = true;

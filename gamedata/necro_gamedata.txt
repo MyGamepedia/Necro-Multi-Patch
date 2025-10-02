@@ -1,0 +1,205 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			"CMultiplayRules::FAllowFlashlight" // CMultiplayRules::FAllowFlashlight()
+			{
+				"windows"	"56"
+				"linux"		"57"
+			}
+			
+			"CBaseCombatWeapon::HandleFireOnEmpty"
+			{
+				"windows"	"283"
+				"linux"		"284"
+			}
+
+			"CBaseCombatWeapon::PrimaryAttack" //PrimaryAttack() for any weapon class
+			{
+				"windows"	"295"
+				"linux"		"296"
+			}
+			
+			"CBaseCombatWeapon::SecondaryAttack" //SecondaryAttack() for any weapon class
+			{
+				"windows"	"296"
+				"linux"		"297"
+			}
+			
+			"CBlackMesaBaseDetonator::Detonate" //CBlackMesaBaseDetonator::DispatchExplodeSound
+			{
+				"windows"	"240"
+				"linux"		"241"
+			}
+			
+			"CBasePlayer::ForceRespawn" // void CBasePlayer::ForceRespawn(void)
+			{
+				"windows"	"347"
+				"linux"		"348"
+			}
+			
+			"CMultiplayRules::IsMultiplayer" // CMultiplayRules::IsMultiplayer()
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			
+			"CBasePickup::DoRespawn" // void CBasePickup::DoRespawn()
+			{
+				"windows"	"238"
+				"linux"		"239"
+			}
+			
+			"CBaseEntity::AcceptInput" // CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int)
+			{
+				"windows"	"39"
+				"linux"		"40"
+			}
+		}
+		"Functions"
+		{
+			"CMultiplayRules::FAllowFlashlight"
+			{
+				"offset"	"CMultiplayRules::FAllowFlashlight"
+				"hooktype"	"gamerules"
+				"return"	"bool"
+				"this"		"ignore"
+			}
+			
+			"CMultiplayRules::IsMultiplayer"
+			{
+				"offset"	"CMultiplayRules::IsMultiplayer"
+				"hooktype"	"gamerules"
+				"return"	"bool"
+				"this"		"ignore"
+			}
+			
+			"CBlackMesaBaseWeaponIronSights::ToggleIronSights"
+			{
+				"signature"	"CBlackMesaBaseWeaponIronSights::ToggleIronSights"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBaseCombatWeapon::Precache"
+			{
+				"signature"	"CBaseCombatWeapon::Precache"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBaseCombatWeapon::PrimaryAttack"
+			{
+				"offset"	"CBaseCombatWeapon::PrimaryAttack"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBaseCombatWeapon::SecondaryAttack"
+			{
+				"offset"	"CBaseCombatWeapon::SecondaryAttack"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBaseCombatWeapon::HandleFireOnEmpty"
+			{
+				"offset"	"CBaseCombatWeapon::HandleFireOnEmpty"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBlackMesaBaseDetonator::Detonate"
+			{
+				"offset"	"CBlackMesaBaseDetonator::Detonate"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBlackMesaPlayer::GiveDefaultItems"
+			{
+				"signature"	"CBlackMesaPlayer::GiveDefaultItems"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBasePlayer::ForceRespawn"
+			{
+				"offset"	"CBasePlayer::ForceRespawn"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBaseEntity::AcceptInput"
+			{
+				"offset"	"CBaseEntity::AcceptInput"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"szInputName"
+					{
+						"type"	"charptr"
+					}
+					"pActivator"
+					{
+						"type"	"int"
+					}
+					"pCaller"
+					{
+						"type"	"int"
+					}
+					"Value"
+					{
+						"type"	"object"
+						"size"	"20"
+						"flags"	"byval odtor octor oassignop"
+					}
+					"outputID"
+					{
+						"type"	"int"
+					}
+				}
+			}
+		}
+		"Signatures"
+		{
+			"CBlackMesaPlayer::GiveDefaultItems"
+			{
+				"windows"	"\x53\x56\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x88\x00\x00\x00\xFF\xD0\x84\xC0\x74\x13\x8B\x07\x8B\xCF\x8B\x80\xB8\x07\x00\x00\xFF\xD0\x84\xC0\x0F\x94\xC3\xEB\x02\xB3\x01\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x88\x00\x00\x00\xFF\xD0\x84\xC0"
+				"linux"		"@_ZN16CBlackMesaPlayer16GiveDefaultItemsEv"
+			}
+			
+			"CBlackMesaBaseWeaponIronSights::ToggleIronSights"
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x14\x56\x57\x8B\xF9\x2A\x2A\x2A\x2A\x2A\x8B\xF0\x89\x75\xEC\x85\xF6\x2A\x2A\x5F\x32\xC0\x5E\x8B"
+				"linux"		"@_ZN30CBlackMesaBaseWeaponIronSights16ToggleIronSightsEv"
+			}
+			
+			//salo's sign was different, needs test on necro server
+			"CBaseCombatWeapon::Precache"
+			{
+				"windows"	"\x55\x8B\xEC\x51\x53\x56\x57\x8B\xF9\x83\xBF\xDC\x04\x00\x00\xFF\x8D\x9F\xDC\x04\x00\x00\x74\x2E\x80\xBB\x78\xFB\xFF\xFF\x00\x8D\x8B\x24\xFB\xFF\xFF\x74\x06\x80\x49\x58\x01\xEB\x13\x8B\x51\x18\x85\xD2\x74\x0C\x8B\xC3\x2B\xC1\x8B\x2A\x2A\x2A\x2A\xDB\xF4\xFF"
+				"linux"		"@_ZN17CBaseCombatWeapon8PrecacheEv"
+			}	
+
+			"CEnvLaserDot::Create"
+			{
+				"library"   "server"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x56\x6A\x00\x2A\x2A\x2A\x2A\x11\xFF\x75\x08\x68\x2A\x2A\x2A\x2A\xE8\x05\x99\xDF\xFF\x8B\x2A\x2A\x2A\x2A\x85\xF6\x0F\x84\x82\x00\x00\x00\x6A\x00\x6A\x00\x8B\xCE\xE8\xBD\x3F\xE0\xFF\x0F\xB7\x86\x88\x01\x00\x00\x8D\x8E\x4C\x01\x00\x00"
+				"linux"		"@_ZN12CEnvLaserDot6CreateERK6VectorP11CBaseEntity"
+			}
+		}                                        
+	}
+}
