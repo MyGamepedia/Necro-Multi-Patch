@@ -10,6 +10,7 @@ ConVar g_ConvarNecroBoltSpriteTrail;
 ConVar g_ConvarNecroClassicFrags;
 ConVar g_ConvarNecroClassicLaserDot;
 //ConVar g_ConvarNecroMp5ContactParticles;
+ConVar g_ConvarNecroBoltHitscanDamage;
 
 DynamicDetour hkToggleIronsights;
 DynamicDetour hkGiveDefaultItems;

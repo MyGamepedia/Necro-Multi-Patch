@@ -32,7 +32,7 @@ public Plugin myinfo = {
     name = "Dr.Necro's Black Mesa Servers Multipath",
     author = "MyGamepedia. Used a part of the source code from ampreeT/SourceCoop.",
     description = "This addon used for Dr.Necro's Black Mesa servers to fix issues in Black Mesa multiplayer.",
-    version = "1.0",
+    version = "1.0.1",
     url = ""
 };
 
@@ -48,6 +48,7 @@ public void OnPluginStart()
 	g_ConvarNecroClassicFrags = CreateConVar("necro_classicfrags", "0", "Enable simplified physics for frag grenades.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroClassicLaserDot = CreateConVar("necro_classiclaserdot", "0", "Enable original RPG laser dot rendering.", 0, true, 0.0, true, 1.0);
 //	g_ConvarNecroMp5ContactParticles = CreateConVar("necro_mp5contactparticles", "1", "Enable particles for MP5 barrel grenade.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroBoltHitscanDamage = CreateConVar("necro_bolthitscandamage", "65.0", "Amount of damage for the crossbow bolt hitscan.");
 	
 	LoadGameData();
 }
@@ -89,6 +90,30 @@ public void OnEntityCreated(int entity, const char[] classname)
 {
 	SDKHook(entity, SDKHook_Spawn, OnEntitySpawned);
 	SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnedPost);
+	SDKHook(entity, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
+}
+
+public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
+{
+//	PrintToServer("OnPlayerTakeDamage: victim=%d, attacker=%d, inflictor=%d, damage=%.2f, damagetype=%d, weapon=%d, damageForce[%.2f, %.2f, %.2f], damagePosition[%.2f, %.2f, %.2f]",
+//					victim, attacker, inflictor, damage, damagetype, weapon,
+//					damageForce[0], damageForce[1], damageForce[2],
+//					damagePosition[0], damagePosition[1], damagePosition[2]);
+					
+	
+	if(IsValidEntity(weapon))
+	{
+		char classname[64];
+		GetEntityClassname(weapon, classname, sizeof(classname));
+		
+		if(StrEqual(classname, "weapon_crossbow") && damagetype == 4096)
+		{
+			damage = GetConVarFloat(g_ConvarNecroBoltHitscanDamage);
+			return Plugin_Changed;
+		}
+	}
+
+    return Plugin_Continue;
 }
 
 public OnEntitySpawned(int entity)
