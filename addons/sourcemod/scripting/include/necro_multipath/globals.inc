@@ -1,3 +1,4 @@
+//#define DEBUG
 #define MAX_FORMAT 256
 
 ConVar mp_flashlight;

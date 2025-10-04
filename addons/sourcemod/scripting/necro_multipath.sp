@@ -32,7 +32,7 @@ public Plugin myinfo = {
     name = "Dr.Necro's Black Mesa Servers Multipath",
     author = "MyGamepedia. Used a part of the source code from ampreeT/SourceCoop.",
     description = "This addon used for Dr.Necro's Black Mesa servers to fix issues in Black Mesa multiplayer.",
-    version = "1.0.1",
+    version = "1.0.2",
     url = ""
 };
 
@@ -95,10 +95,12 @@ public void OnEntityCreated(int entity, const char[] classname)
 
 public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
 {
-//	PrintToServer("OnPlayerTakeDamage: victim=%d, attacker=%d, inflictor=%d, damage=%.2f, damagetype=%d, weapon=%d, damageForce[%.2f, %.2f, %.2f], damagePosition[%.2f, %.2f, %.2f]",
-//					victim, attacker, inflictor, damage, damagetype, weapon,
-//					damageForce[0], damageForce[1], damageForce[2],
-//					damagePosition[0], damagePosition[1], damagePosition[2]);
+	#if defined DEBUG
+	PrintToServer("Hook_OnTakeDamage: victim=%d, attacker=%d, inflictor=%d, damage=%.2f, damagetype=%d, weapon=%d, damageForce[%.2f, %.2f, %.2f], damagePosition[%.2f, %.2f, %.2f]",
+					victim, attacker, inflictor, damage, damagetype, weapon,
+					damageForce[0], damageForce[1], damageForce[2],
+					damagePosition[0], damagePosition[1], damagePosition[2]);
+	#endif
 					
 	
 	if(IsValidEntity(weapon))
@@ -108,7 +110,24 @@ public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float
 		
 		if(StrEqual(classname, "weapon_crossbow") && damagetype == 4096)
 		{
-			damage = GetConVarFloat(g_ConvarNecroBoltHitscanDamage);
+			if(damage == 125)
+			{
+				damage = GetConVarFloat(g_ConvarNecroBoltHitscanDamage);
+				
+				#if defined DEBUG
+				PrintToServer("Normal crossbow damage");
+				#endif
+			}
+			
+			if(damage == 125 * GetConVarFloat(FindConVar("sk_player_head")))
+			{
+				damage = GetConVarFloat(g_ConvarNecroBoltHitscanDamage) * GetConVarFloat(FindConVar("sk_player_head"));
+				
+				#if defined DEBUG
+				PrintToServer("Head crossbow damage");
+				#endif
+			}
+			
 			return Plugin_Changed;
 		}
 	}
