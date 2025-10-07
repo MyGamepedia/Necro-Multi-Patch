@@ -2,6 +2,8 @@
 Repository for __Necro Multi-Patch__ addon, a [SourceMod](https://github.com/alliedmodders/sourcemod) plugin specially created for __[tick 100]NecroHELL!__ and __[tick 100]!!crossfire 4Ever!!__, both are public Black Mesa servers created by __[Dr.Necro](https://steamcommunity.com/id/ampreeT)__.
 
 ## Console Variables
+This plugin adds following ConVars:
+
 * **`necro_bolthitscandamage`**: `65.0` - Sets specified amount of damage for the crossbow bolt hitscan.
 * **`necro_boltspritetrail`**: `0` - Enables trail for explosive crossbow bolts, the trail makes it easier to determine where the bolt was fired from.
 * **`necro_classicfrags`**: `0` - By default, this plugin implements frag grenade physics from the singleplayer campaign, allowing players to pick up it. If this console variable is enabled, the game will use the legacy physics.
