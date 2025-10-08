@@ -13,4 +13,10 @@ This plugin adds following ConVars:
 * **`necro_givedefaultitems`**: `1` - If enabled, gives default weapon pack for the player when spawned.
 * **`necro_overridedefaultweaponparams`**: `1` - Enables parameters override for all weapons by loading custom weapon script with __necro_ postfix.
 
+## Contribution
+
+- Report issues if you find.
+- Create servers feedback and suggest improvements.
+- Users are able to add their own changes, using `Pull requests` system.
+
 TODO: Add more in README.md.
