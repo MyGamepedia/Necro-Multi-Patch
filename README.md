@@ -1,7 +1,7 @@
 # Necro-Multi-Patch
 Repository for __Necro Multi-Patch__ addon, a [SourceMod](https://github.com/alliedmodders/sourcemod) plugin specially created for __[tick 100]NecroHELL!__ and 
 
-__[tick 100]!!crossfire 4Ever!!__, both are public Black Mesa servers created by __[Dr.Necro](https://steamcommunity.com/id/ampreeT)__.
+__[tick 100]!!crossfire 4Ever!!__, both are public Black Mesa servers created by __[Dr.Necro]([https://steamcommunity.com/id/ampreeT](https://steamcommunity.com/profiles/76561198071553465/))__.
 
 ## Console Variables
 This plugin adds following ConVars:
