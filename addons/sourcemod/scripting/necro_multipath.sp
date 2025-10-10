@@ -2,6 +2,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <sdktools_functions>
 #include <sdkhooks>
 #include <dhooks>
 #include <entity>
@@ -14,7 +15,7 @@
 #include "necro_multipath/entities/env_sprite"
 #include "necro_multipath/entities/grenade_bolt"
 #include "necro_multipath/entities/grenade_frag"
-//#include "necro_multipath/entities/grenade_mp5_contact"
+#include "necro_multipath/entities/grenade_mp5_contact"
 #include "necro_multipath/entities/item_ammo_canister"
 
 #include "necro_multipath/entities/funcs/BaseCombatWeaponPrecache"
@@ -30,9 +31,9 @@
 
 public Plugin myinfo = {
     name = "Dr.Necro's Black Mesa Servers Multipath",
-    author = "MyGamepedia. Used a part of the source code from ampreeT/SourceCoop.",
+    author = "MyGamepedia",
     description = "This addon used for Dr.Necro's Black Mesa servers to fix issues in Black Mesa multiplayer.",
-    version = "1.0.2",
+    version = "1.0.3",
     url = ""
 };
 
@@ -43,12 +44,19 @@ public void OnPluginStart()
 	
 	g_ConvarNecroGiveDefaultItems = CreateConVar("necro_givedefaultitems", "1", "Enable default give items list for on player spawn.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroOverrideDefaultWeaponParams = CreateConVar("necro_overridedefaultweaponparams", "1", "Enable weapon values override for parameters by loading custom weapon script.", 0, true, 0.0, true, 1.0);
-	g_ConvarNecroBoltSpriteTrail = CreateConVar("necro_boltspritetrail", "0", "Enable trail for explosive crossbow bolts, the trial makes it easier to determine where the shot was fired from.", 0, true, 0.0, true, 1.0);
-//	g_pConvarDmRespawnTime = CreateConVar("necro_respawntime", "2.0", "Sets player respawn time in seconds.", _, true, 0.1);
+	g_ConvarNecroBoltParticles = CreateConVar("necro_boltparticles", "1", "Enable trail for explosive crossbow bolts, the trial makes it easier to determine where the shot was fired from.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroClassicFrags = CreateConVar("necro_classicfrags", "0", "Enable simplified physics for frag grenades.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroClassicLaserDot = CreateConVar("necro_classiclaserdot", "0", "Enable original RPG laser dot rendering.", 0, true, 0.0, true, 1.0);
-//	g_ConvarNecroMp5ContactParticles = CreateConVar("necro_mp5contactparticles", "1", "Enable particles for MP5 barrel grenade.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroMp5ContactParticles = CreateConVar("necro_mp5contactparticles", "1", "Enable particles for MP5 barrel grenade.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroBoltHitscanDamage = CreateConVar("necro_bolthitscandamage", "65.0", "Amount of damage for the crossbow bolt hitscan.");
+	g_ConvarNecroAllowFastRespawn = CreateConVar("necro_allowfastrespawn","1","Allow player respawn by pressing buttons before spec_freeze_time and spec_freeze_traveltime is finished", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroFastRespawnDelay = CreateConVar("necro_fastrespawndelay", "0.5", "Amount of time in seconds before player can respawn by pressing the buttons with enabled fast respawn.");
+	
+	HookEvent("player_death", Event_PlayerDeath);	
+	
+	g_ConvarNecroFastRespawnDelay.AddChangeHook(OnFastRespawnDelayChanged);
+	
+	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay);
 	
 	LoadGameData();
 }
@@ -65,7 +73,7 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);	
 	
 	LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
-	LoadDHookVirtual(pGameConfig, hkBlackMesaBaseDetonatorDetonate, "CBlackMesaBaseDetonator::Detonate");
+//	LoadDHookVirtual(pGameConfig, hkBlackMesaBaseDetonatorDetonate, "CBlackMesaBaseDetonator::Detonate");
 	LoadDHookVirtual(pGameConfig, hkForceRespawn, "CBasePlayer::ForceRespawn");
 	LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
 	LoadDHookVirtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
@@ -84,6 +92,13 @@ public void OnClientPutInServer(int client)
 	
 	//DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	//DHookEntity(hkForceRespawn, false, client, _, Hook_PlayerForceRespawn);
+	
+	g_fClientFastRespawnDelay[client] = 0.0;
+}
+
+public void OnClientDisconnect_Post(int client)
+{
+	g_bPostTeamSelect[client] = false;
 }
 
 public void OnEntityCreated(int entity, const char[] classname)
@@ -135,6 +150,17 @@ public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float
     return Plugin_Continue;
 }
 
+public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
+{
+    int client = GetClientOfUserId(event.GetInt("userid"));
+	
+	g_fClientFastRespawnDelay[client] = GetGameTime() + g_fClientFastRespawnDelay[0];
+		
+	#if defined DEBUG
+	PrintToServer("Event_PlayerDeath: g_fClientFastRespawnDelay[%d]: %f", client, g_fClientFastRespawnDelay[client]);
+	#endif
+}
+
 public OnEntitySpawned(int entity)
 {
 	char classname[64];
@@ -160,10 +186,10 @@ public OnEntitySpawned(int entity)
 		RequestFrame(Sprite_PathCanister, entity); //we need RequestFrame because parent is not immediately set
 	}
 	
-//	if(StrEqual(classname, "grenade_mp5_contact"))
-//	{
-//		Mp5Contact_Path(entity);
-//	}
+	if(StrEqual(classname, "grenade_mp5_contact"))
+	{
+		Mp5Contact_Path(entity);
+	}
 }
 
 public OnEntitySpawnedPost(int entity)
@@ -213,13 +239,29 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		Format(command, sizeof(command), "use %s", classname);
 		FakeClientCommand(iClient, command);
 		
-//		PrintToServer("use %s", classname);
+		#if defined DEBUG
+		PrintToServer("OnPlayerRunCmd: Client (%d) used %s", iClient, classname);
+		#endif
 	}
 	
 	return Plugin_Continue;
 }
 
-public void OnClientDisconnect_Post(int client)
+public void OnPlayerRunCmdPost(int client, int buttons)
 {
-	g_bPostTeamSelect[client] = false;
+    if(GetConVarBool(g_ConvarNecroAllowFastRespawn) && buttons & (IN_ATTACK|IN_JUMP|IN_DUCK|IN_FORWARD|IN_BACK|IN_ATTACK2) 
+	   && !IsPlayerAlive(client) && GetClientTeam(client) != 1 && GetGameTime() >= g_fClientFastRespawnDelay[client])
+	{
+		#if defined DEBUG
+		PrintToServer("OnPlayerRunCmdPost: Client (%d) respawned without waiting.", client);
+		PrintToServer("OnPlayerRunCmdPost: GetGameTime() == %d, g_fClientFastRespawnDelay[%d] == %f", GetGameTime(), client, g_fClientFastRespawnDelay[client]);
+		#endif
+		
+        SetEntPropFloat(client, Prop_Send, "m_flDeathTime", 0.0);
+	}
+}
+
+public void OnFastRespawnDelayChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay);
 }

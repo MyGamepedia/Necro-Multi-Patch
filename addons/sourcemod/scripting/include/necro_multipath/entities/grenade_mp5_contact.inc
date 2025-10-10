@@ -1,24 +1,30 @@
 public Mp5Contact_Path(int entity)
 {
+    if (!IsValidEntity(entity))
+        return;
+	
 	if (GetConVarBool(g_ConvarNecroMp5ContactParticles))
 	{
-		int particlesystem = CreateEntityByName("info_particle_system");
+		#if defined DEBUG
+		PrintToServer("Mp5Contact_Path: Allowed to create particle for entity (%d)", entity);
+		#endif
 		
-		if (particlesystem == -1)
-			return;
-
-		DispatchKeyValue(particlesystem, "effect_name", "handgrenade_spark");
-		DispatchKeyValue(particlesystem, "start_active", "1");
-//		DispatchKeyValue(particlesystem, "friction", "41424242424242424242.0"); //mark
-
-		SetEntPropEnt(particlesystem, Prop_Send, "m_hOwnerEntity", entity);
+		int particle = CreateEntityByName("info_particle_system");
+		
+		SetEntPropString(particle, Prop_Data, "m_iszEffectName", "grenade_mp5_trail"); 
+		
+		SetEntProp(particle, Prop_Data, "m_bStartActive", 1);
 		
 		float pos[3];
 		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", pos);
 		
-		//Attach
-		TeleportEntity(particlesystem, pos, NULL_VECTOR, NULL_VECTOR);
+		TeleportEntity(particle, pos, NULL_VECTOR, NULL_VECTOR);
 		
-		DispatchSpawn(particlesystem);
+		SetVariantString("!activator");
+		AcceptEntityInput(particle, "SetParent", entity);
+		
+		DispatchSpawn(particle);
+		
+		ActivateEntity(particle);	
 	}
 }

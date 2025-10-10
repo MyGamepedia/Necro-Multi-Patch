@@ -11,16 +11,20 @@ int GetChild(const int entity, const char[] classname)
 		
 		if(StrEqual(childclassname, classname))
 		{
-			PrintToServer("GetChild: childclassname %s, classname %s", childclassname, classname);
+			#if defined DEBUG
+			PrintToServer("GetChild: Child classname: %s. Parameter classname: %s", childclassname, classname);
+			#endif
 			
 			//used for now as mark for spawned ents by this plugin, maybe we will find better way
 			int hammerid = GetEntProp(child, Prop_Data, "m_iHammerID");
 			//float friction = GetEntPropFloat(child, Prop_Data, "m_flFriction");
 			
-			//PrintToServer("friction: %f hammerid %d", friction, hammerid);
-			
 			if(hammerid == 0) 
-			{		
+			{
+				#if defined DEBUG
+				PrintToServer("GetChild: Return child: index - %d, child classname - %s, parameter classname - %s", child, childclassname, classname);
+				#endif
+				
 				return child;
 			}
 		}
@@ -28,6 +32,8 @@ int GetChild(const int entity, const char[] classname)
 		child = GetEntPropEnt(child, Prop_Data, "m_hMovePeer");
 	}
 	
-//	PrintToServer("GetChild: Nothing found");
+	#if defined DEBUG
+	PrintToServer("GetChild: Return -1");
+	#endif
 	return -1;
 }
