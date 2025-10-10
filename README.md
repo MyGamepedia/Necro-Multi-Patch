@@ -23,4 +23,9 @@ This plugin adds following ConVars:
 - Create servers feedback and suggest improvements.
 - Users are able to add their own changes, using `Pull requests` system.
 
+## Credits
+
+- Used a part of code from [SourceCoop](https://github.com/ampreeT/SourceCoop).
+- Used and reworked code from [fast_spawn](https://forums.alliedmods.net/showthread.php?p=2362850) plugin by __Alienmario__ ([Steam](https://steamcommunity.com/id/4oM0/), [GitHub](https://github.com/Alienmario)).
+  
 TODO: Add more in README.md.
