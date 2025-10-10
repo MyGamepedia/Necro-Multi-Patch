@@ -7,7 +7,7 @@
 	"playermodel_multiplayer" "string" "models/weapons/w_357_mp.mdl"
 	"viewmodel" "string" "models/weapons/v_357.mdl"
 	"printname" "string" "357"
-	"primary_ammo" "string" "357"
+	"primary_ammo" "string" "357" 
 	"clip_size" "int" "6"
 	"bucket" "int" "1"
 	"bucket_position" "int" "1"
