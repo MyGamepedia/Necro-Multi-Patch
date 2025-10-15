@@ -1,8 +1,11 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 //#define DEBUG
 #define MAX_FORMAT 256
 
 ConVar mp_flashlight;
-//ConVar mp_forcerespawn;
+ConVar mp_forcerespawn;
 
 ConVar g_ConvarNecroGiveDefaultItems;
 ConVar g_ConvarNecroOverrideDefaultWeaponParams;
@@ -25,8 +28,7 @@ DynamicHook hkIsMultiplayer;
 DynamicHook hkAcceptInput;
 
 bool g_bPostTeamSelect[MAXPLAYERS+1];
-//int g_bUnblockRespawn[MAXPLAYERS+1];
-//bool g_bHideEntity[MAXPLAYERS + 1];
+int g_bUnblockRespawn[MAXPLAYERS+1];
 bool g_bIsMultiplayerOverride = true;
 
 float g_fClientFastRespawnDelay[MAXPLAYERS+1];

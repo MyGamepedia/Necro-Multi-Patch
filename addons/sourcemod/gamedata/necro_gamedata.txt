@@ -57,6 +57,12 @@
 				"windows"	"39"
 				"linux"		"40"
 			}
+			
+			"CWeapon_Tau::ItemPostFrame" // CWeapon_Tau::ItemPostFrame()
+			{
+				"windows"	"279"
+				"linux"		"280"
+			}
 		}
 		"Functions"
 		{
@@ -171,6 +177,14 @@
 						"type"	"int"
 					}
 				}
+			}
+			
+			"CWeapon_Tau::ItemPostFrame"
+			{
+				"offset"	"CWeapon_Tau::ItemPostFrame"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
 			}
 		}
 		"Signatures"

@@ -1,3 +1,4 @@
+#pragma newdecls required
 #pragma semicolon 1
 
 #include <sourcemod>
@@ -24,7 +25,7 @@
 
 #include "necro_multipath/players/funcs/FAllowFlashlight"
 #include "necro_multipath/players/funcs/GiveDefaultItems"
-//#include "necro_multipath/players/funcs/PlayerForceRespawn"
+#include "necro_multipath/players/funcs/PlayerForceRespawn"
 
 #include "necro_multipath/functions/GetChild"
 #include "necro_multipath/functions/AddOutput"
@@ -33,23 +34,23 @@ public Plugin myinfo = {
     name = "Dr.Necro's Black Mesa Servers Multipath",
     author = "MyGamepedia",
     description = "This addon used for Dr.Necro's Black Mesa servers to fix issues in Black Mesa multiplayer.",
-    version = "1.0.3",
+    version = "1.0.4",
     url = ""
 };
 
 public void OnPluginStart()
-{
+{	
 	mp_flashlight = FindConVar("mp_flashlight");
-//	mp_forcerespawn = FindConVar("mp_forcerespawn");
+	mp_forcerespawn = FindConVar("mp_forcerespawn");
 	
 	g_ConvarNecroGiveDefaultItems = CreateConVar("necro_givedefaultitems", "1", "Enable default give items list for on player spawn.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroOverrideDefaultWeaponParams = CreateConVar("necro_overridedefaultweaponparams", "1", "Enable weapon values override for parameters by loading custom weapon script.", 0, true, 0.0, true, 1.0);
-	g_ConvarNecroBoltParticles = CreateConVar("necro_boltparticles", "1", "Enable trail for explosive crossbow bolts, the trial makes it easier to determine where the shot was fired from.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroBoltParticles = CreateConVar("necro_boltparticles", "1", "Enables trail for explosive crossbow bolts, the trial makes it easier to determine where the shot was fired from.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroClassicFrags = CreateConVar("necro_classicfrags", "0", "Enable simplified physics for frag grenades.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroClassicLaserDot = CreateConVar("necro_classiclaserdot", "0", "Enable original RPG laser dot rendering.", 0, true, 0.0, true, 1.0);
-	g_ConvarNecroMp5ContactParticles = CreateConVar("necro_mp5contactparticles", "1", "Enable particles for MP5 barrel grenade.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroMp5ContactParticles = CreateConVar("necro_mp5contactparticles", "1", "Enables smoke for MP5 barrel grenade.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroBoltHitscanDamage = CreateConVar("necro_bolthitscandamage", "65.0", "Amount of damage for the crossbow bolt hitscan.");
-	g_ConvarNecroAllowFastRespawn = CreateConVar("necro_allowfastrespawn","1","Allow player respawn by pressing buttons before spec_freeze_time and spec_freeze_traveltime is finished", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroAllowFastRespawn = CreateConVar("necro_allowfastrespawn","1","Allow player respawn by pressing the buttons before spec_freeze_time and spec_freeze_traveltime is finished.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroFastRespawnDelay = CreateConVar("necro_fastrespawndelay", "0.5", "Amount of time in seconds before player can respawn by pressing the buttons with enabled fast respawn.");
 	
 	HookEvent("player_death", Event_PlayerDeath);	
@@ -91,7 +92,7 @@ public void OnClientPutInServer(int client)
 		return;
 	
 	//DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
-	//DHookEntity(hkForceRespawn, false, client, _, Hook_PlayerForceRespawn);
+	DHookEntity(hkForceRespawn, false, client, _, Hook_PlayerForceRespawn);
 	
 	g_fClientFastRespawnDelay[client] = 0.0;
 }
@@ -161,7 +162,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	#endif
 }
 
-public OnEntitySpawned(int entity)
+public void OnEntitySpawned(int entity)
 {
 	char classname[64];
 	GetEntityClassname(entity, classname, sizeof(classname));
@@ -192,7 +193,7 @@ public OnEntitySpawned(int entity)
 	}
 }
 
-public OnEntitySpawnedPost(int entity)
+public void OnEntitySpawnedPost(int entity)
 {
 	char classname[64];
 	GetEntityClassname(entity, classname, sizeof(classname));

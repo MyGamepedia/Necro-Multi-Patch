@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 public MRESReturn Hook_FAllowFlashlight(DHookReturn hReturn, DHookParam hParams)
 {
 	DHookSetReturn(hReturn, mp_flashlight.BoolValue);
