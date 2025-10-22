@@ -1,7 +1,13 @@
 public Bolt_Path(int entity)
 {
-	//set proper skin for the bolt
-	SetEntProp(entity, Prop_Send, "m_nSkin", 1);
+	if (GetConVarBool(g_ConvarNecroExplodingBolt))
+	{
+		//set proper skin for the bolt
+		SetEntProp(entity, Prop_Send, "m_nSkin", 1);
+		
+		//enable exploding bolt
+		SetEntProp(entity, Prop_Data, "m_bExplodingBolt", 1);
+	}
 	
 	if (GetConVarBool(g_ConvarNecroBoltParticles))
 	{

@@ -1,3 +1,6 @@
+#pragma newdecls required
+#pragma semicolon 1
+
 public MRESReturn Hook_PlayerForceRespawn(int iClient)
 {
 	float flDeathTime = GetEntPropFloat(iClient, Prop_Send, "m_flDeathTime");

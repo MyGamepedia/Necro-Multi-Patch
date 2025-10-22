@@ -1,3 +1,4 @@
+//set laser_dot disabled on start, so we don't see flickering when toggle on
 public LaserDot_Path(int entity)
 {
 	if (!GetConVarBool(g_ConvarNecroClassicLaserDot))
@@ -13,6 +14,7 @@ public void LaserDot_PathPost(int entity)
 		return;
 	}
 	
+	//no owner on spawn, a delay is needed
 	if (!GetConVarBool(g_ConvarNecroClassicLaserDot))
 	{
 		RequestFrame(LaserDot_RenderFix, entity);
@@ -58,21 +60,26 @@ public void LaserDot_RenderFix(int entity)
 	
 	SetEntPropEnt(sprite, Prop_Data, "m_hDamageFilter", entity); //HACK! use damage filter value to store env_laser_dot (this fieled is never used for sprites anyway)
 	
+	#if defined DEBUG
 	//the name is the new name for sprite + dot's index
 	char name[64];
 	Format(name, sizeof(name), "sprite_laserdot_%d", entity);
 	DispatchKeyValue(sprite, "targetname", name);
+	#endif
 			
 	float pos[3];
 	GetEntPropVector(entity, Prop_Send, "m_vecOrigin", pos);
 			
 	TeleportEntity(sprite, pos, NULL_VECTOR, NULL_VECTOR); //note: orig sprite displaced by ~4 units down, any reason we need do so as well ?
 	
-	SDKUnhook(entity, SDKHook_SetTransmit, Hook_LaserDot_HideOnSpawn_Transmit);
-	SDKHook(entity, SDKHook_SetTransmit, Hook_LaserDot_ShowForOwnerOnly_Transmit);
+	SDKUnhook(entity, SDKHook_SetTransmit, Hook_LaserDot_HideOnSpawn_Transmit); //make is enabled
 	
+	SDKHook(entity, SDKHook_SetTransmit, Hook_LaserDot_ShowForOwnerOnly_Transmit); //show for owner pov only
+	
+	//set these flags so it can work
 	SetEdictFlags(sprite, GetEdictFlags(sprite) & ~(FL_EDICT_ALWAYS|FL_EDICT_DONTSEND|FL_EDICT_PVSCHECK));
-	SDKHook(sprite, SDKHook_SetTransmit, Hook_Sprite_HideForLaserDotOwner_Transmit);
+	
+	SDKHook(sprite, SDKHook_SetTransmit, Hook_Sprite_HideForLaserDotOwner_Transmit); //don't show for owner pov
 	
 	RequestFrame(LaserDot_TeleportSprite, sprite); //TODO: maybe there is a better way to teleport sprite ?
 }
@@ -84,8 +91,10 @@ public void LaserDot_TeleportSprite(int entity)
 		return;
 	}
 	
-	int laserdot = GetEntPropEnt(entity, Prop_Data, "m_hDamageFilter");
-			
+	int laserdot = GetEntPropEnt(entity, Prop_Data, "m_hDamageFilter"); //HACK! use this unused fieled, so we can get laserdot and teleport
+																		//needed cuz if sprite is paranted, it will use parent's transmit hook
+	
+	//kill the sprite if no more laserdot we can teleport to
 	if(!IsValidEntity(laserdot))
 	{
 		AcceptEntityInput(entity, "Kill");
@@ -97,6 +106,7 @@ public void LaserDot_TeleportSprite(int entity)
 			
 	TeleportEntity(entity, pos, NULL_VECTOR, NULL_VECTOR);
 	
+	//cycle teleport
 	RequestFrame(LaserDot_TeleportSprite, entity);
 }
 
@@ -105,6 +115,7 @@ public Action Hook_LaserDot_HideOnSpawn_Transmit(int entity, int client)
 	return Plugin_Stop;
 }
 
+//show for laserdot owner and spectators if  ObserverTarget == owner and if in first person mode
 public Action Hook_LaserDot_ShowForOwnerOnly_Transmit(int entity, int client) 
 {
 	int owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
@@ -130,7 +141,7 @@ public Action Hook_LaserDot_ShowForOwnerOnly_Transmit(int entity, int client)
 
 public Action Hook_Sprite_HideForLaserDotOwner_Transmit(int entity, int client) 
 {
-	int laserdot = GetEntPropEnt(entity, Prop_Data, "m_hDamageFilter");
+	int laserdot = GetEntPropEnt(entity, Prop_Data, "m_hDamageFilter"); //get laserdot we need from this fieled
 			
 	if(!IsValidEntity(laserdot))
 	{
@@ -140,6 +151,7 @@ public Action Hook_Sprite_HideForLaserDotOwner_Transmit(int entity, int client)
 			
 	int owner = GetEntPropEnt(laserdot, Prop_Send, "m_hOwnerEntity");
 	
+	//isn't needed without owner
 	if(!IsValidEntity(owner))
 	{
 		AcceptEntityInput(entity, "Kill");

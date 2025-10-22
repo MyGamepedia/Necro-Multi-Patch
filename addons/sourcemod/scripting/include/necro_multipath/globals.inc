@@ -16,19 +16,30 @@ ConVar g_ConvarNecroMp5ContactParticles;
 ConVar g_ConvarNecroBoltHitscanDamage;
 ConVar g_ConvarNecroAllowFastRespawn;
 ConVar g_ConvarNecroFastRespawnDelay;
+ConVar g_ConvarNecroExplodingBolt;
 
 DynamicDetour hkToggleIronsights;
 DynamicDetour hkGiveDefaultItems;
 DynamicDetour hkBaseCombatWeaponPrecache;
+//DynamicDetour hkBaseCombatDefaultReload;
+//DynamicDetour hkBaseCombatReload;
+DynamicDetour hkStartLagCompensation;
 
 DynamicHook hkFAllowFlashlight;
 //DynamicHook hkBlackMesaBaseDetonatorDetonate;
 DynamicHook hkForceRespawn;
 DynamicHook hkIsMultiplayer;
 DynamicHook hkAcceptInput;
+//DynamicHook hkItemPostFrame;
+//DynamicHook hkBlackMesaBaseWeaponThrownReload;
+//DynamicHook hkBaseCombatWeaponFinishReload;
+//DynamicHook hkBlackMesaBaseProjectileInit;
+DynamicHook hkWeaponCrossbowFireBolt;
 
 bool g_bPostTeamSelect[MAXPLAYERS+1];
 int g_bUnblockRespawn[MAXPLAYERS+1];
 bool g_bIsMultiplayerOverride = true;
 
 float g_fClientFastRespawnDelay[MAXPLAYERS+1];
+
+int g_iUserCmdOffset;

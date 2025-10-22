@@ -63,7 +63,52 @@
 				"windows"	"279"
 				"linux"		"280"
 			}
+			
+			"CBaseCombatWeapon::AbortReload"
+			{
+				"windows"	"289"
+				"linux"		"290"
+			}
+			
+			"CBlackMesaBaseWeaponThrown::Reload"
+			{
+				"windows"	"290"
+				"linux"		"291"
+			}
+			
+			"CBaseCombatWeapon::Reload"
+			{
+				"windows"	"290"
+				"linux"		"291"
+			}
+			
+			"CBaseCombatWeapon::FinishReload"
+			{
+				"windows"	"288"
+				"linux"		"289"
+			}
+			
+			
+			"CBlackMesaBaseProjectile::Init"
+			{
+				"windows"	"237"
+				"linux"		"238"
+			}
+			
+			"CWeapon_Crossbow::FireBolt"
+			{
+				"windows"	"423"
+				"linux"		"424"
+			}
+			
+			//It is "const CUserCmd *cmd = player->GetCurrentUserCommand()" in orig code, W - 0xE14 (hex) L - 0xE1C (hex)
+			"CBasePlayer::GetCurrentUserCommand"	//TODO: Give a better name ?
+			{
+				"linux"		"3612"	//WARNING: NEEDS TO BE TESTED ON A LINUX SERVER!!!
+				"windows"	"3604"
+			}
 		}
+		
 		"Functions"
 		{
 			"CMultiplayRules::FAllowFlashlight"
@@ -186,6 +231,124 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+			
+			"CBlackMesaBaseWeaponThrown::Reload" //CBlackMesaBaseWeaponThrown::Reload
+			{
+				"offset"	"CBlackMesaBaseWeaponThrown::Reload"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBaseCombatWeapon::FinishReload" //CBaseCombatWeapon::FinishReload()
+			{
+				"offset"	"CBaseCombatWeapon::FinishReload"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBaseCombatWeapon::DefaultReload" //bool CBaseCombatWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
+			{
+				"signature"	"CBaseCombatWeapon::DefaultReload"
+				"callconv"	"thiscall"
+				"return"	"int"
+				"this"		"entity"
+				"arguments"
+				{
+					"iMaxClip1"
+					{
+						"type"	"int"
+					}
+					"iMaxClip2"
+					{
+						"type"	"int"
+					}
+					"iActivity"
+					{
+						"type"	"int"
+					}
+				}
+			}
+			
+			"CLagCompensationManager::StartLagCompensation"	//void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, LagCompensationType lagCompensationType, const Vector& weaponPos, const QAngle &weaponAngles, float weaponRange )
+			{
+				"signature"		"CLagCompensationManager::StartLagCompensation"
+				"callconv"		"thiscall"
+				"return"		"void"
+				"this"			"address"
+				"arguments"
+				{
+					"CBasePlayer"
+					{
+						"type"		"cbaseentity"
+					}
+					"LagCompensationType"
+					{
+						"type"		"int"
+					}
+					"weaponPos"
+					{
+						"type"		"vectorptr"
+					}
+					"weaponAngles"
+					{
+						"type"		"vectorptr"
+					}
+					"weaponRange"
+					{
+						"type"		"float"
+					}
+				}
+			}
+			
+			"CBaseCombatWeapon::Reload" //bool CBaseCombatWeapon::Reload( void ), NOTE: in Source SDK it's bool, while Ghidra shows void for Black Mesa, for Windows also show fastcall
+			{
+				"signature"	"CBaseCombatWeapon::Reload"
+				"callconv"	"thiscall"
+				"return"	"int"
+				"this"		"entity"
+			}
+			
+			"CBlackMesaBaseProjectile::Init" //void CBlackMesaBaseProjectile::Init(Vector const&, Vector const&, CBaseCombatCharacter*)
+			{
+				"offset"	"CBlackMesaBaseProjectile::Init"
+				"callconv"	"thiscall"
+				"return"	"int"
+				"this"		"entity"
+				"arguments"
+				{
+					"iVector1"
+					{
+						"type"	"vectorptr"
+					}
+					
+					"iVector2"
+					{
+						"type"	"vectorptr"
+					}
+					
+					"hBaseCombatCharacter"
+					{
+						"type"	"int"
+					}
+				}
+			}
+			
+			"CWeapon_Crossbow::FireBolt" //bool CWeapon_Crossbow::FireBolt(bool)
+			{
+				"offset"	"CWeapon_Crossbow::FireBolt"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"bUnknown"
+					{
+						"type"	"bool"
+					}
+				}
+			}
 		}
 		"Signatures"
 		{
@@ -201,13 +364,33 @@
 				"linux"		"@_ZN30CBlackMesaBaseWeaponIronSights16ToggleIronSightsEv"
 			}
 			
-			//salo's sign was different, needs test on necro server
 			"CBaseCombatWeapon::Precache"
 			{
 				"windows"	"\x55\x8B\xEC\x51\x53\x56\x57\x8B\xF9\x83\xBF\xDC\x04\x00\x00\xFF\x8D\x9F\xDC\x04\x00\x00\x74\x2E\x80\xBB\x78\xFB\xFF\xFF\x00\x8D\x8B\x24\xFB\xFF\xFF\x74\x06\x80\x49\x58\x01\xEB\x13\x8B\x51\x18\x85\xD2\x74\x0C\x8B\xC3\x2B\xC1\x8B\x2A\x2A\x2A\x2A\xDB\xF4\xFF"
 				"linux"		"@_ZN17CBaseCombatWeapon8PrecacheEv"
-			}	
-
+			}
+			
+			//Use Cheat Engine to find by finding m_bReload via value scan
+			"CBaseCombatWeapon::DefaultReload"
+			{
+				"windows"	"\x55\x8B\xEC\x51\x53\x57\x8B\xF9\x8B\x8F\x94\x04\x00\x00\x83\xF9\xFF\x74\x43\x8B\x15\x2A\x2A\x2A\x2A\x8B\xC1\x25\xFF\x1F\x00\x00\xC1\xE9\x0D\xC1\xE0\x2A\x2A\x2A\x2A\x08\x75\x2A\x2A\x2A\x2A\x04\x85\xC9\x74\x22\x8B\x01\xFF\x90\x38\x01\x00\x00\x8B\xD8\x85\xDB"
+				"linux"		"@_ZN17CBaseCombatWeapon13DefaultReloadEiii"
+			}
+			
+			//Use "Function Call Trees: CBaseCombatWeapon::DefaultReload" to find this func
+			"CBaseCombatWeapon::Reload"
+			{
+				"windows"	"\x56\x8B\xF1\x8B\x06\xFF\x90\x8C\x04\x00\x00\x50\x8B\x06\x8B\xCE\xFF\x90\x40\x05\x00\x00\x50\x8B\x06\x8B\xCE\xFF\x90\x3C\x05\x00\x00\x50\x8B\xCE\xE8\xE7\xCA\xFF\xFF\x5E\xC3"
+				"linux"		"@__ZN17CBaseCombatWeapon6ReloadEv"
+			}
+			
+			//Seach by string "StartLagCompensation"
+			"CLagCompensationManager::StartLagCompensation"
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x40\x33\xD2\x89\x4D\xF4\x56\x57\x33\xFF\x89\x55\xF8\x8D\x71\x04\x89\x55\xC0\x89\x55\xC4\x89\x55\xC8\x89\x7D\xCC\xBF\xFF\xFF\x00\x00\x89\x55\xD0\x2A\x2A\x2A\x2A\x89\x75\xE8\x66\x3B\xD7\x74\x15\x8B\x46\x04\x0F\xB7\xCA\x03\xC9\x0F\xB7\x04"
+				"linux"		"@_ZN23CLagCompensationManager20StartLagCompensationEP11CBasePlayer19LagCompensationTypeRK6VectorRK6QAnglef"
+			}
+			
 			"CEnvLaserDot::Create"
 			{
 				"library"   "server"

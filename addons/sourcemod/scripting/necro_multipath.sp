@@ -18,6 +18,7 @@
 #include "necro_multipath/entities/grenade_frag"
 #include "necro_multipath/entities/grenade_mp5_contact"
 #include "necro_multipath/entities/item_ammo_canister"
+#include "necro_multipath/entities/weapon_crossbow"
 
 #include "necro_multipath/entities/funcs/BaseCombatWeaponPrecache"
 #include "necro_multipath/entities/funcs/BlackMesaBaseWeaponIronSightsToggleIronSights"
@@ -27,6 +28,8 @@
 #include "necro_multipath/players/funcs/GiveDefaultItems"
 #include "necro_multipath/players/funcs/PlayerForceRespawn"
 
+#include "necro_multipath/engine/CLagCompensationManagerStartLagCompensation"
+
 #include "necro_multipath/functions/GetChild"
 #include "necro_multipath/functions/AddOutput"
 
@@ -34,7 +37,7 @@ public Plugin myinfo = {
     name = "Dr.Necro's Black Mesa Servers Multipath",
     author = "MyGamepedia",
     description = "This addon used for Dr.Necro's Black Mesa servers to fix issues in Black Mesa multiplayer.",
-    version = "1.0.4",
+    version = "1.0.5",
     url = ""
 };
 
@@ -52,6 +55,7 @@ public void OnPluginStart()
 	g_ConvarNecroBoltHitscanDamage = CreateConVar("necro_bolthitscandamage", "65.0", "Amount of damage for the crossbow bolt hitscan.");
 	g_ConvarNecroAllowFastRespawn = CreateConVar("necro_allowfastrespawn","1","Allow player respawn by pressing the buttons before spec_freeze_time and spec_freeze_traveltime is finished.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroFastRespawnDelay = CreateConVar("necro_fastrespawndelay", "0.5", "Amount of time in seconds before player can respawn by pressing the buttons with enabled fast respawn.");
+	g_ConvarNecroExplodingBolt = CreateConVar("necro_explodingbolt","1","Enable exploding bolt for the crossbow.", 0, true, 0.0, true, 1.0);
 	
 	HookEvent("player_death", Event_PlayerDeath);	
 	
@@ -72,12 +76,15 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig, hkGiveDefaultItems, "CBlackMesaPlayer::GiveDefaultItems", Hook_GiveDefaultItems);
 	LoadDHookDetour(pGameConfig, hkBaseCombatWeaponPrecache, "CBaseCombatWeapon::Precache", Hook_BaseCombatWeaponPrecache, Hook_BaseCombatWeaponPrecachePost);
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);	
+	LoadDHookDetour(pGameConfig, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
 	
 	LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
-//	LoadDHookVirtual(pGameConfig, hkBlackMesaBaseDetonatorDetonate, "CBlackMesaBaseDetonator::Detonate");
 	LoadDHookVirtual(pGameConfig, hkForceRespawn, "CBasePlayer::ForceRespawn");
 	LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
 	LoadDHookVirtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
+	LoadDHookVirtual(pGameConfig, hkWeaponCrossbowFireBolt, "CWeapon_Crossbow::FireBolt");
+	
+	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
 }
 
 public void OnMapStart()
@@ -169,6 +176,7 @@ public void OnEntitySpawned(int entity)
 	
 	if(StrEqual(classname, "grenade_bolt"))
 	{
+	//	DHookEntity(hkBlackMesaBaseProjectileInit, false, entity, _, Hook_BoltInit);
 		Bolt_Path(entity);
 	}
 	
@@ -190,6 +198,12 @@ public void OnEntitySpawned(int entity)
 	if(StrEqual(classname, "grenade_mp5_contact"))
 	{
 		Mp5Contact_Path(entity);
+	}
+	
+	if(StrEqual(classname, "weapon_crossbow"))
+	{
+		DHookEntity(hkWeaponCrossbowFireBolt, false, entity, _, Hook_FireBolt);
+		DHookEntity(hkWeaponCrossbowFireBolt, true, entity, _, Hook_FireBoltPost);
 	}
 }
 
