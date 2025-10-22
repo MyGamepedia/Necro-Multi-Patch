@@ -12,6 +12,7 @@ This plugin adds following ConVars:
 * **`necro_boltparticles`**: `1` - Enables trail for explosive crossbow bolts, the trail makes it easier to determine where the bolt was fired from.
 * **`necro_classicfrags`**: `0` - By default, this plugin implements frag grenade physics from the singleplayer campaign, allowing players to pick up it. If this console variable is enabled, the game will use the legacy physics.
 * **`necro_classiclaserdot`**: `0` - By default, this plugin implements new rendering for laser dot to prevent glowing through walls. If this console variable is enabled, the new rendering will be disabled.
+* **`necro_explodingbolt`**: `1` - Enables exploding crossbow bolts.
 * **`necro_fastrespawndelay`**: `0.5` - Amount of time in seconds before player can respawn by pressing the buttons with enabled fast respawn.
 * **`necro_givedefaultitems`**: `1` - If enabled, gives default weapon pack for the player when spawned.
 * **`necro_mp5contactparticles`**: `1` - Enables smoke for MP5 barrel grenade.
