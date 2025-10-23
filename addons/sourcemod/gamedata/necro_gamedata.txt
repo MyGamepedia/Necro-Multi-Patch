@@ -70,12 +70,6 @@
 				"linux"		"290"
 			}
 			
-			"CBlackMesaBaseWeaponThrown::Reload"
-			{
-				"windows"	"290"
-				"linux"		"291"
-			}
-			
 			"CBaseCombatWeapon::Reload"
 			{
 				"windows"	"290"
@@ -88,6 +82,23 @@
 				"linux"		"289"
 			}
 			
+			"CBaseCombatWeapon::PrimaryAttack"
+			{
+				"windows"	"295"
+				"linux"		"296"
+			}
+			
+			"CBaseCombatWeapon::SecondaryAttack"
+			{
+				"windows"	"296"
+				"linux"		"297"
+			}
+
+			"CBaseCombatWeapon::Deploy"
+			{
+				"windows"	"268"
+				"linux"		"269"
+			}	
 			
 			"CBlackMesaBaseProjectile::Init"
 			{
@@ -148,6 +159,14 @@
 				"offset"	"CBaseCombatWeapon::PrimaryAttack"
 				"hooktype"	"entity"
 				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBaseCombatWeapon::Deploy"
+			{
+				"offset"	"CBaseCombatWeapon::Deploy"
+				"hooktype"	"entity"
+				"return"	"bool"
 				"this"		"entity"
 			}
 			
@@ -232,9 +251,9 @@
 				"this"		"entity"
 			}
 			
-			"CBlackMesaBaseWeaponThrown::Reload" //CBlackMesaBaseWeaponThrown::Reload
+			"CBaseCombatWeapon::Reload"
 			{
-				"offset"	"CBlackMesaBaseWeaponThrown::Reload"
+				"offset"	"CBaseCombatWeapon::Reload"
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
@@ -302,13 +321,15 @@
 				}
 			}
 			
-			"CBaseCombatWeapon::Reload" //bool CBaseCombatWeapon::Reload( void ), NOTE: in Source SDK it's bool, while Ghidra shows void for Black Mesa, for Windows also show fastcall
-			{
-				"signature"	"CBaseCombatWeapon::Reload"
-				"callconv"	"thiscall"
-				"return"	"int"
-				"this"		"entity"
-			}
+			
+//			"CBaseCombatWeapon::Reload" //bool CBaseCombatWeapon::Reload( void ), NOTE: in Source SDK it's bool, while Ghidra shows void for Black Mesa, for Windows also show fastcall
+//			{
+//				"signature"	"CBaseCombatWeapon::Reload"
+//				"callconv"	"thiscall"
+//				"return"	"int"
+//				"this"		"entity"
+//			}
+			
 			
 			"CBlackMesaBaseProjectile::Init" //void CBlackMesaBaseProjectile::Init(Vector const&, Vector const&, CBaseCombatCharacter*)
 			{
