@@ -21,7 +21,7 @@ This plugin adds following ConVars:
 ## Contribution
 
 - Report issues if you find.
-- Create servers feedback and suggest improvements.
+- Create feedback about our servers and suggest improvements.
 - Users are able to add their own changes, using `Pull requests` system.
 
 ## Credits
