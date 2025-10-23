@@ -42,9 +42,9 @@
 		"bullet" "bullet"
 		{
 			"id" "elementid" "e9423b5f-562f-4ef5-9778-f142e82167be"
-			"spread" "vector3" "4 3 0"
-			"shot_count" "int" "8"
-			"damage" "float" "7"
+			"spread" "vector3" "4 3 0" //orig - "4 3 0"
+			"shot_count" "int" "8" //orig - 8
+			"damage" "float" "7" //orig - 7
 			"damage_multiplayer" "float" "10"	
 			"range_modifier" "float" "0.8"		
 			"range_min" "float" "256"	
@@ -52,12 +52,12 @@
 		"recoil" "recoil"
 		{
 			"id" "elementid" "5579b78b-25fe-4c6f-b8d9-eb9942b6ecad"
-			"min_snap_angles" "vector3" "-3 -0.15 0"
-			"max_snap_angles" "vector3" "-1.5 0.15 0"
-			"min_punch_angles" "vector3" "-6 -0.25 -0.25"
-			"max_punch_angles" "vector3" "-5 0.25 0.25"
-			"min_punch_offset" "vector3" "-1 1 -1"
-			"max_punch_offset" "vector3" "-1 1 -1"
+			"min_snap_angles" "vector3" "-3 -0.15 0" //orig - "-3 -0.15 0"
+			"max_snap_angles" "vector3" "-1.5 0.15 0" //orig - "-1.5 0.15 0"
+			"min_punch_angles" "vector3" "-6 -0.25 -0.25" //orig - "-6 -0.25 -0.25"
+			"max_punch_angles" "vector3" "-5 0.25 0.25" //orig - "-5 0.25 0.25"
+			"min_punch_offset" "vector3" "-1 1 -1" //orig - "-1 1 -1"
+			"max_punch_offset" "vector3" "-1 1 -1" //orig - "-1 1 -1"
 		}
 	}
 	"secondary_attack" "secondary_attack"
