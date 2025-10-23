@@ -24,6 +24,7 @@ This plugin adds following ConVars:
 * **`necro_satcheldelay_reload_primary`**: `1.0` - Sets delay for satchel weapon primary attack when the owner take out a new satchel.
 * **`necro_satcheldelay_reload_secondary`**: `1.0` - Sets delay for satchel weapon secondary attack when the owner take out a new satchel.
 
+
 ## Contribution
 
 - Report issues if you find.
