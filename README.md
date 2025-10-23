@@ -17,6 +17,12 @@ This plugin adds following ConVars:
 * **`necro_givedefaultitems`**: `1` - If enabled, gives default weapon pack for the player when spawned.
 * **`necro_mp5contactparticles`**: `1` - Enables smoke for MP5 barrel grenade.
 * **`necro_overridedefaultweaponparams`**: `1` - Enables parameters override for all weapons by loading custom weapon script with __necro_ postfix.
+* **`necro_satcheldelay_attack1_primary`**: `1.0` - Sets delay for satchel weapon primary attack when the satchel thrown.  Recommended 0.84 at least to avoid bugs with the satchel rendering.
+* **`necro_satcheldelay_attack1_secondary`**: `1.2` - Sets delay for satchel weapon primary secondary when the satchel thrown. Recommended 1.2 at least to avoid bugs with the radio rendering.
+* **`necro_satcheldelay_attack2_primary`**: `0.3` - Sets delay for satchel weapon primary attack when the radio is used.
+* **`necro_satcheldelay_attack2_secondary`**: `0.2` - Sets delay for satchel weapon secondary attack when the radio is used.
+* **`necro_satcheldelay_reload_primary`**: `1.0` - Sets delay for satchel weapon primary attack when the owner take out a new satchel.
+* **`necro_satcheldelay_reload_secondary`**: `1.0` - Sets delay for satchel weapon secondary attack when the owner take out a new satchel.
 
 ## Contribution
 
