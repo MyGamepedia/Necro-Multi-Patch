@@ -17,6 +17,12 @@ ConVar g_ConvarNecroBoltHitscanDamage;
 ConVar g_ConvarNecroAllowFastRespawn;
 ConVar g_ConvarNecroFastRespawnDelay;
 ConVar g_ConvarNecroExplodingBolt;
+ConVar g_ConvarNecroSatchelDelay_Attack1_Primary;
+ConVar g_ConvarNecroSatchelDelay_Attack1_Secondary;
+ConVar g_ConvarNecroSatchelDelay_Attack2_Primary;
+ConVar g_ConvarNecroSatchelDelay_Attack2_Secondary;
+ConVar g_ConvarNecroSatchelDelay_Reload_Primary;
+ConVar g_ConvarNecroSatchelDelay_Reload_Secondary;
 
 DynamicDetour hkToggleIronsights;
 DynamicDetour hkGiveDefaultItems;
@@ -34,6 +40,10 @@ DynamicHook hkAcceptInput;
 //DynamicHook hkBlackMesaBaseWeaponThrownReload;
 //DynamicHook hkBaseCombatWeaponFinishReload;
 //DynamicHook hkBlackMesaBaseProjectileInit;
+DynamicHook hkBaseCombatPrimaryAttack;
+DynamicHook hkBaseCombatSecondaryAttack;
+//DynamicHook hkBaseCombatDeploy;
+DynamicHook hkBaseCombatReload;
 DynamicHook hkWeaponCrossbowFireBolt;
 
 bool g_bPostTeamSelect[MAXPLAYERS+1];

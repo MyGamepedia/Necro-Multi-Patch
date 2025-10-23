@@ -19,6 +19,7 @@
 #include "necro_multipath/entities/grenade_mp5_contact"
 #include "necro_multipath/entities/item_ammo_canister"
 #include "necro_multipath/entities/weapon_crossbow"
+#include "necro_multipath/entities/weapon_satchel"
 
 #include "necro_multipath/entities/funcs/BaseCombatWeaponPrecache"
 #include "necro_multipath/entities/funcs/BlackMesaBaseWeaponIronSightsToggleIronSights"
@@ -37,7 +38,7 @@ public Plugin myinfo = {
     name = "Dr.Necro's Black Mesa Servers Multipath",
     author = "MyGamepedia",
     description = "This addon used for Dr.Necro's Black Mesa servers to fix issues in Black Mesa multiplayer.",
-    version = "1.0.5",
+    version = "1.0.6",
     url = ""
 };
 
@@ -55,7 +56,14 @@ public void OnPluginStart()
 	g_ConvarNecroBoltHitscanDamage = CreateConVar("necro_bolthitscandamage", "65.0", "Amount of damage for the crossbow bolt hitscan.");
 	g_ConvarNecroAllowFastRespawn = CreateConVar("necro_allowfastrespawn","1","Allow player respawn by pressing the buttons before spec_freeze_time and spec_freeze_traveltime is finished.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroFastRespawnDelay = CreateConVar("necro_fastrespawndelay", "0.5", "Amount of time in seconds before player can respawn by pressing the buttons with enabled fast respawn.");
-	g_ConvarNecroExplodingBolt = CreateConVar("necro_explodingbolt","1","Enable exploding bolt for the crossbow.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroExplodingBolt = CreateConVar("necro_explodingbolt","1","Enables exploding bolt for the crossbow.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroSatchelDelay_Attack1_Primary = CreateConVar("necro_satcheldelay_attack1_primary","1.0","Sets delay for satchel weapon primary attack when the satchel thrown.  Recommended 0.84 at least to avoid bugs with the satchel rendering.");
+	g_ConvarNecroSatchelDelay_Attack1_Secondary = CreateConVar("necro_satcheldelay_attack1_secondary","1.2","Sets delay for satchel weapon primary secondary when the satchel thrown. Recommended 1.2 at least to avoid bugs with the radio rendering.");
+	g_ConvarNecroSatchelDelay_Attack2_Primary = CreateConVar("necro_satcheldelay_attack2_primary","0.3","Sets delay for satchel weapon primary attack when the radio is used.");
+	g_ConvarNecroSatchelDelay_Attack2_Secondary = CreateConVar("necro_satcheldelay_attack2_secondary","0.2","Sets delay for satchel weapon secondary attack when the radio is used.");
+	g_ConvarNecroSatchelDelay_Reload_Primary = CreateConVar("necro_satcheldelay_reload_primary","1.0","Sets delay for satchel weapon primary attack when the owner take out a new satchel.");
+	g_ConvarNecroSatchelDelay_Reload_Secondary = CreateConVar("necro_satcheldelay_reload_secondary","1.0","Sets delay for satchel weapon secondary attack when the owner take out a new satchel.");
+
 	
 	HookEvent("player_death", Event_PlayerDeath);	
 	
@@ -83,6 +91,9 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
 	LoadDHookVirtual(pGameConfig, hkAcceptInput, "CBaseEntity::AcceptInput");
 	LoadDHookVirtual(pGameConfig, hkWeaponCrossbowFireBolt, "CWeapon_Crossbow::FireBolt");
+	LoadDHookVirtual(pGameConfig, hkBaseCombatPrimaryAttack, "CBaseCombatWeapon::PrimaryAttack");
+	LoadDHookVirtual(pGameConfig, hkBaseCombatSecondaryAttack, "CBaseCombatWeapon::SecondaryAttack");
+	LoadDHookVirtual(pGameConfig, hkBaseCombatReload, "CBaseCombatWeapon::Reload");
 	
 	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
 }
@@ -202,8 +213,15 @@ public void OnEntitySpawned(int entity)
 	
 	if(StrEqual(classname, "weapon_crossbow"))
 	{
-		DHookEntity(hkWeaponCrossbowFireBolt, false, entity, _, Hook_FireBolt);
-		DHookEntity(hkWeaponCrossbowFireBolt, true, entity, _, Hook_FireBoltPost);
+		DHookEntity(hkWeaponCrossbowFireBolt, false, entity, _, Hook_CrossbowFireBolt);
+		DHookEntity(hkWeaponCrossbowFireBolt, true, entity, _, Hook_CrossbowFireBoltPost);
+	}
+	
+	if(StrEqual(classname, "weapon_satchel"))
+	{
+		DHookEntity(hkBaseCombatPrimaryAttack, true, entity, _, Hook_SatchelPrimaryAttackPost);
+		DHookEntity(hkBaseCombatSecondaryAttack, true, entity, _, Hook_SatchelSecondaryAttackPost);
+		DHookEntity(hkBaseCombatReload, true, entity, _, Hook_SatchelReloadPost);
 	}
 }
 
@@ -262,7 +280,7 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 	return Plugin_Continue;
 }
 
-public void OnPlayerRunCmdPost(int client, int buttons)
+public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2])
 {
     if(GetConVarBool(g_ConvarNecroAllowFastRespawn) && buttons & (IN_ATTACK|IN_JUMP|IN_DUCK|IN_FORWARD|IN_BACK|IN_ATTACK2) 
 	   && !IsPlayerAlive(client) && GetClientTeam(client) != 1 && GetGameTime() >= g_fClientFastRespawnDelay[client])
