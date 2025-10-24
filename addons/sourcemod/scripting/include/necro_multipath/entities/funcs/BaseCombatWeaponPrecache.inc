@@ -1,5 +1,6 @@
 #define BASECOMBATWEAPONPRECACHE_RETURN_CLASSNAME
 
+//Purpose: Override default weapon classnames to load custom Necro weapon scripts
 public MRESReturn Hook_BaseCombatWeaponPrecache(int _this, DHookParam hParams)
 {
 	if (GetConVarBool(g_ConvarNecroOverrideDefaultWeaponParams))
@@ -91,6 +92,7 @@ public MRESReturn Hook_BaseCombatWeaponPrecache(int _this, DHookParam hParams)
 	return MRES_Ignored;
 }
 
+//Purpose: Restore default weapon classnames after precache is done so the weapon can spawn
 public MRESReturn Hook_BaseCombatWeaponPrecachePost(int _this, DHookParam hParams)
 {
 	#if defined BASECOMBATWEAPONPRECACHE_RETURN_CLASSNAME

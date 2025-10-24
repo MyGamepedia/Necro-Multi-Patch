@@ -1,4 +1,8 @@
-public Bolt_Path(int entity)
+#pragma newdecls required
+#pragma semicolon 1
+
+//Purpose: Set exploding bolt (if enabled) and add particle trail effect
+public void Bolt_Path(int entity)
 {
 	if (GetConVarBool(g_ConvarNecroExplodingBolt))
 	{
@@ -31,6 +35,6 @@ public Bolt_Path(int entity)
 		
 		DispatchSpawn(particle);
 		
-		ActivateEntity(particle);	
+		ActivateEntity(particle);	//needed to start particle effect
 	}
 }

@@ -1,6 +1,7 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+//Purpose: Easy function to add outputs to entities
 bool AddOutput(const int entity, const char[] szOutput, const char[] szTarget, const char[] szTargetInput, 
 					  const char[] szParameter = "",const float flDelay = 0.0, const int iTimesToFire = -1)
 {

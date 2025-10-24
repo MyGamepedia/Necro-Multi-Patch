@@ -1,4 +1,8 @@
-public Mp5Contact_Path(int entity)
+#pragma newdecls required
+#pragma semicolon 1
+
+//Purpose: Add particle trail effect to MP5 contact grenade
+public void Mp5Contact_Path(int entity)
 {
     if (!IsValidEntity(entity))
         return;
@@ -25,6 +29,6 @@ public Mp5Contact_Path(int entity)
 		
 		DispatchSpawn(particle);
 		
-		ActivateEntity(particle);	
+		ActivateEntity(particle);	//needed to start particle effect
 	}
 }

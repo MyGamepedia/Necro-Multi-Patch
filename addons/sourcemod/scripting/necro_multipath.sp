@@ -31,14 +31,14 @@
 
 #include "necro_multipath/engine/CLagCompensationManagerStartLagCompensation"
 
-#include "necro_multipath/functions/GetChild"
+//#include "necro_multipath/functions/GetChild"
 #include "necro_multipath/functions/AddOutput"
 
 public Plugin myinfo = {
     name = "Dr.Necro's Black Mesa Servers Multipath",
     author = "MyGamepedia",
-    description = "This addon used for Dr.Necro's Black Mesa servers to fix issues in Black Mesa multiplayer.",
-    version = "1.0.6",
+    description = "This addon is used to significantly expand and improve Dr.Necro's Black Mesa multiplayer servers.",
+    version = "1.0.7",
     url = ""
 };
 
@@ -61,31 +61,37 @@ public void OnPluginStart()
 	g_ConvarNecroSatchelDelay_Attack1_Secondary = CreateConVar("necro_satcheldelay_attack1_secondary","1.2","Sets delay for satchel weapon primary secondary when the satchel thrown. Recommended 1.2 at least to avoid bugs with the radio rendering.");
 	g_ConvarNecroSatchelDelay_Attack2_Primary = CreateConVar("necro_satcheldelay_attack2_primary","0.3","Sets delay for satchel weapon primary attack when the radio is used.");
 	g_ConvarNecroSatchelDelay_Attack2_Secondary = CreateConVar("necro_satcheldelay_attack2_secondary","0.2","Sets delay for satchel weapon secondary attack when the radio is used.");
-	g_ConvarNecroSatchelDelay_Reload_Primary = CreateConVar("necro_satcheldelay_reload_primary","1.0","Sets delay for satchel weapon primary attack when the owner take out a new satchel.");
-	g_ConvarNecroSatchelDelay_Reload_Secondary = CreateConVar("necro_satcheldelay_reload_secondary","1.0","Sets delay for satchel weapon secondary attack when the owner take out a new satchel.");
+	g_ConvarNecroSatchelDelay_Reload_Primary = CreateConVar("necro_satcheldelay_reload_primary","0.1","Sets delay for satchel weapon primary attack when the owner take out a new satchel.");
+	g_ConvarNecroSatchelDelay_Reload_Secondary = CreateConVar("necro_satcheldelay_reload_secondary","0.1","Sets delay for satchel weapon secondary attack when the owner take out a new satchel.");
 
 	
 	HookEvent("player_death", Event_PlayerDeath);	
 	
 	g_ConvarNecroFastRespawnDelay.AddChangeHook(OnFastRespawnDelayChanged);
 	
-	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay);
+	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay); //HACK! Use fist (unused) element in the array to store cvar delay value
 	
+	//Load detours offsets + some vars from memory
 	LoadGameData();
 }
 
+//Purpose: Load our main game config file and offsets + some vars from memory
 void LoadGameData()
 {
+	//Load our main game config file
 	GameData pGameConfig = LoadGameConfigFile("necro_gamedata");
 	
+	//Check if is valid 
 	if (pGameConfig == null)
 		SetFailState("Couldn't load game config: \"necro_gamedata\"");
-		
+	
+	//Detours
 	LoadDHookDetour(pGameConfig, hkGiveDefaultItems, "CBlackMesaPlayer::GiveDefaultItems", Hook_GiveDefaultItems);
 	LoadDHookDetour(pGameConfig, hkBaseCombatWeaponPrecache, "CBaseCombatWeapon::Precache", Hook_BaseCombatWeaponPrecache, Hook_BaseCombatWeaponPrecachePost);
 	LoadDHookDetour(pGameConfig, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);	
 	LoadDHookDetour(pGameConfig, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
 	
+	//Offsets
 	LoadDHookVirtual(pGameConfig, hkFAllowFlashlight, "CMultiplayRules::FAllowFlashlight");
 	LoadDHookVirtual(pGameConfig, hkForceRespawn, "CBasePlayer::ForceRespawn");
 	LoadDHookVirtual(pGameConfig, hkIsMultiplayer, "CMultiplayRules::IsMultiplayer");
@@ -95,15 +101,21 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkBaseCombatSecondaryAttack, "CBaseCombatWeapon::SecondaryAttack");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatReload, "CBaseCombatWeapon::Reload");
 	
+	//Memory Vars
 	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
 }
 
+//Purspose: Load  gamerule offsets to control various game mechanics when map is loaded
 public void OnMapStart()
 {
 	DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
 	DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
 }
 
+//Purpose: Fix following when player is on the server:
+/* 1. Fix mp_forcerespawn not working properly
+   2. Initialize fast respawn delay variable for player
+*/
 public void OnClientPutInServer(int client)
 {
 	if (IsFakeClient(client))
@@ -120,13 +132,15 @@ public void OnClientDisconnect_Post(int client)
 	g_bPostTeamSelect[client] = false;
 }
 
+//Purpose: Hook entity creation to setup our custom entity hooks
 public void OnEntityCreated(int entity, const char[] classname)
 {
 	SDKHook(entity, SDKHook_Spawn, OnEntitySpawned);
-	SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnedPost);
+	SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnedPost); //needed for some entities
 	SDKHook(entity, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
 }
 
+//Purpose: Modify crossbow bolt hitscan damage
 public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
 {
 	#if defined DEBUG
@@ -136,12 +150,13 @@ public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float
 					damagePosition[0], damagePosition[1], damagePosition[2]);
 	#endif
 					
-	
+	//Check if damage is from crossbow hitscan bolt
 	if(IsValidEntity(weapon))
 	{
 		char classname[64];
 		GetEntityClassname(weapon, classname, sizeof(classname));
 		
+		//Modify damage value if is weapon_crossbow and damage type is 4096 
 		if(StrEqual(classname, "weapon_crossbow") && damagetype == 4096)
 		{
 			if(damage == 125)
@@ -153,6 +168,7 @@ public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float
 				#endif
 			}
 			
+			//Headshot multiplier fix
 			if(damage == 125 * GetConVarFloat(FindConVar("sk_player_head")))
 			{
 				damage = GetConVarFloat(g_ConvarNecroBoltHitscanDamage) * GetConVarFloat(FindConVar("sk_player_head"));
@@ -161,6 +177,7 @@ public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float
 				PrintToServer("Head crossbow damage");
 				#endif
 			}
+			//TODO: Call the programmer to add more multipliers if needed
 			
 			return Plugin_Changed;
 		}
@@ -169,6 +186,7 @@ public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float
     return Plugin_Continue;
 }
 
+//Purpose: Set fast respawn delay when player dies
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
     int client = GetClientOfUserId(event.GetInt("userid"));
@@ -180,6 +198,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	#endif
 }
 
+//Purpose: Check entity classname and apply our custom entity hooks
 public void OnEntitySpawned(int entity)
 {
 	char classname[64];
@@ -187,74 +206,81 @@ public void OnEntitySpawned(int entity)
 	
 	if(StrEqual(classname, "grenade_bolt"))
 	{
-	//	DHookEntity(hkBlackMesaBaseProjectileInit, false, entity, _, Hook_BoltInit);
-		Bolt_Path(entity);
+		Bolt_Path(entity); //Set proper skin, make it explosive if needed and add trail if enabled
 	}
 	
 	if(StrEqual(classname, "env_laser_dot"))
 	{
-		LaserDot_Path(entity);
+		LaserDot_Path(entity); //hide laser dot before using new rendering method
 	}
 	
 	if(StrEqual(classname, "grenade_frag"))
 	{
-		Frag_Path(entity);
+		Frag_Path(entity); //Use VPhysics for frag grenade if classic frags is disabled
 	}
 	
 	if(StrEqual(classname, "env_sprite"))
 	{
-		RequestFrame(Sprite_PathCanister, entity); //we need RequestFrame because parent is not immediately set
+		RequestFrame(Sprite_PathCanister, entity); //Control canister's sprite visibility depending on pick up state
+												   //used RequestFrame because parent is not immediately set
 	}
 	
 	if(StrEqual(classname, "grenade_mp5_contact"))
 	{
-		Mp5Contact_Path(entity);
+		Mp5Contact_Path(entity); //Add smoke particle effect to MP5 barrel grenade if enabled
 	}
 	
 	if(StrEqual(classname, "weapon_crossbow"))
 	{
-		DHookEntity(hkWeaponCrossbowFireBolt, false, entity, _, Hook_CrossbowFireBolt);
-		DHookEntity(hkWeaponCrossbowFireBolt, true, entity, _, Hook_CrossbowFireBoltPost);
+		DHookEntity(hkWeaponCrossbowFireBolt, false, entity, _, Hook_CrossbowFireBolt); //Use singleplayer rules for bolt creation to make sk_crossbow_tracer_enabled work
+		DHookEntity(hkWeaponCrossbowFireBolt, true, entity, _, Hook_CrossbowFireBoltPost); //Set back multiplayer rules after bolt creation
 	}
 	
 	if(StrEqual(classname, "weapon_satchel"))
 	{
+		//Set custom attack delays on different stages
 		DHookEntity(hkBaseCombatPrimaryAttack, true, entity, _, Hook_SatchelPrimaryAttackPost);
 		DHookEntity(hkBaseCombatSecondaryAttack, true, entity, _, Hook_SatchelSecondaryAttackPost);
 		DHookEntity(hkBaseCombatReload, true, entity, _, Hook_SatchelReloadPost);
 	}
 }
 
+//Purpose: Post spawn fixes for some entities
 public void OnEntitySpawnedPost(int entity)
 {
 	char classname[64];
 	GetEntityClassname(entity, classname, sizeof(classname));
-	
+
 	if(StrEqual(classname, "env_laser_dot"))
 	{
-		LaserDot_PathPost(entity);
+		LaserDot_PathPost(entity); //set new rendering after spawn
+	}
+	{
+		Frag_PathPost(entity); //reset multiplayer state back for this entity after setting VPhysics
 	}
 	
 	if(StrEqual(classname, "grenade_frag"))
 	{
-		Frag_PathPost(entity);
+		Frag_PathPost(entity); //reset multiplayer state back for this entity after setting VPhysics
 	}
 }
 
-public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fVel[3], float fAngles[3], int &iWeapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
+//Purpose: Various fixes when player is sending commands
+public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fVel[3], float fAngles[3], int &iWeapon, 
+							int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
 	if (IsFakeClient(iClient))
 		return Plugin_Continue;
 	
-	//hide broken ctrl menu when in spectator
-	int observermode = GetEntProp(iClient, Prop_Data, "m_iObserverMode");
+	//Hide broken specmenu for spectators
+	int observermode = GetEntProp(iClient, Prop_Data, "m_iObserverMode"); //get observer mode
 	
 	if (mouse[0] || mouse[1])
 	{
 		g_bPostTeamSelect[iClient] = true;
 	}
 	
-	if (observermode > 1)
+	if (observermode > 1) //hide panel if we are spectator
 	{
 		if (g_bPostTeamSelect[iClient] && tickcount % 10 == 0)
 		{
@@ -262,11 +288,11 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		}
 	}
 	
-	//client don't use weapon when used custom classname to load custom script, force use with client command
+	//Client don't use weapon when used custom classname to load custom script, force use with client command by checking classname
 	char classname[64];
 	GetEntityClassname(iWeapon, classname, sizeof(classname));
 	
-	if(!StrEqual(classname, "worldspawn"))
+	if(!StrEqual(classname, "worldspawn")) //send use command if we want to use a weapon
 	{
 		char command[64];
 		Format(command, sizeof(command), "use %s", classname);
@@ -280,8 +306,10 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 	return Plugin_Continue;
 }
 
+//Purpose: Allow fast respawn when player presses the buttons
 public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2])
 {
+	//Respawn player if: allowed by convar, player pressed any of the buttons, player is dead, player is not on spectator team and the delay time is passed
     if(GetConVarBool(g_ConvarNecroAllowFastRespawn) && buttons & (IN_ATTACK|IN_JUMP|IN_DUCK|IN_FORWARD|IN_BACK|IN_ATTACK2) 
 	   && !IsPlayerAlive(client) && GetClientTeam(client) != 1 && GetGameTime() >= g_fClientFastRespawnDelay[client])
 	{
@@ -294,7 +322,8 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 	}
 }
 
+//Purpose: Update fast respawn delay value when convar is changed
 public void OnFastRespawnDelayChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay);
+	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay); //HACK! Use fist (unused) element in the array to store cvar delay value
 }
