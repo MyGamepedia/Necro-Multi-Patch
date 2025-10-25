@@ -29,7 +29,7 @@ This plugin adds following ConVars:
 
 - Report issues if you find.
 - Create feedback about our servers and suggest improvements.
-- - Make sure your issue does not repeat someone's. If you to make a feedback on the same problem, please leave your comment under someone's issue or use emoji to support it.
+- - Make sure your issue does not repeat someone's. If you want to make a feedback on the same problem, please leave your comment under someone's issue or use emoji to support it.
 - Users are able to add their own changes, using `Pull requests` system.
 
 ## Credits
