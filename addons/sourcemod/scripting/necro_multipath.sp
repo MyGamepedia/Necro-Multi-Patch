@@ -20,6 +20,7 @@
 #include "necro_multipath/entities/item_ammo_canister"
 #include "necro_multipath/entities/weapon_crossbow"
 #include "necro_multipath/entities/weapon_satchel"
+//#include "necro_multipath/entities/weapon_gluon"
 
 #include "necro_multipath/entities/funcs/BaseCombatWeaponPrecache"
 #include "necro_multipath/entities/funcs/BlackMesaBaseWeaponIronSightsToggleIronSights"
@@ -31,6 +32,9 @@
 
 #include "necro_multipath/engine/CLagCompensationManagerStartLagCompensation"
 
+#include "necro_multipath/convars/host_timescale"
+#include "necro_multipath/convars/necro_fastrespawndelay"
+
 //#include "necro_multipath/functions/GetChild"
 #include "necro_multipath/functions/AddOutput"
 
@@ -38,7 +42,7 @@ public Plugin myinfo = {
     name = "Dr.Necro's Black Mesa Servers Multipath",
     author = "MyGamepedia",
     description = "This addon is used to significantly expand and improve Dr.Necro's Black Mesa multiplayer servers.",
-    version = "1.0.7",
+    version = "1.0.8",
     url = ""
 };
 
@@ -46,6 +50,7 @@ public void OnPluginStart()
 {	
 	mp_flashlight = FindConVar("mp_flashlight");
 	mp_forcerespawn = FindConVar("mp_forcerespawn");
+	sk_crossbow_tracer_enabled = FindConVar("sk_crossbow_tracer_enabled");
 	
 	g_ConvarNecroGiveDefaultItems = CreateConVar("necro_givedefaultitems", "1", "Enable default give items list for on player spawn.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroOverrideDefaultWeaponParams = CreateConVar("necro_overridedefaultweaponparams", "1", "Enable weapon values override for parameters by loading custom weapon script.", 0, true, 0.0, true, 1.0);
@@ -57,17 +62,19 @@ public void OnPluginStart()
 	g_ConvarNecroAllowFastRespawn = CreateConVar("necro_allowfastrespawn","1","Allow player respawn by pressing the buttons before spec_freeze_time and spec_freeze_traveltime is finished.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroFastRespawnDelay = CreateConVar("necro_fastrespawndelay", "0.5", "Amount of time in seconds before player can respawn by pressing the buttons with enabled fast respawn.");
 	g_ConvarNecroExplodingBolt = CreateConVar("necro_explodingbolt","1","Enables exploding bolt for the crossbow.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroatchelDelayOverride = CreateConVar("necro_satcheldelayoverride","1","Enables primary and secondary attack delay override for weapon_satchel", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroSatchelDelay_Attack1_Primary = CreateConVar("necro_satcheldelay_attack1_primary","1.0","Sets delay for satchel weapon primary attack when the satchel thrown.  Recommended 0.84 at least to avoid bugs with the satchel rendering.");
 	g_ConvarNecroSatchelDelay_Attack1_Secondary = CreateConVar("necro_satcheldelay_attack1_secondary","1.2","Sets delay for satchel weapon primary secondary when the satchel thrown. Recommended 1.2 at least to avoid bugs with the radio rendering.");
 	g_ConvarNecroSatchelDelay_Attack2_Primary = CreateConVar("necro_satcheldelay_attack2_primary","0.3","Sets delay for satchel weapon primary attack when the radio is used.");
 	g_ConvarNecroSatchelDelay_Attack2_Secondary = CreateConVar("necro_satcheldelay_attack2_secondary","0.2","Sets delay for satchel weapon secondary attack when the radio is used.");
-	g_ConvarNecroSatchelDelay_Reload_Primary = CreateConVar("necro_satcheldelay_reload_primary","0.1","Sets delay for satchel weapon primary attack when the owner take out a new satchel.");
-	g_ConvarNecroSatchelDelay_Reload_Secondary = CreateConVar("necro_satcheldelay_reload_secondary","0.1","Sets delay for satchel weapon secondary attack when the owner take out a new satchel.");
+	g_ConvarNecroSatchelDelay_Reload_Primary = CreateConVar("necro_satcheldelay_reload_primary","0.4","Sets delay for satchel weapon primary attack when the owner take out a new satchel.");
+	g_ConvarNecroSatchelDelay_Reload_Secondary = CreateConVar("necro_satcheldelay_reload_secondary","0.4","Sets delay for satchel weapon secondary attack when the owner take out a new satchel.");
 
 	
 	HookEvent("player_death", Event_PlayerDeath);	
 	
 	g_ConvarNecroFastRespawnDelay.AddChangeHook(OnFastRespawnDelayChanged);
+	HookConVarChange(FindConVar("host_timescale"), OnHostTimeScaleChanged);
 	
 	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay); //HACK! Use fist (unused) element in the array to store cvar delay value
 	
@@ -100,6 +107,8 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkBaseCombatPrimaryAttack, "CBaseCombatWeapon::PrimaryAttack");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatSecondaryAttack, "CBaseCombatWeapon::SecondaryAttack");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatReload, "CBaseCombatWeapon::Reload");
+	LoadDHookVirtual(pGameConfig, hkBaseCombatHasAnyAmmo, "CBaseCombatWeapon::HasAnyAmmo");
+	LoadDHookVirtual(pGameConfig, hkBaseCombatDeploy, "CBaseCombatWeapon::Deploy");
 	
 	//Memory Vars
 	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
@@ -207,6 +216,7 @@ public void OnEntitySpawned(int entity)
 	if(StrEqual(classname, "grenade_bolt"))
 	{
 		Bolt_Path(entity); //Set proper skin, make it explosive if needed and add trail if enabled
+		DHookEntity(hkAcceptInput, false, entity, _, Hook_GrenadeBoltAcceptInput); //Disable exploading bolt if is not allowed
 	}
 	
 	if(StrEqual(classname, "env_laser_dot"))
@@ -234,6 +244,7 @@ public void OnEntitySpawned(int entity)
 	{
 		DHookEntity(hkWeaponCrossbowFireBolt, false, entity, _, Hook_CrossbowFireBolt); //Use singleplayer rules for bolt creation to make sk_crossbow_tracer_enabled work
 		DHookEntity(hkWeaponCrossbowFireBolt, true, entity, _, Hook_CrossbowFireBoltPost); //Set back multiplayer rules after bolt creation
+		DHookEntity(hkBaseCombatDeploy, true, entity, _, Hook_CrossbowDeploy); //Set back multiplayer rules after bolt creation
 	}
 	
 	if(StrEqual(classname, "weapon_satchel"))
@@ -320,10 +331,4 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 		
         SetEntPropFloat(client, Prop_Send, "m_flDeathTime", 0.0);
 	}
-}
-
-//Purpose: Update fast respawn delay value when convar is changed
-public void OnFastRespawnDelayChanged(ConVar convar, const char[] oldValue, const char[] newValue)
-{
-	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay); //HACK! Use fist (unused) element in the array to store cvar delay value
 }
