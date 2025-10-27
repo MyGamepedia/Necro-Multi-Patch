@@ -15,18 +15,6 @@
 				"windows"	"283"
 				"linux"		"284"
 			}
-
-			"CBaseCombatWeapon::PrimaryAttack" //PrimaryAttack() for any weapon class
-			{
-				"windows"	"295"
-				"linux"		"296"
-			}
-			
-			"CBaseCombatWeapon::SecondaryAttack" //SecondaryAttack() for any weapon class
-			{
-				"windows"	"296"
-				"linux"		"297"
-			}
 			
 			"CBlackMesaBaseDetonator::Detonate" //CBlackMesaBaseDetonator::DispatchExplodeSound
 			{
@@ -92,6 +80,12 @@
 			{
 				"windows"	"296"
 				"linux"		"297"
+			}
+			
+			"CBaseCombatWeapon::HasAnyAmmo"
+			{
+				"windows"	"263"
+				"linux"		"264"
 			}
 
 			"CBaseCombatWeapon::Deploy"
@@ -183,6 +177,14 @@
 				"offset"	"CBaseCombatWeapon::HandleFireOnEmpty"
 				"hooktype"	"entity"
 				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBaseCombatWeapon::HasAnyAmmo"
+			{
+				"offset"	"CBaseCombatWeapon::HasAnyAmmo"
+				"hooktype"	"entity"
+				"return"	"bool"
 				"this"		"entity"
 			}
 			

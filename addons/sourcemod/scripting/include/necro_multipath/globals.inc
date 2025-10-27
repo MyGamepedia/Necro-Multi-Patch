@@ -6,6 +6,7 @@
 
 ConVar mp_flashlight;
 ConVar mp_forcerespawn;
+ConVar sk_crossbow_tracer_enabled;
 
 ConVar g_ConvarNecroGiveDefaultItems;
 ConVar g_ConvarNecroOverrideDefaultWeaponParams;
@@ -23,6 +24,7 @@ ConVar g_ConvarNecroSatchelDelay_Attack2_Primary;
 ConVar g_ConvarNecroSatchelDelay_Attack2_Secondary;
 ConVar g_ConvarNecroSatchelDelay_Reload_Primary;
 ConVar g_ConvarNecroSatchelDelay_Reload_Secondary;
+ConVar g_ConvarNecroatchelDelayOverride;
 
 DynamicDetour hkToggleIronsights;
 DynamicDetour hkGiveDefaultItems;
@@ -42,8 +44,9 @@ DynamicHook hkAcceptInput;
 //DynamicHook hkBlackMesaBaseProjectileInit;
 DynamicHook hkBaseCombatPrimaryAttack;
 DynamicHook hkBaseCombatSecondaryAttack;
-//DynamicHook hkBaseCombatDeploy;
+DynamicHook hkBaseCombatDeploy;
 DynamicHook hkBaseCombatReload;
+DynamicHook hkBaseCombatHasAnyAmmo;
 DynamicHook hkWeaponCrossbowFireBolt;
 
 bool g_bPostTeamSelect[MAXPLAYERS+1];
