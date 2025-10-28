@@ -4,6 +4,13 @@ Repository for __Necro Multi-Patch__ addon, a [SourceMod](https://github.com/all
 
 __[tick 100]!!crossfire 4Ever!!__, both are public Black Mesa servers created by __[Dr.Necro](https://steamcommunity.com/profiles/76561198071553465/)__.
 
+## Contribution
+
+- Report issues if you find.
+- Create feedback about our servers and suggest improvements.
+- - Make sure your issue does not repeat someone's. If you want to make a feedback on the same problem, please leave your comment under someone's issue or use emoji to support it.
+- Users are able to add their own changes, using `Pull requests` system.
+
 ## New Systems Console Variables
 This plugin adds several systems that control the design of various aspects of the game, their behavior can be customized depending on the current needs of the server or game mode.
 
@@ -52,14 +59,6 @@ This plugin adds following ConVars:
 * **`necro_satcheldelay_reload_primary`**: `1.0` - Sets delay for satchel weapon primary attack when the owner take out a new satchel.
 * **`necro_satcheldelay_reload_secondary`**: `1.0` - Sets delay for satchel weapon secondary attack when the owner take out a new satchel.
 * **`necro_satcheldelayoverride`**: `1` - Enables primary and secondary attack delay override for satchel weapon.
-
-
-## Contribution
-
-- Report issues if you find.
-- Create feedback about our servers and suggest improvements.
-- - Make sure your issue does not repeat someone's. If you want to make a feedback on the same problem, please leave your comment under someone's issue or use emoji to support it.
-- Users are able to add their own changes, using `Pull requests` system.
 
 ## Credits
 
