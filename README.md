@@ -3,6 +3,33 @@ Repository for __Necro Multi-Patch__ addon, a [SourceMod](https://github.com/all
 
 __[tick 100]!!crossfire 4Ever!!__, both are public Black Mesa servers created by __[Dr.Necro](https://steamcommunity.com/profiles/76561198071553465/)__.
 
+## New Systems Console Variables
+This plugin adds several systems that control the design of various aspects of the game, their behavior can be customized depending on the current needs of the server or game mode.
+
+### Respawn
+* There is optional "fast respawn" that allows a client to respawn before the auto respawn by clicking action buttons. The amount of time before the client can do "fast respawn" after death controlled by `necro_fastrespawndelay` convar, the entire ability of "fast respawn" can be disabled with `necro_allowfastrespawn` convar.
+* The auto respawn can be disabled with `mp_forcerespawn` convar. Keep in mind that dead client will not be able to respawn after death, this is why it is recommended to use it with "fast respawn" enabled.
+* The amount of time before respawn can be changed using `spec_freeze_traveltime` (the amount of time to zoom in to killer for the freeze camera (default is 0.4)) and `spec_freeze_time` (the amount of time before auto respawn after `spec_freeze_traveltime` (default is 4.0).
+
+### Crossbow bolts
+* Restored functionality of `sk_crossbow_tracer_enabled`, which means you can use the `tracerbullet` entity for the bolts.
+* The explosive bolts can be disabled, using `necro_explodingbolt` convar, this allows to use default bouncing bolts.
+
+### Satchel delay
+* Due to various bugs with the weapon models and gameplay issues caused by spamming this weapon, was added this system that allows to control satchel attack delay (both primary and secondary) in 3 different cases, primary attack, secondary attack and reload (when the owner take out a new satchel).
+* For primary attack, it is controlled using `necro_satcheldelay_attack1_primary` and `necro_satcheldelay_attack1_secondary`.
+* For secondary attack, it is controlled using `necro_satcheldelay_attack2_primary` and `necro_satcheldelay_attack2_secondary`.
+* For reload, it is controlled using  `necro_satcheldelay_reload_primary` and `necro_satcheldelay_reload_secondary`.
+* This system can be disabled using `necro_satcheldelayoverride` (not recommended).
+
+### Projectile trails
+* Added particle trails for some projectiles to make it a little easier to figure out their flight path, this helps to determine the location of the attacker.
+* For MP5 contact grenade, it is controlled using `necro_mp5contactparticles`.
+* For crossbow bolts, it is controlled using `necro_boltparticles`.
+
+### Default items give
+* The default spawn items list (crowbar, 3 frags, glock, full ammo for 9mm) can be disabled using `necro_givedefaultitems`.
+ 
 ## Console Variables
 This plugin adds following ConVars:
 
