@@ -26,14 +26,18 @@
 #include "necro_multipath/entities/funcs/BlackMesaBaseWeaponIronSightsToggleIronSights"
 #include "necro_multipath/entities/funcs/MultiplayRulesIsMultiplayer"
 
-#include "necro_multipath/players/funcs/FAllowFlashlight"
 #include "necro_multipath/players/funcs/GiveDefaultItems"
 #include "necro_multipath/players/funcs/PlayerForceRespawn"
 
 #include "necro_multipath/engine/CLagCompensationManagerStartLagCompensation"
 
+#include "necro_multipath/gamerules/RestoreWorld"
+#include "necro_multipath/gamerules/FAllowFlashlight"
+
 #include "necro_multipath/convars/host_timescale"
 #include "necro_multipath/convars/necro_fastrespawndelay"
+#include "necro_multipath/convars/necro_spectatorjointeamdelay"
+#include "necro_multipath/convars/jointeam"
 
 //#include "necro_multipath/functions/GetChild"
 #include "necro_multipath/functions/AddOutput"
@@ -41,8 +45,8 @@
 public Plugin myinfo = {
     name = "Dr.Necro's Black Mesa Servers Multipath",
     author = "MyGamepedia",
-    description = "This addon is used to significantly expand and improve Dr.Necro's Black Mesa multiplayer servers.",
-    version = "1.0.8",
+    description = "This addon is used to significantly expands and improves Dr.Necro's Black Mesa multiplayer servers.",
+    version = "1.0.9",
     url = ""
 };
 
@@ -51,6 +55,7 @@ public void OnPluginStart()
 	mp_flashlight = FindConVar("mp_flashlight");
 	mp_forcerespawn = FindConVar("mp_forcerespawn");
 	sk_crossbow_tracer_enabled = FindConVar("sk_crossbow_tracer_enabled");
+	mp_teamplay = FindConVar("mp_teamplay");
 	
 	g_ConvarNecroGiveDefaultItems = CreateConVar("necro_givedefaultitems", "1", "Enable default give items list for on player spawn.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroOverrideDefaultWeaponParams = CreateConVar("necro_overridedefaultweaponparams", "1", "Enable weapon values override for parameters by loading custom weapon script.", 0, true, 0.0, true, 1.0);
@@ -62,21 +67,23 @@ public void OnPluginStart()
 	g_ConvarNecroAllowFastRespawn = CreateConVar("necro_allowfastrespawn","1","Allow player respawn by pressing the buttons before spec_freeze_time and spec_freeze_traveltime is finished.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroFastRespawnDelay = CreateConVar("necro_fastrespawndelay", "0.5", "Amount of time in seconds before player can respawn by pressing the buttons with enabled fast respawn.");
 	g_ConvarNecroExplodingBolt = CreateConVar("necro_explodingbolt","1","Enables exploding bolt for the crossbow.", 0, true, 0.0, true, 1.0);
-	g_ConvarNecroatchelDelayOverride = CreateConVar("necro_satcheldelayoverride","1","Enables primary and secondary attack delay override for weapon_satchel", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroSatchelDelayOverride = CreateConVar("necro_satcheldelayoverride","1","Enables primary and secondary attack delay override for weapon_satchel", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroSatchelDelay_Attack1_Primary = CreateConVar("necro_satcheldelay_attack1_primary","1.0","Sets delay for satchel weapon primary attack when the satchel thrown.  Recommended 0.84 at least to avoid bugs with the satchel rendering.");
 	g_ConvarNecroSatchelDelay_Attack1_Secondary = CreateConVar("necro_satcheldelay_attack1_secondary","1.2","Sets delay for satchel weapon primary secondary when the satchel thrown. Recommended 1.2 at least to avoid bugs with the radio rendering.");
 	g_ConvarNecroSatchelDelay_Attack2_Primary = CreateConVar("necro_satcheldelay_attack2_primary","0.3","Sets delay for satchel weapon primary attack when the radio is used.");
 	g_ConvarNecroSatchelDelay_Attack2_Secondary = CreateConVar("necro_satcheldelay_attack2_secondary","0.2","Sets delay for satchel weapon secondary attack when the radio is used.");
 	g_ConvarNecroSatchelDelay_Reload_Primary = CreateConVar("necro_satcheldelay_reload_primary","0.4","Sets delay for satchel weapon primary attack when the owner take out a new satchel.");
 	g_ConvarNecroSatchelDelay_Reload_Secondary = CreateConVar("necro_satcheldelay_reload_secondary","0.4","Sets delay for satchel weapon secondary attack when the owner take out a new satchel.");
-
-	
-	HookEvent("player_death", Event_PlayerDeath);	
+	g_ConvarNecroSpectatorJoinTeamDelay = CreateConVar("necro_spectatorjointeamdelay", "15.0", "Amount of time in seconds before spectator can join a team or player deathmatch again.");
 	
 	g_ConvarNecroFastRespawnDelay.AddChangeHook(OnFastRespawnDelayChanged);
+	g_ConvarNecroSpectatorJoinTeamDelay.AddChangeHook(OnSpectatorJoinTeamDelayChanged);
+
 	HookConVarChange(FindConVar("host_timescale"), OnHostTimeScaleChanged);
 	
-	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay); //HACK! Use fist (unused) element in the array to store cvar delay value
+	//HACK! Use fist (unused) element in the array to store cvar delay value
+	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay);
+	g_fClientSpectatorJoinTeamDelay[0] = GetConVarFloat(g_ConvarNecroSpectatorJoinTeamDelay);
 	
 	//Load detours offsets + some vars from memory
 	LoadGameData();
@@ -109,6 +116,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkBaseCombatReload, "CBaseCombatWeapon::Reload");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatHasAnyAmmo, "CBaseCombatWeapon::HasAnyAmmo");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatDeploy, "CBaseCombatWeapon::Deploy");
+	LoadDHookVirtual(pGameConfig, hkRestoreWorld, "CBM_MP_GameRules::RestoreWorld");
 	
 	//Memory Vars
 	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
@@ -119,6 +127,12 @@ public void OnMapStart()
 {
 	DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
 	DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
+	DHookGamerules(hkRestoreWorld, true, _, Hook_RestoreWorldPost);
+	
+		
+	HookEvent("player_death", Event_PlayerDeath);
+	
+	AddCommandListener(Listener_Jointeam, "jointeam");
 }
 
 //Purpose: Fix following when player is on the server:
@@ -134,6 +148,7 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkForceRespawn, false, client, _, Hook_PlayerForceRespawn);
 	
 	g_fClientFastRespawnDelay[client] = 0.0;
+	g_fClientSpectatorJoinTeamDelay[client] = 0.0;
 }
 
 public void OnClientDisconnect_Post(int client)
