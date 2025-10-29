@@ -60,7 +60,7 @@ This plugin adds following ConVars:
 * **`necro_satcheldelay_reload_primary`**: `1.0` - Sets delay for satchel weapon primary attack when the owner take out a new satchel.
 * **`necro_satcheldelay_reload_secondary`**: `1.0` - Sets delay for satchel weapon secondary attack when the owner take out a new satchel.
 * **`necro_satcheldelayoverride`**: `1` - Enables primary and secondary attack delay override for satchel weapon.
-* * **`necro_spectatorjointeamdelay`**: `15.0` - Amount of time in seconds before spectator can join a team or play deathmatch again after the player joined spectators.
+* **`necro_spectatorjointeamdelay`**: `15.0` - Amount of time in seconds before spectator can join a team or play deathmatch again after the player joined spectators.
 
 
 ## Credits
