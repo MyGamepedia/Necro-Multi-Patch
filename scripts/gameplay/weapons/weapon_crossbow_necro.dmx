@@ -57,7 +57,7 @@
 	"secondary_attack" "secondary_attack"
 	{
 		"id" "elementid" "ce1fb42d-fb55-4f51-85ec-87fb087b7166"
-		"cycle" "float" "0.95" //secondary_attack delay, orig - 0.75
+		"cycle" "float" "0.75" //secondary_attack delay, orig - 0.75 (0.95)
 		"bullet" "bullet"
 		{
 			"id" "elementid" "49bd59ae-105d-48ae-bab4-ab335a91df54"

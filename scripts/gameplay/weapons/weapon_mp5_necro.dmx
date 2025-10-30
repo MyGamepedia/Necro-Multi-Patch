@@ -60,7 +60,7 @@
 	"secondary_attack" "secondary_attack"
 	{
 		"id" "elementid" "46eada80-dfa0-4dec-b790-88f93fa84898"
-		"cycle" "float" "0.95" //orig - 0.75
+		"cycle" "float" "0.75" //orig - 0.75 (0.95)
 		"recoil" "recoil"
 		{
 			"id" "elementid" "067ed3dc-c2b0-4344-a419-53a8efd15365"

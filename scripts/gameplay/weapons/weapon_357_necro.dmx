@@ -37,7 +37,7 @@
 	"primary_attack" "primary_attack"
 	{
 		"id" "elementid" "458fa7c9-723c-4981-aa78-37cd78410dfe"
-		"cycle" "float" "0.45" //orig - 0.75
+		"cycle" "float" "0.75" //orig - 0.75 (0.45)
 		"bullet" "bullet"
 		{
 			"id" "elementid" "e4ea20f8-6c40-4690-80c8-9de188c0ac9a"
