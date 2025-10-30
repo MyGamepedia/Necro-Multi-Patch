@@ -69,4 +69,4 @@ This plugin adds following ConVars:
 - Used and reworked code from [fast_spawn](https://forums.alliedmods.net/showthread.php?p=2362850) plugin by __Alienmario__ ([Steam](https://steamcommunity.com/id/4oM0/), [GitHub](https://github.com/Alienmario)).
 - Used and reworked code from [L4D2 Lag Compensation Null CUserCmd fix](https://hlmod.net/threads/krash-servera-ne-ochen-ponjatny-prichiny.35472/post-600631) plugin by __fdxx__.
   
-TODO: Add more in README.md.
+TODO: Add more info in README.md generally.
