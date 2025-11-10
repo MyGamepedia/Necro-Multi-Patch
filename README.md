@@ -11,7 +11,7 @@ __[tick 100]!!crossfire 4Ever!!__, both are public Black Mesa servers created by
 - - Make sure your issue does not repeat someone's. If you want to make a feedback on the same problem, please leave your comment under someone's issue or use emoji to support it.
 - Users are able to add their own changes, using `Pull requests` system.
 
-## New Systems Console Variables
+## New Systems
 This plugin adds several systems that control the design of various aspects of the game, their behavior can be customized depending on the current needs of the server or game mode.
 
 ### Respawn
