@@ -7,6 +7,8 @@
 ConVar mp_flashlight;
 ConVar mp_forcerespawn;
 ConVar sk_crossbow_tracer_enabled;
+ConVar mp_teamplay;
+ConVar sv_cheats;
 
 ConVar g_ConvarNecroGiveDefaultItems;
 ConVar g_ConvarNecroOverrideDefaultWeaponParams;
@@ -24,7 +26,9 @@ ConVar g_ConvarNecroSatchelDelay_Attack2_Primary;
 ConVar g_ConvarNecroSatchelDelay_Attack2_Secondary;
 ConVar g_ConvarNecroSatchelDelay_Reload_Primary;
 ConVar g_ConvarNecroSatchelDelay_Reload_Secondary;
-ConVar g_ConvarNecroatchelDelayOverride;
+ConVar g_ConvarNecroSatchelDelayOverride;
+ConVar g_ConvarNecroSpectatorJoinTeamDelay;
+ConVar g_ConvarNecroOtherPlayersFlashlight;
 
 DynamicDetour hkToggleIronsights;
 DynamicDetour hkGiveDefaultItems;
@@ -48,11 +52,21 @@ DynamicHook hkBaseCombatDeploy;
 DynamicHook hkBaseCombatReload;
 DynamicHook hkBaseCombatHasAnyAmmo;
 DynamicHook hkWeaponCrossbowFireBolt;
+DynamicHook hkRestoreWorld;
+//DynamicHook hkAttemptToExitFreezeCam;
+DynamicHook hkStartObserverMode;
+//DynamicHook hkShowViewPortPanel;
+DynamicHook hkPlayerSpawn;
+DynamicHook hkFlashlightOff;
+DynamicHook hkFlashlightOn;
 
 bool g_bPostTeamSelect[MAXPLAYERS+1];
 int g_bUnblockRespawn[MAXPLAYERS+1];
 bool g_bIsMultiplayerOverride = true;
 
 float g_fClientFastRespawnDelay[MAXPLAYERS+1];
+float g_fClientSpectatorJoinTeamDelay[MAXPLAYERS+1];
 
 int g_iUserCmdOffset;
+
+bool g_iTeamplay;
