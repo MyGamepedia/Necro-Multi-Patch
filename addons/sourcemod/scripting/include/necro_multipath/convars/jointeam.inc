@@ -6,19 +6,17 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 	//-2 - auto assign
 	//1 - spectators
 	//0 - def team (0 = spectators in teamplay)
-	//3 - team2
 	//2 - team1
+	//3 - team2
 
 	char sArg1[3];
     GetCmdArg(1, sArg1, sizeof(sArg1)); 
 
     int team = StringToInt(sArg1); //team I want to join
 	int oldteam = GetEntProp(client, Prop_Data, "m_iTeamNum"); //my current team
-	bool teamplay = GetConVarBool(mp_teamplay); //check if we are in tdm
-
 
 	//Todo: make it smaller there possible, this code is massive 
-	if(!teamplay)
+	if(!g_iTeamplay)
 	{
 		if(team == -2 || (team != 0 && team != 1)) //IS auto assign OR is not auto assign but also not dm team
 		{
@@ -51,6 +49,16 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 
 		if(oldteam == 0 && team == 1) //if my current team is dm team and want to join spectator team - let me in no matter what and reset delay
 		{
+			//player controls tanks and physics props when switched team to spectatos, fix by forcing the player to unuse
+			int useentity = GetEntPropEnt(client, Prop_Data, "m_hUseEntity");
+			if(IsValidEntity(useentity))
+			{
+				AcceptEntityInput(client, "ForceDropPhysObjects"); //works for both props and tanks
+			}
+
+			if(GetConVarBool(g_ConvarNecroOtherPlayersFlashlight))
+				Player_Flashlight3rdPersonOff(client);
+
 			g_fClientSpectatorJoinTeamDelay[client] = GetGameTime() + g_fClientSpectatorJoinTeamDelay[0];
 			return Plugin_Continue;
 		}
@@ -65,7 +73,7 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 			int sci = GetTeamClientCount(2);
 			int mar = GetTeamClientCount(3);
 
-			//Repeats logic from CHL2MP_Player::PickDefaultSpawnTeam
+			//Mainly repeats logic from CHL2MP_Player::PickDefaultSpawnTeam
 			//(https://github.com/ValveSoftware/source-sdk-2013/blob/39f6dde8fbc238727c020d13b05ecadd31bda4c0/src/game/server/hl2mp/hl2mp_player.cpp#L280)
 			if(sci == 0 || mar == 0)
 			{
@@ -149,6 +157,16 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 
 		if((oldteam == 2 || oldteam == 3) && (team == 1 || team == 0)) //if my current team is t2 or t3 and want to join spectator team - let me in no matter what and reset delay
 		{
+			//player controls tanks and physics props when switched team to spectatos, fix by forcing the player to unuse
+			int useentity = GetEntPropEnt(client, Prop_Data, "m_hUseEntity");
+			if(IsValidEntity(useentity))
+			{
+				AcceptEntityInput(client, "ForceDropPhysObjects"); //works for both props and tanks
+			}
+
+			if(GetConVarBool(g_ConvarNecroOtherPlayersFlashlight))
+				Player_Flashlight3rdPersonOff(client);
+
 			g_fClientSpectatorJoinTeamDelay[client] = GetGameTime() + g_fClientSpectatorJoinTeamDelay[0];
 			return Plugin_Continue;
 		}

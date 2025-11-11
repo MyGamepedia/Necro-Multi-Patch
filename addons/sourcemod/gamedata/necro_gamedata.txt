@@ -2,124 +2,6 @@
 {
 	"#default"
 	{
-		"Offsets"
-		{
-			"CMultiplayRules::FAllowFlashlight" // CMultiplayRules::FAllowFlashlight()
-			{
-				"windows"	"56"
-				"linux"		"57"
-			}
-			
-			"CBaseCombatWeapon::HandleFireOnEmpty"
-			{
-				"windows"	"283"
-				"linux"		"284"
-			}
-			
-			"CBlackMesaBaseDetonator::Detonate" //CBlackMesaBaseDetonator::DispatchExplodeSound
-			{
-				"windows"	"240"
-				"linux"		"241"
-			}
-			
-			"CBasePlayer::ForceRespawn" // void CBasePlayer::ForceRespawn(void)
-			{
-				"windows"	"347"
-				"linux"		"348"
-			}
-			
-			"CMultiplayRules::IsMultiplayer" // CMultiplayRules::IsMultiplayer()
-			{
-				"windows"	"34"
-				"linux"		"35"
-			}
-			
-			"CBasePickup::DoRespawn" // void CBasePickup::DoRespawn()
-			{
-				"windows"	"238"
-				"linux"		"239"
-			}
-			
-			"CBaseEntity::AcceptInput" // CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int)
-			{
-				"windows"	"39"
-				"linux"		"40"
-			}
-			
-			"CWeapon_Tau::ItemPostFrame" // CWeapon_Tau::ItemPostFrame()
-			{
-				"windows"	"279"
-				"linux"		"280"
-			}
-			
-			"CBaseCombatWeapon::AbortReload"
-			{
-				"windows"	"289"
-				"linux"		"290"
-			}
-			
-			"CBaseCombatWeapon::Reload"
-			{
-				"windows"	"290"
-				"linux"		"291"
-			}
-			
-			"CBaseCombatWeapon::FinishReload"
-			{
-				"windows"	"288"
-				"linux"		"289"
-			}
-			
-			"CBaseCombatWeapon::PrimaryAttack"
-			{
-				"windows"	"295"
-				"linux"		"296"
-			}
-			
-			"CBaseCombatWeapon::SecondaryAttack"
-			{
-				"windows"	"296"
-				"linux"		"297"
-			}
-			
-			"CBaseCombatWeapon::HasAnyAmmo"
-			{
-				"windows"	"263"
-				"linux"		"264"
-			}
-
-			"CBaseCombatWeapon::Deploy"
-			{
-				"windows"	"268"
-				"linux"		"269"
-			}	
-			
-			"CBlackMesaBaseProjectile::Init"
-			{
-				"windows"	"237"
-				"linux"		"238"
-			}
-			
-			"CWeapon_Crossbow::FireBolt"
-			{
-				"windows"	"423"
-				"linux"		"424"
-			}
-			
-			"CBM_MP_GameRules::RestoreWorld"
-			{
-				"windows"	"159"
-				"linux"		"160"
-			}
-			
-			//It is "const CUserCmd *cmd = player->GetCurrentUserCommand()" in orig code, W - 0xE14 (hex) L - 0xE1C (hex)
-			"CBasePlayer::GetCurrentUserCommand"	//TODO: Give a better name ?
-			{
-				"linux"		"3612"	//WARNING: NEEDS TO BE TESTED ON A LINUX SERVER!!!
-				"windows"	"3604"
-			}
-		}
-		
 		"Functions"
 		{
 			"CMultiplayRules::FAllowFlashlight"
@@ -149,6 +31,14 @@
 			"CBaseCombatWeapon::Precache"
 			{
 				"signature"	"CBaseCombatWeapon::Precache"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBlackMesaPlayer::StateThink_DYING"
+			{
+				"signature"	"CBlackMesaPlayer::StateThink_DYING"
 				"callconv"	"thiscall"
 				"return"	"void"
 				"this"		"entity"
@@ -213,6 +103,14 @@
 			"CBasePlayer::ForceRespawn"
 			{
 				"offset"	"CBasePlayer::ForceRespawn"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+
+			"CBasePlayer::Spawn"
+			{
+				"offset"	"CBasePlayer::Spawn"
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
@@ -386,7 +284,247 @@
 				"return"	"void"
 				"this"		"ignore"
 			}
+			
+			"CBasePlayer::AttemptToExitFreezeCam"
+			{
+				"offset"	"CBasePlayer::AttemptToExitFreezeCam"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			
+			"CBasePlayer::StartObserverMode"
+			{
+				"offset"	"CBasePlayer::StartObserverMode"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"mode"
+					{
+						"type"	"int"
+					}
+				}
+			}
+
+			"CBlackMesaPlayer::FlashlightTurnOff"
+			{
+				"offset"	"CBlackMesaPlayer::FlashlightTurnOff"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"bUnknown"
+					{
+						"type"	"bool"
+					}
+				}
+			}
+
+			"CBlackMesaPlayer::FlashlightTurnOn"
+			{
+				"offset"	"CBlackMesaPlayer::FlashlightTurnOn"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"bUnknown"
+					{
+						"type"	"bool"
+					}
+				}
+			}
+
+			//"CPointSpotlight::SpotlightCurrentPos"
+			//{
+			//	"signature"	"CPointSpotlight::SpotlightCurrentPos"
+			//	"callconv"	"thiscall"
+			//	"return"	"void" //should be "vector" here
+			//	"this"		"entity"
+			//}
+
+			//"CBasePlayer::ShowViewPortPanel"
+			//{
+			//	"offset"	"CBasePlayer::ShowViewPortPanel"
+			//	"hooktype"	"entity"
+			//	"return"	"void"
+			//	"this"		"entity"
+			//	"arguments"
+			//	{
+			//		"name"
+			//		{
+			//			"type"	"charptr"
+			//		}
+			//
+			//		"bShow"
+			//		{
+			//			"type"	"bool"
+			//		}
+			//
+			//		"data"
+			//		{
+			//			"type"	"KeyValues" //todo: fix me
+			//		}
+			//	}
+			//}
 		}
+		"Offsets"
+		{
+			"CMultiplayRules::FAllowFlashlight" // CMultiplayRules::FAllowFlashlight()
+			{
+				"windows"	"56"
+				"linux"		"57"
+			}
+			
+			"CBaseCombatWeapon::HandleFireOnEmpty"
+			{
+				"windows"	"283"
+				"linux"		"284"
+			}
+			
+			"CBlackMesaBaseDetonator::Detonate" //CBlackMesaBaseDetonator::DispatchExplodeSound
+			{
+				"windows"	"240"
+				"linux"		"241"
+			}
+			
+			"CBasePlayer::ForceRespawn" // void CBasePlayer::ForceRespawn(void)
+			{
+				"windows"	"347"
+				"linux"		"348"
+			}
+
+			"CBasePlayer::Spawn" // CBasePlayer::Spawn()
+			{
+				"windows"	"24"
+				"linux" 	"25"
+			}
+
+			"CBlackMesaPlayer::FlashlightTurnOn" // CBlackMesaPlayer::FlashlightTurnOn(bool)
+			{
+				"windows"	"374"
+				"linux" 	"375"
+			}
+
+			"CBlackMesaPlayer::FlashlightTurnOff" // CBlackMesaPlayer::FlashlightTurnOff(bool)
+			{
+				"windows"	"375"
+				"linux" 	"376"
+			}
+			
+			"CMultiplayRules::IsMultiplayer" // CMultiplayRules::IsMultiplayer()
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			
+			"CBasePickup::DoRespawn" // void CBasePickup::DoRespawn()
+			{
+				"windows"	"238"
+				"linux"		"239"
+			}
+			
+			"CBaseEntity::AcceptInput" // CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int)
+			{
+				"windows"	"39"
+				"linux"		"40"
+			}
+			
+			"CWeapon_Tau::ItemPostFrame" // CWeapon_Tau::ItemPostFrame()
+			{
+				"windows"	"279"
+				"linux"		"280"
+			}
+			
+			"CBaseCombatWeapon::AbortReload"
+			{
+				"windows"	"289"
+				"linux"		"290"
+			}
+			
+			"CBaseCombatWeapon::Reload"
+			{
+				"windows"	"290"
+				"linux"		"291"
+			}
+			
+			"CBaseCombatWeapon::FinishReload"
+			{
+				"windows"	"288"
+				"linux"		"289"
+			}
+			
+			"CBaseCombatWeapon::PrimaryAttack"
+			{
+				"windows"	"295"
+				"linux"		"296"
+			}
+			
+			"CBaseCombatWeapon::SecondaryAttack"
+			{
+				"windows"	"296"
+				"linux"		"297"
+			}
+			
+			"CBaseCombatWeapon::HasAnyAmmo"
+			{
+				"windows"	"263"
+				"linux"		"264"
+			}
+
+			"CBaseCombatWeapon::Deploy"
+			{
+				"windows"	"268"
+				"linux"		"269"
+			}	
+			
+			"CBlackMesaBaseProjectile::Init"
+			{
+				"windows"	"237"
+				"linux"		"238"
+			}
+			
+			"CWeapon_Crossbow::FireBolt"
+			{
+				"windows"	"423"
+				"linux"		"424"
+			}
+			
+			"CBM_MP_GameRules::RestoreWorld"
+			{
+				"windows"	"159"
+				"linux"		"160"
+			}
+			
+			"CBasePlayer::AttemptToExitFreezeCam"
+			{
+				"windows"	"405"
+				"linux"		"406"
+			}
+
+			"CBasePlayer::StartObserverMode" // bool CBasePlayer::StartObserverMode(int)
+			{
+				"windows"	"389"
+				"linux"		"390"
+			}
+
+			"CBasePlayer::ShowViewPortPanel" // void CBasePlayer::ShowViewPortPanel(char const*, bool, KeyValues*)
+			{
+				"windows"	"350"
+				"linux"		"351"
+			}
+			
+			//It is "const CUserCmd *cmd = player->GetCurrentUserCommand()" in orig code, W - 0xE14 (hex) L - 0xE1C (hex)
+			"CBasePlayer::GetCurrentUserCommand"	//TODO: Give a better name ?
+			{
+				"linux"		"3612"
+				"windows"	"3604"
+			}
+		}
+		
 		"Signatures"
 		{
 			"CBlackMesaPlayer::GiveDefaultItems"
@@ -434,6 +572,17 @@
 				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x56\x6A\x00\x2A\x2A\x2A\x2A\x11\xFF\x75\x08\x68\x2A\x2A\x2A\x2A\xE8\x05\x99\xDF\xFF\x8B\x2A\x2A\x2A\x2A\x85\xF6\x0F\x84\x82\x00\x00\x00\x6A\x00\x6A\x00\x8B\xCE\xE8\xBD\x3F\xE0\xFF\x0F\xB7\x86\x88\x01\x00\x00\x8D\x8E\x4C\x01\x00\x00"
 				"linux"		"@_ZN12CEnvLaserDot6CreateERK6VectorP11CBaseEntity"
 			}
-		}                                        
+			
+			"CBlackMesaPlayer::StateThink_DYING"
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x80\xBE\x84\x13\x00\x00\x00\x75\x63\x8B\x8E\x9C\x13\x00\x00\x83\xF9\xFF\x74\x58\x8B\x15\x2A\x2A\x2A\x2A\x8B\xC1\x25\xFF\x1F\x00\x00\xC1\xE9\x0D\xC1\xE0\x2A\x2A\x2A\x2A\x08\x75\x2A\x2A\x2A\x2A\x04\x00\x74\x38\x8A\x86\xE8"
+			}
+
+			"CPointSpotlight::SpotlightCurrentPos"
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x70\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x53\x8B\x5D\x08\x56\x57\x8B\xF9\x8B\x87\x04\x01\x00\x00\xC1\xE8\x0B\xA8\x01\x74\x05\xE8\x16\xA6\xEC\xFF\x8D\xB7\x70\x03\x00\x00\x8D\x87\xFC\x02\x00\x00\x56\x50\xE8\xF3\xBB\x2D\x2A\x2A\x2A\x2A"
+				"linux"		"_ZN15CPointSpotlight19SpotlightCurrentPosEv"
+			}
+		}
 	}
 }

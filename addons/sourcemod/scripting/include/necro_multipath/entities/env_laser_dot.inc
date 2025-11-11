@@ -45,14 +45,14 @@ public void LaserDot_RenderFix(int entity)
 		return;
 	
 	#if defined DEBUG
-	PrecacheModel("sprites/glow1.vmt", true);
-	DispatchKeyValue(sprite, "model", "sprites/glow1.vmt"); //use this texture for debug, so we know what/where/when the sprite
+	PrecacheModel("sprites/obsolete.vmt", true);
+	DispatchKeyValue(sprite, "model", "sprites/obsolete.vmt"); //use this texture for debug, so we know what/where/when the sprite
 	#else
-	PrecacheModel("sprites/redglow1_path.vmt", true); 
-	DispatchKeyValue(sprite, "model", "sprites/redglow1_path.vmt"); //orig "sprites/redglow1.vmt"
+	PrecacheModel("sprites/obsolete.vmt", true); 
+	DispatchKeyValue(sprite, "model", "sprites/glow01.vmt"); //orig "sprites/redglow1.vmt", used "sprites/redglow1_path.vmt", can be "sprites/glow01.vmt"
 	#endif
 	
-	DispatchKeyValue(sprite, "rendercolor", "255 255 255"); //def
+	DispatchKeyValue(sprite, "rendercolor", "255 0 0"); //def is "255 255 255"
 	DispatchKeyValue(sprite, "renderamt", "255"); //alpha, also def
 	DispatchKeyValue(sprite, "rendermode", "9"); //world space glow
 	DispatchKeyValue(sprite, "renderfx", "15"); //Distort

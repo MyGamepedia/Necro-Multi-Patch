@@ -1,5 +1,5 @@
-//Purpose: Get child entity of specific classname
-int GetChild(const int entity, const char[] classname)
+//Purpose: Get child entity by classname
+int GetChildByClassname(const int entity, const char[] classname)
 {
 	if (!IsValidEntity(entity)) return -1;
 	

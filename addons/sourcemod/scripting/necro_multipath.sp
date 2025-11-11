@@ -8,9 +8,12 @@
 #include <dhooks>
 #include <entity>
 
+
 #include "srccoop_api/util/common/dhooks"
 
 #include "necro_multipath/globals"
+
+#include "necro_multipath/gameevents/player_death"
 
 #include "necro_multipath/entities/env_laser_dot"
 #include "necro_multipath/entities/env_sprite"
@@ -20,14 +23,20 @@
 #include "necro_multipath/entities/item_ammo_canister"
 #include "necro_multipath/entities/weapon_crossbow"
 #include "necro_multipath/entities/weapon_satchel"
-//#include "necro_multipath/entities/weapon_gluon"
 
 #include "necro_multipath/entities/funcs/BaseCombatWeaponPrecache"
 #include "necro_multipath/entities/funcs/BlackMesaBaseWeaponIronSightsToggleIronSights"
 #include "necro_multipath/entities/funcs/MultiplayRulesIsMultiplayer"
+#include "necro_multipath/entities/funcs/OnTakeDamage"
+
+#include "necro_multipath/players/PlayerRunCmd"
+#include "necro_multipath/players/PlayerSpawnPost"
 
 #include "necro_multipath/players/funcs/GiveDefaultItems"
 #include "necro_multipath/players/funcs/PlayerForceRespawn"
+#include "necro_multipath/players/funcs/FlashlightOff"
+#include "necro_multipath/players/funcs/FlashlightOn"
+#include "necro_multipath/players/funcs/StartObserverMode"
 
 #include "necro_multipath/engine/CLagCompensationManagerStartLagCompensation"
 
@@ -39,24 +48,27 @@
 #include "necro_multipath/convars/necro_spectatorjointeamdelay"
 #include "necro_multipath/convars/jointeam"
 
-//#include "necro_multipath/functions/GetChild"
+#include "necro_multipath/functions/GetChild"
 #include "necro_multipath/functions/AddOutput"
 
 public Plugin myinfo = {
     name = "Dr.Necro's Black Mesa Servers Multipath",
     author = "MyGamepedia",
     description = "This addon is used to significantly expands and improves Dr.Necro's Black Mesa multiplayer servers.",
-    version = "1.0.9",
+    version = "1.1.0",
     url = ""
 };
 
 public void OnPluginStart()
-{	
+{
+	//existing convars
 	mp_flashlight = FindConVar("mp_flashlight");
 	mp_forcerespawn = FindConVar("mp_forcerespawn");
 	sk_crossbow_tracer_enabled = FindConVar("sk_crossbow_tracer_enabled");
 	mp_teamplay = FindConVar("mp_teamplay");
+	sv_cheats = FindConVar("sv_cheats");
 	
+	//new convars
 	g_ConvarNecroGiveDefaultItems = CreateConVar("necro_givedefaultitems", "1", "Enable default give items list for on player spawn.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroOverrideDefaultWeaponParams = CreateConVar("necro_overridedefaultweaponparams", "1", "Enable weapon values override for parameters by loading custom weapon script.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroBoltParticles = CreateConVar("necro_boltparticles", "1", "Enables trail for explosive crossbow bolts, the trial makes it easier to determine where the shot was fired from.", 0, true, 0.0, true, 1.0);
@@ -74,12 +86,14 @@ public void OnPluginStart()
 	g_ConvarNecroSatchelDelay_Attack2_Secondary = CreateConVar("necro_satcheldelay_attack2_secondary","0.2","Sets delay for satchel weapon secondary attack when the radio is used.");
 	g_ConvarNecroSatchelDelay_Reload_Primary = CreateConVar("necro_satcheldelay_reload_primary","0.4","Sets delay for satchel weapon primary attack when the owner take out a new satchel.");
 	g_ConvarNecroSatchelDelay_Reload_Secondary = CreateConVar("necro_satcheldelay_reload_secondary","0.4","Sets delay for satchel weapon secondary attack when the owner take out a new satchel.");
-	g_ConvarNecroSpectatorJoinTeamDelay = CreateConVar("necro_spectatorjointeamdelay", "15.0", "Amount of time in seconds before spectator can join a team or player deathmatch again.");
-	
+	g_ConvarNecroSpectatorJoinTeamDelay = CreateConVar("necro_spectatorjointeamdelay", "15.0", "Amount of time in seconds before spectator can join a team or play deathmatch again after the player joined spectators.");
+	g_ConvarNecroOtherPlayersFlashlight = CreateConVar("necro_otherplayersflashlight", "1", "Allow creation of flashlight effects, used as flashlight from other players perspective.", 0, true, 0.0, true, 1.0);
+
+	//hook convars
 	g_ConvarNecroFastRespawnDelay.AddChangeHook(OnFastRespawnDelayChanged);
 	g_ConvarNecroSpectatorJoinTeamDelay.AddChangeHook(OnSpectatorJoinTeamDelayChanged);
-
 	HookConVarChange(FindConVar("host_timescale"), OnHostTimeScaleChanged);
+	AddCommandListener(Listener_Jointeam, "jointeam"); //note: it was planned to use player_team event hook, but it doesn't store team nums (always 0)
 	
 	//HACK! Use fist (unused) element in the array to store cvar delay value
 	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay);
@@ -117,6 +131,10 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig, hkBaseCombatHasAnyAmmo, "CBaseCombatWeapon::HasAnyAmmo");
 	LoadDHookVirtual(pGameConfig, hkBaseCombatDeploy, "CBaseCombatWeapon::Deploy");
 	LoadDHookVirtual(pGameConfig, hkRestoreWorld, "CBM_MP_GameRules::RestoreWorld");
+	LoadDHookVirtual(pGameConfig, hkStartObserverMode, "CBasePlayer::StartObserverMode");
+	LoadDHookVirtual(pGameConfig, hkPlayerSpawn, "CBasePlayer::Spawn");
+	LoadDHookVirtual(pGameConfig, hkFlashlightOff, "CBlackMesaPlayer::FlashlightTurnOff");
+	LoadDHookVirtual(pGameConfig, hkFlashlightOn, "CBlackMesaPlayer::FlashlightTurnOn");
 	
 	//Memory Vars
 	g_iUserCmdOffset = pGameConfig.GetOffset("CBasePlayer::GetCurrentUserCommand");
@@ -125,14 +143,23 @@ void LoadGameData()
 //Purspose: Load  gamerule offsets to control various game mechanics when map is loaded
 public void OnMapStart()
 {
+	//gamerules hooks
 	DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
 	DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
 	DHookGamerules(hkRestoreWorld, true, _, Hook_RestoreWorldPost);
 	
-		
+	//events hooks
 	HookEvent("player_death", Event_PlayerDeath);
-	
-	AddCommandListener(Listener_Jointeam, "jointeam");
+
+	//set teamplay variable state to know if teamplay is enabled or not
+	if(GetConVarBool(mp_teamplay))
+	{
+		g_iTeamplay = true;
+	}
+	else
+	{
+		g_iTeamplay = false;
+	}
 }
 
 //Purpose: Fix following when player is on the server:
@@ -146,9 +173,18 @@ public void OnClientPutInServer(int client)
 	
 	//DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam);
 	DHookEntity(hkForceRespawn, false, client, _, Hook_PlayerForceRespawn);
-	
+	DHookEntity(hkStartObserverMode, false, client, _, Hook_PlayerStartObserverMode);
+	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawnPost);
+	DHookEntity(hkFlashlightOff, false, client, _, Hook_FlashlightOff);
+	DHookEntity(hkFlashlightOn, false, client, _, Hook_FlashlightOn);
+
+	//reset these vars
 	g_fClientFastRespawnDelay[client] = 0.0;
 	g_fClientSpectatorJoinTeamDelay[client] = 0.0;
+
+	//disable "other players flashlight"
+	SendConVarValue(client, sv_cheats, "1"); //HACK! This thing needs cheats ON, enable cheats ON, disable the thing, set cheats OFF after
+	ClientCommand(client, "r_flashlight_3rd_draw 0");
 }
 
 public void OnClientDisconnect_Post(int client)
@@ -162,64 +198,6 @@ public void OnEntityCreated(int entity, const char[] classname)
 	SDKHook(entity, SDKHook_Spawn, OnEntitySpawned);
 	SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnedPost); //needed for some entities
 	SDKHook(entity, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
-}
-
-//Purpose: Modify crossbow bolt hitscan damage
-public Action Hook_OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
-{
-	#if defined DEBUG
-	PrintToServer("Hook_OnTakeDamage: victim=%d, attacker=%d, inflictor=%d, damage=%.2f, damagetype=%d, weapon=%d, damageForce[%.2f, %.2f, %.2f], damagePosition[%.2f, %.2f, %.2f]",
-					victim, attacker, inflictor, damage, damagetype, weapon,
-					damageForce[0], damageForce[1], damageForce[2],
-					damagePosition[0], damagePosition[1], damagePosition[2]);
-	#endif
-					
-	//Check if damage is from crossbow hitscan bolt
-	if(IsValidEntity(weapon))
-	{
-		char classname[64];
-		GetEntityClassname(weapon, classname, sizeof(classname));
-		
-		//Modify damage value if is weapon_crossbow and damage type is 4096 
-		if(StrEqual(classname, "weapon_crossbow") && damagetype == 4096)
-		{
-			if(damage == 125)
-			{
-				damage = GetConVarFloat(g_ConvarNecroBoltHitscanDamage);
-				
-				#if defined DEBUG
-				PrintToServer("Normal crossbow damage");
-				#endif
-			}
-			
-			//Headshot multiplier fix
-			if(damage == 125 * GetConVarFloat(FindConVar("sk_player_head")))
-			{
-				damage = GetConVarFloat(g_ConvarNecroBoltHitscanDamage) * GetConVarFloat(FindConVar("sk_player_head"));
-				
-				#if defined DEBUG
-				PrintToServer("Head crossbow damage");
-				#endif
-			}
-			//TODO: Call the programmer to add more multipliers if needed
-			
-			return Plugin_Changed;
-		}
-	}
-
-    return Plugin_Continue;
-}
-
-//Purpose: Set fast respawn delay when player dies
-public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
-{
-    int client = GetClientOfUserId(event.GetInt("userid"));
-	
-	g_fClientFastRespawnDelay[client] = GetGameTime() + g_fClientFastRespawnDelay[0];
-		
-	#if defined DEBUG
-	PrintToServer("Event_PlayerDeath: g_fClientFastRespawnDelay[%d]: %f", client, g_fClientFastRespawnDelay[client]);
-	#endif
 }
 
 //Purpose: Check entity classname and apply our custom entity hooks
@@ -288,62 +266,5 @@ public void OnEntitySpawnedPost(int entity)
 	if(StrEqual(classname, "grenade_frag"))
 	{
 		Frag_PathPost(entity); //reset multiplayer state back for this entity after setting VPhysics
-	}
-}
-
-//Purpose: Various fixes when player is sending commands
-public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fVel[3], float fAngles[3], int &iWeapon, 
-							int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
-{
-	if (IsFakeClient(iClient))
-		return Plugin_Continue;
-	
-	//Hide broken specmenu for spectators
-	int observermode = GetEntProp(iClient, Prop_Data, "m_iObserverMode"); //get observer mode
-	
-	if (mouse[0] || mouse[1])
-	{
-		g_bPostTeamSelect[iClient] = true;
-	}
-	
-	if (observermode > 1) //hide panel if we are spectator
-	{
-		if (g_bPostTeamSelect[iClient] && tickcount % 10 == 0)
-		{
-			ShowVGUIPanel(iClient, "specmenu", _, false);
-		}
-	}
-	
-	//Client don't use weapon when used custom classname to load custom script, force use with client command by checking classname
-	char classname[64];
-	GetEntityClassname(iWeapon, classname, sizeof(classname));
-	
-	if(!StrEqual(classname, "worldspawn")) //send use command if we want to use a weapon
-	{
-		char command[64];
-		Format(command, sizeof(command), "use %s", classname);
-		FakeClientCommand(iClient, command);
-		
-		#if defined DEBUG
-		PrintToServer("OnPlayerRunCmd: Client (%d) used %s", iClient, classname);
-		#endif
-	}
-	
-	return Plugin_Continue;
-}
-
-//Purpose: Allow fast respawn when player presses the buttons
-public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2])
-{
-	//Respawn player if: allowed by convar, player pressed any of the buttons, player is dead, player is not on spectator team and the delay time is passed
-    if(GetConVarBool(g_ConvarNecroAllowFastRespawn) && buttons & (IN_ATTACK|IN_JUMP|IN_DUCK|IN_FORWARD|IN_BACK|IN_ATTACK2) 
-	   && !IsPlayerAlive(client) && GetClientTeam(client) != 1 && GetGameTime() >= g_fClientFastRespawnDelay[client])
-	{
-		#if defined DEBUG
-		PrintToServer("OnPlayerRunCmdPost: Client (%d) respawned without waiting.", client);
-		PrintToServer("OnPlayerRunCmdPost: GetGameTime() == %d, g_fClientFastRespawnDelay[%d] == %f", GetGameTime(), client, g_fClientFastRespawnDelay[client]);
-		#endif
-		
-        SetEntPropFloat(client, Prop_Send, "m_flDeathTime", 0.0);
 	}
 }
