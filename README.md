@@ -52,6 +52,7 @@ This plugin adds following ConVars:
 * **`necro_fastrespawndelay`**: `0.5` - Amount of time in seconds before player can respawn by pressing the buttons with enabled fast respawn.
 * **`necro_givedefaultitems`**: `1` - If enabled, gives default weapon pack for the player when spawned.
 * **`necro_mp5contactparticles`**: `1` - Enables smoke for MP5 barrel grenade.
+* **`necro_otherplayersflashlight`**: `1` - Allow creation of flashlight effects, used as flashlight from other players perspective.
 * **`necro_overridedefaultweaponparams`**: `1` - Enables parameters override for all weapons by loading custom weapon script with __necro_ postfix.
 * **`necro_satcheldelay_attack1_primary`**: `1.0` - Sets delay for satchel weapon primary attack when the satchel thrown.  Recommended 0.84 at least to avoid bugs with the satchel rendering.
 * **`necro_satcheldelay_attack1_secondary`**: `1.2` - Sets delay for satchel weapon primary secondary when the satchel thrown. Recommended 1.2 at least to avoid bugs with the radio rendering.
