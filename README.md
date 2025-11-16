@@ -11,6 +11,9 @@ __[tick 100]!!crossfire 4Ever!!__, both are public Black Mesa servers created by
 - - Make sure your issue does not repeat someone's. If you want to make a feedback on the same problem, please leave your comment under someone's issue or use emoji to support it.
 - Users are able to add their own changes, using `Pull requests` system.
 
+## Includes SourceCoop Improvements
+Used a major part of code from [SourceCoop](https://github.com/ampreeT/SourceCoop) project to implement lots of improvements and bug fixes. This includes many changes for the NPCs AI, singleplayer entities reimplementation to make them working under multiplayer, etc.
+
 ## New Systems
 This plugin adds several systems that control the design of various aspects of the game, their behavior can be customized depending on the current needs of the server or game mode.
 
@@ -66,7 +69,7 @@ This plugin adds following ConVars:
 
 ## Credits
 
-- Used a part of code from [SourceCoop](https://github.com/ampreeT/SourceCoop).
+- Used a major part of code from [SourceCoop](https://github.com/ampreeT/SourceCoop).
 - Used and reworked code from [fast_spawn](https://forums.alliedmods.net/showthread.php?p=2362850) plugin by __Alienmario__ ([Steam](https://steamcommunity.com/id/4oM0/), [GitHub](https://github.com/Alienmario)).
 - Used and reworked code from [L4D2 Lag Compensation Null CUserCmd fix](https://hlmod.net/threads/krash-servera-ne-ochen-ponjatny-prichiny.35472/post-600631) plugin by __fdxx__.
   
