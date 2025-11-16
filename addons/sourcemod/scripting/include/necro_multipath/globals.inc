@@ -2,10 +2,7 @@
 #pragma semicolon 1
 
 //#define DEBUG
-#define MAX_FORMAT 256
 
-ConVar mp_flashlight;
-ConVar mp_forcerespawn;
 ConVar sk_crossbow_tracer_enabled;
 ConVar mp_teamplay;
 ConVar sv_cheats;
@@ -29,19 +26,15 @@ ConVar g_ConvarNecroSatchelDelay_Reload_Secondary;
 ConVar g_ConvarNecroSatchelDelayOverride;
 ConVar g_ConvarNecroSpectatorJoinTeamDelay;
 ConVar g_ConvarNecroOtherPlayersFlashlight;
+ConVar g_ConvarNecroOtherPlayersFlashlightTransmit;
+ConVar g_ConvarNecroPlayersCollide;
 
-DynamicDetour hkToggleIronsights;
-DynamicDetour hkGiveDefaultItems;
 DynamicDetour hkBaseCombatWeaponPrecache;
 //DynamicDetour hkBaseCombatDefaultReload;
 //DynamicDetour hkBaseCombatReload;
 DynamicDetour hkStartLagCompensation;
 
-DynamicHook hkFAllowFlashlight;
 //DynamicHook hkBlackMesaBaseDetonatorDetonate;
-DynamicHook hkForceRespawn;
-DynamicHook hkIsMultiplayer;
-DynamicHook hkAcceptInput;
 //DynamicHook hkItemPostFrame;
 //DynamicHook hkBlackMesaBaseWeaponThrownReload;
 //DynamicHook hkBaseCombatWeaponFinishReload;
@@ -52,17 +45,10 @@ DynamicHook hkBaseCombatDeploy;
 DynamicHook hkBaseCombatReload;
 DynamicHook hkBaseCombatHasAnyAmmo;
 DynamicHook hkWeaponCrossbowFireBolt;
-DynamicHook hkRestoreWorld;
 //DynamicHook hkAttemptToExitFreezeCam;
-DynamicHook hkStartObserverMode;
 //DynamicHook hkShowViewPortPanel;
-DynamicHook hkPlayerSpawn;
 DynamicHook hkFlashlightOff;
 DynamicHook hkFlashlightOn;
-
-bool g_bPostTeamSelect[MAXPLAYERS+1];
-int g_bUnblockRespawn[MAXPLAYERS+1];
-bool g_bIsMultiplayerOverride = true;
 
 float g_fClientFastRespawnDelay[MAXPLAYERS+1];
 float g_fClientSpectatorJoinTeamDelay[MAXPLAYERS+1];

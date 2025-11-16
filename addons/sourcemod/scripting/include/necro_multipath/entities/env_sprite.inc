@@ -39,3 +39,26 @@ public void Sprite_PathCanister(int entity)
 		}
 	}
 }
+
+//------------------------------------------------------
+// env_sprite
+// fix m_flGlowProxySize out of bounds console spam
+//------------------------------------------------------
+public void Hook_EnvSpriteSpawnPost(int iEntIndex)
+{
+	CreateTimer(0.1, Timer_EnvSpritePostSpawn, CBaseEntity(iEntIndex), TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public void Timer_EnvSpritePostSpawn(Handle timer, CBaseEntity pEntity)
+{
+	if (pEntity.IsValid())
+	{
+		if (HasEntProp(pEntity.entindex, Prop_Data, "m_flGlowProxySize"))
+		{
+			if (GetEntPropFloat(pEntity.entindex, Prop_Data, "m_flGlowProxySize") > 64.0)
+			{
+				SetEntPropFloat(pEntity.entindex, Prop_Data, "m_flGlowProxySize", 64.0);
+			}
+		}
+	}
+}

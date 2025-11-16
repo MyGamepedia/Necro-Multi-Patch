@@ -2,6 +2,15 @@
 {
 	"#default"
 	{
+		"Keys"
+		{
+			"IServerTools"
+			{
+				"windows"	"VSERVERTOOLS003"
+				"linux"		"VSERVERTOOLS003"
+			}
+		}
+		
 		"Functions"
 		{
 			"CMultiplayRules::FAllowFlashlight"
@@ -226,6 +235,14 @@
 					}
 				}
 			}
+
+			"CRecipientFilter::IgnorePredictionCull"
+			{
+				"signature"	"CRecipientFilter::IgnorePredictionCull"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"ignore"
+			}
 			
 			
 //			"CBaseCombatWeapon::Reload" //bool CBaseCombatWeapon::Reload( void ), NOTE: in Source SDK it's bool, while Ghidra shows void for Black Mesa, for Windows also show fastcall
@@ -338,6 +355,14 @@
 				}
 			}
 
+			"CBasePlayer::Weapon_ShootPosition"
+			{
+				"offset"	"CBasePlayer::Weapon_ShootPosition"
+				"hooktype"	"entity"
+				"return"	"vector"
+				"this"		"entity"
+			}
+
 			//"CPointSpotlight::SpotlightCurrentPos"
 			//{
 			//	"signature"	"CPointSpotlight::SpotlightCurrentPos"
@@ -370,6 +395,40 @@
 			//		}
 			//	}
 			//}
+
+			"CTempEntsSystem::DispatchEffect"
+			{
+				"offset"	"CTempEntsSystem::DispatchEffect"
+				"hooktype"	"raw"
+				"return"	"void"
+				"this"		"ignore"
+				"arguments"
+				{
+					"filter"
+					{
+						"type"	"objectptr"
+						"flags"	"byref"
+					}
+					"delay"
+					{
+						"type"	"float"
+					}
+					"pos"
+					{
+						"type"	"vectorptr"
+						"flags"	"byref"
+					}
+					"pName"
+					{
+						"type"	"charptr"
+					}
+					"data"
+					{
+						"type"	"objectptr"
+						"flags"	"byref"
+					}
+				}
+			}
 		}
 		"Offsets"
 		{
@@ -516,6 +575,12 @@
 				"windows"	"350"
 				"linux"		"351"
 			}
+
+			"CBasePlayer::Weapon_ShootPosition"	// CBasePlayer::Weapon_ShootPosition()
+			{
+				"windows"	"285"
+				"linux"		"286"
+			}
 			
 			//It is "const CUserCmd *cmd = player->GetCurrentUserCommand()" in orig code, W - 0xE14 (hex) L - 0xE1C (hex)
 			"CBasePlayer::GetCurrentUserCommand"	//TODO: Give a better name ?
@@ -523,8 +588,52 @@
 				"linux"		"3612"
 				"windows"	"3604"
 			}
+
+			"CServerTools::GetTempEntsSystem"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
+			"CServerTools::GetEntityFactoryDictionary" // CServerTools::GetEntityFactoryDictionary()
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+
+			"CEntityFactoryDictionary::InstallFactory" // CEntityFactoryDictionary::InstallFactory(IEntityFactory*, char const*)
+			{
+				"windows"	"0"
+				"linux"		"0"
+			}
+			"CEntityFactoryDictionary::FindFactory" // CEntityFactoryDictionary::FindFactory(char const*)
+			{
+				"windows"	"3"
+				"linux"		"3"
+			}
+
+			"CTempEntsSystem::DispatchEffect" // CTempEntsSystem::DispatchEffect(IRecipientFilter&, float, Vector const&, char const*, CEffectData const&)
+			{
+				"windows"	"39"
+				"linux"		"40"
+			}
 		}
-		
+
+		"Signatures"
+		{
+			"CreateInterface:engine"
+			{
+				"library"		"engine"
+				"windows"		"@CreateInterface"
+				"linux"			"@CreateInterface"
+			}
+			"CreateInterface:server"
+			{
+				"library"		"server"
+				"windows"		"@CreateInterface"
+				"linux"			"@CreateInterface"
+			}
+		}
+
 		"Signatures"
 		{
 			"CBlackMesaPlayer::GiveDefaultItems"
@@ -564,6 +673,12 @@
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x40\x33\xD2\x89\x4D\xF4\x56\x57\x33\xFF\x89\x55\xF8\x8D\x71\x04\x89\x55\xC0\x89\x55\xC4\x89\x55\xC8\x89\x7D\xCC\xBF\xFF\xFF\x00\x00\x89\x55\xD0\x2A\x2A\x2A\x2A\x89\x75\xE8\x66\x3B\xD7\x74\x15\x8B\x46\x04\x0F\xB7\xCA\x03\xC9\x0F\xB7\x04"
 				"linux"		"@_ZN23CLagCompensationManager20StartLagCompensationEP11CBasePlayer19LagCompensationTypeRK6VectorRK6QAnglef"
+			}
+
+			"CRecipientFilter::IgnorePredictionCull"
+			{
+				"windows"	"\x8A\x41\x1D"
+				"linux"		"@_ZNK16CRecipientFilter20IgnorePredictionCullEv"
 			}
 			
 			"CEnvLaserDot::Create"

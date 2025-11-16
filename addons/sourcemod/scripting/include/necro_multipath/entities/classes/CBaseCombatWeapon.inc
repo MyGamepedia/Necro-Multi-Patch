@@ -185,3 +185,48 @@ public MRESReturn Hook_BaseCombatWeaponPrecachePost(int _this, DHookParam hParam
 
 	return MRES_Ignored;
 }
+
+//------------------------------------------------------
+// weapons
+// use sp weapon models
+//------------------------------------------------------
+public MRESReturn Hook_WeaponSetModel(int _this, DHookParam hParams)
+{
+	if (!DHookIsNullParam(hParams, 1))
+	{
+		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
+		if (pWeapon != NULL_CBASEENTITY)
+		{
+			CBaseCombatCharacter pOwner = pWeapon.GetOwner();
+			if (pOwner != NULL_CBASEENTITY && !pOwner.IsPlayer())
+			{
+				static const char szWeaponModel[][][] =
+				{
+					{ "models/weapons/w_glock_mp.mdl", "models/weapons/w_glock.mdl" },
+					{ "models/weapons/w_357_mp.mdl", "models/weapons/w_357.mdl" },
+					{ "models/weapons/w_mp5_mp.mdl", "models/weapons/w_mp5.mdl" },
+					{ "models/weapons/w_shotgun_mp.mdl", "models/weapons/w_shotgun.mdl" },
+					{ "models/weapons/w_rpg_mp.mdl", "models/weapons/w_rpg.mdl" },
+				};
+
+				char szModelName[MAX_MODELNAME];
+				DHookGetParamString(hParams, 1, szModelName, sizeof(szModelName));
+
+				for (int i = 0; i < sizeof(szWeaponModel); i++)
+				{
+					if (strcmp(szModelName, szWeaponModel[i][0], false) == 0)
+					{
+						if (PrecacheModel(szWeaponModel[i][1], false))
+						{
+							hParams.SetString(1, szWeaponModel[i][1]);
+							return MRES_ChangedHandled;
+						}
+
+						break;
+					}
+				}
+			}
+		}
+	}
+	return MRES_Ignored;
+}

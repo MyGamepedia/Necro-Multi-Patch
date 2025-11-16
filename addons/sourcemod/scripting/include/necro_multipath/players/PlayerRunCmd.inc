@@ -7,6 +7,8 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 {
 	if (IsFakeClient(iClient))
 		return Plugin_Continue;
+
+	GetClientEyePosition(iClient, g_vec3PlayerShootPosition[iClient]); //record current player eye vector to fix shoot pos
 	
 	//Hide broken specmenu for spectators
 	int observermode = GetEntProp(iClient, Prop_Data, "m_iObserverMode"); //get observer mode

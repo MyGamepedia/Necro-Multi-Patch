@@ -4,10 +4,11 @@
 //Purpose: Set exploding bolt (if enabled) and add particle trail effect
 public void Bolt_Path(int entity)
 {
-	if(GetConVarBool(sk_crossbow_tracer_enabled) || (!GetConVarBool(g_ConvarNecroExplodingBolt) && !GetConVarBool(sk_crossbow_tracer_enabled)))
+	if(GetConVarBool(sk_crossbow_tracer_enabled) || GetConVarBool(g_ConvarNecroExplodingBolt) && !GetConVarBool(sk_crossbow_tracer_enabled))
 	{
 		//set proper skin for the bolt
 		SetEntProp(entity, Prop_Send, "m_nSkin", 1);
+		SetEntProp(entity, Prop_Data, "m_bExplodingBolt", 1);
 	}
 	
 	if (GetConVarBool(g_ConvarNecroBoltParticles))
@@ -34,21 +35,4 @@ public void Bolt_Path(int entity)
 		
 		ActivateEntity(particle);	//needed to start particle effect
 	}
-}
-
-//Purpose: Decline "SetToExplode" input if exploading bolts are disabled
-public MRESReturn Hook_GrenadeBoltAcceptInput(int _this, DHookReturn hReturn, DHookParam hParams)
-{
-	if(GetConVarBool(sk_crossbow_tracer_enabled) || (!GetConVarBool(g_ConvarNecroExplodingBolt) && !GetConVarBool(sk_crossbow_tracer_enabled)))
-	{
-		char szInputType[MAX_FORMAT];
-		DHookGetParamString(hParams, 1, szInputType, sizeof(szInputType));
-		if (strcmp(szInputType, "SetToExplode", false) == 0)
-		{
-			DHookSetReturn(hReturn, true);
-			return MRES_Supercede;
-		}
-	}
-
-	return MRES_Ignored;
 }

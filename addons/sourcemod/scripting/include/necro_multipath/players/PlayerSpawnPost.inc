@@ -9,6 +9,8 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 
 	if(IsPlayerAlive(iClient))
 	{
+		ClearNpcMemoryForPlayer(iClient);
+		
 		//disable "other players flashlight"
 		SendConVarValue(iClient, sv_cheats, "1"); //HACK! This thing needs cheats ON
 		ClientCommand(iClient, "r_flashlight_3rd_draw 0");
