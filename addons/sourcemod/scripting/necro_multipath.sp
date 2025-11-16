@@ -38,6 +38,7 @@
 #include <necro_multipath/entities/music_track>
 #include <necro_multipath/entities/npc_barnacle>
 #include <necro_multipath/entities/npc_gargantua>
+#include <necro_multipath/entities/npc_human_medic>
 #include <necro_multipath/entities/npc_ichthyosaur>
 #include <necro_multipath/entities/npc_lav>
 #include <necro_multipath/entities/npc_puffballfungus>
@@ -580,6 +581,14 @@ public void OnEntitySpawned(int iEntIndex)
 		if (strcmp(szClassname, "npc_puffballfungus") == 0)
 		{
 			SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_PuffballFungusDmg);
+			return;
+		}
+		#endif
+
+		#if defined ENTPATCH_BM_MEDIC
+		if (strcmp(szClassname, "npc_human_medic") == 0)
+		{
+			DHookEntity(hkEvent_Killed, false, iEntIndex, _, Hook_HumanMedicKilled);
 			return;
 		}
 		#endif
