@@ -613,6 +613,7 @@
 				"return"	"void"
 				"this"		"entity"
 			}
+
 			"CBasePlayer::Weapon_ShootPosition"
 			{
 				"offset"	"CBasePlayer::Weapon_ShootPosition"
@@ -620,6 +621,7 @@
 				"return"	"vector"
 				"this"		"entity"
 			}
+
 			"CBaseTrigger::IsTouching"
 			{
 				"offset"	"CBaseTrigger::IsTouching"
@@ -677,6 +679,48 @@
 					"weaponRange"
 					{
 						"type"		"float"
+					}
+				}
+			}
+
+			"CPlayerResource::UpdatePlayerData"
+			{
+				"offset"	"CPlayerResource::UpdatePlayerData"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+
+			"CPlayerResource::UpdateConnectedPlayer"
+			{
+				"offset"	"CPlayerResource::UpdateConnectedPlayer"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"iIndex"
+					{
+						"type" "int"
+					}
+					"pPlayer"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
+
+			"CPlayerResource::UpdateDisconnectedPlayer"
+			{
+				"offset"	"CPlayerResource::UpdateDisconnectedPlayer"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"iIndex"
+					{
+						"type" "int"
 					}
 				}
 			}
@@ -1587,6 +1631,24 @@
 			{
 				"windows"	"423"
 				"linux"		"424"
+			}
+
+			"CPlayerResource::UpdatePlayerData"
+			{
+				"windows"	"205"
+				"linux"		"206"
+			}
+
+			"CPlayerResource::UpdateConnectedPlayer"
+			{
+				"windows"	"206"
+				"linux"		"207"
+			}
+
+			"CPlayerResource::UpdateDisconnectedPlayer"
+			{
+				"windows"	"207"
+				"linux"		"208"
 			}
 		}
 	}

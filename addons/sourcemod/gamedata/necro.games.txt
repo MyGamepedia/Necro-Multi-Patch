@@ -363,6 +363,63 @@
 				"this"		"entity"
 			}
 
+			"CPlayerResource::UpdatePlayerData"
+			{
+				"offset"	"CPlayerResource::UpdatePlayerData"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+
+			"CPlayerResource::UpdateConnectedPlayer"
+			{
+				"offset"	"CPlayerResource::UpdateConnectedPlayer"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"iIndex"
+					{
+						"type" "int"
+					}
+					"pPlayer"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
+
+			"CPlayerResource::UpdateDisconnectedPlayer"
+			{
+				"offset"	"CPlayerResource::UpdateDisconnectedPlayer"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"iIndex"
+					{
+						"type" "int"
+					}
+				}
+			}
+
+			"CBaseClient::GetUserSetting"
+			{
+				"signature"	"CBaseClient::GetUserSetting"
+				"callconv"	"thiscall"
+				"return"	"charptr"
+				"this"		"entity"
+				"arguments"
+				{
+					"pchCvar"
+					{
+						"type" "charptr"
+					}
+				}
+			}
+
 			//"CPointSpotlight::SpotlightCurrentPos"
 			//{
 			//	"signature"	"CPointSpotlight::SpotlightCurrentPos"
@@ -616,6 +673,24 @@
 				"windows"	"39"
 				"linux"		"40"
 			}
+
+			"CPlayerResource::UpdatePlayerData"
+			{
+				"windows"	"205"
+				"linux"		"206"
+			}
+
+			"CPlayerResource::UpdateConnectedPlayer"
+			{
+				"windows"	"206"
+				"linux"		"207"
+			}
+
+			"CPlayerResource::UpdateDisconnectedPlayer"
+			{
+				"windows"	"207"
+				"linux"		"208"
+			}
 		}
 
 		"Signatures"
@@ -636,6 +711,12 @@
 
 		"Signatures"
 		{
+			"CBaseClient::GetUserSetting" //find by string ''GetUserSetting: cvar''
+			{
+				"windows"	"\x55\x8B\xEC\x56\x57\x8B\xF9\x8B\x8F\x84\x00\x00\x00\x85\xC9\x74\x47\x8B\x75\x08\x85\xF6\x74\x40\x80\x3E\x00\x74\x3B\x53\x68\x2A\x2A\x2A\x2A\x56\xE8\x37\x78\x1D\x00\x8B\xD8\x80\x3B\x00\x75\x1F\x8B\x8F\x84\x00\x00\x00\x56\xE8\x04\x76\x1D\x00\x85\xC0\x75\x0F"
+				"linux"		"_ZNK11CBaseClient14GetUserSettingEPKc"
+			}
+
 			"CBlackMesaPlayer::GiveDefaultItems"
 			{
 				"windows"	"\x53\x56\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x88\x00\x00\x00\xFF\xD0\x84\xC0\x74\x13\x8B\x07\x8B\xCF\x8B\x80\xB8\x07\x00\x00\xFF\xD0\x84\xC0\x0F\x94\xC3\xEB\x02\xB3\x01\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x88\x00\x00\x00\xFF\xD0\x84\xC0"
