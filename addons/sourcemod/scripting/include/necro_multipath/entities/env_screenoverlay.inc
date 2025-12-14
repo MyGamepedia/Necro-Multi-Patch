@@ -299,7 +299,7 @@ public Action Timer_EnvScreenOverlayThink(Handle timer, CEnvScreenOverlay pScree
 			if (pScreenOverlay.GetActiveStoredOverlay(pPlayer) == pScreenOverlay.entindex)
 			{
 				iNextOverlayIndex = pScreenOverlay.GetNextOverlay(pPlayer);
-				if(iNextOverlayIndex < 9 && iNextOverlayIndex >= 0)
+				if(iNextOverlayIndex <= 9 && iNextOverlayIndex >= 0)
 				{
 					iNextOverlay[i] = pScreenOverlay.GetNextOverlay(pPlayer);
 				}
@@ -325,6 +325,8 @@ public Action Timer_EnvScreenOverlayThink(Handle timer, CEnvScreenOverlay pScree
 		// Only switch overlay if the delay has finished
 		if(flNextOverlayStartTime[i] <= flTickedTime && iNextOverlay[i] != -1)
 		{
+			PrintToChatAll("iNextOverlay[%d] == %d", i, iNextOverlay[i]);
+
 			//get material that we will apply for screen
 			char szOverlayName[MAX_FORMAT];
 			pScreenOverlay.GetOverlayName(iNextOverlay[i], szOverlayName, sizeof(szOverlayName));
@@ -341,20 +343,12 @@ public Action Timer_EnvScreenOverlayThink(Handle timer, CEnvScreenOverlay pScree
 			pPlayer.SendCommand(szPlayerCommand);
 
 			// If at last overlay (9), do not increment further, but still set timer for this overlay
-			if(iNextOverlay[i] < 9)
+			if(iNextOverlayIndex <= 9 && iNextOverlayIndex >= 0)
 			{
 				pScreenOverlay.SetNextOverlay(iNextOverlay[i] + 1, pPlayer);
+				float flOverlayDuration = pScreenOverlay.GetOverlayTimes(iNextOverlay[i]);
+				pScreenOverlay.SetNextOverlayStartTime(flTickedTime + flOverlayDuration, pPlayer);
 			}
-			else if(iNextOverlay[i] == 9)
-			{
-				// Stay on last overlay, do not increment further
-				pScreenOverlay.SetNextOverlay(9, pPlayer);
-			}
-
-			float flOverlayDuration = pScreenOverlay.GetOverlayTimes(iNextOverlay[i]);
-			pScreenOverlay.SetNextOverlayStartTime(flTickedTime + flOverlayDuration, pPlayer);
-
-			PrintToChatAll("iNextOverlay[%d] == %d", i, iNextOverlay[i]);
 		}
 	}
 
