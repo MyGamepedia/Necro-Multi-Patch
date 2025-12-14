@@ -18,14 +18,13 @@
 
 #include <necro_multipath/globals>
 
-#include <necro_multipath/gameevents/player_death>
-
 #include <necro_multipath/entities/ai_goal_lead>
 #include <necro_multipath/entities/ai_script_conditions>
 #include <necro_multipath/entities/env_credits>
 #include <necro_multipath/entities/env_explosion>
 #include <necro_multipath/entities/env_introcredits>
 #include <necro_multipath/entities/env_laser_dot>
+#include <necro_multipath/entities/env_screenoverlay>
 #include <necro_multipath/entities/env_sprite>
 #include <necro_multipath/entities/env_xen_portal_effect>
 #include <necro_multipath/entities/env_zoom>
@@ -34,6 +33,7 @@
 #include <necro_multipath/entities/grenade_frag>
 #include <necro_multipath/entities/grenade_mp5_contact>
 #include <necro_multipath/entities/item_ammo_canister>
+#include <necro_multipath/entities/item_weapon_snark>
 #include <necro_multipath/entities/misc_marionettist>
 #include <necro_multipath/entities/music_track>
 #include <necro_multipath/entities/npc_barnacle>
@@ -45,6 +45,7 @@
 #include <necro_multipath/entities/npc_sniper>
 #include <necro_multipath/entities/npc_xenturret>
 #include <necro_multipath/entities/player_loadsaved>
+#include <necro_multipath/entities/player_manager>
 #include <necro_multipath/entities/player_speedmod>
 #include <necro_multipath/entities/point_clientcommand>
 #include <necro_multipath/entities/point_teleport>
@@ -60,7 +61,9 @@
 #include <necro_multipath/entities/classes/CAI_MoveProbe>
 #include <necro_multipath/entities/classes/CBaseAnimating>
 #include <necro_multipath/entities/classes/CBaseCombatWeapon>
+#include <necro_multipath/entities/classes/CBaseClient>
 #include <necro_multipath/entities/classes/CBaseEntity>
+#include <necro_multipath/entities/classes/CBasePickup>
 #include <necro_multipath/entities/classes/CBasePlayer>
 #include <necro_multipath/entities/classes/CBlackMesaBaseWeaponIronSights>
 #include <necro_multipath/entities/classes/CBoneSetup>
@@ -71,6 +74,7 @@
 #include <necro_multipath/entities/classes/CSceneEntity>
 #include <necro_multipath/entities/classes/CTempEntsSystem>
 
+//#include <necro_multipath/instancing> //TODO: create our own
 
 #include <necro_multipath/entities/general/special/Hook_NoDmg>
 #include <necro_multipath/entities/general/OnTakeDamage>
@@ -84,21 +88,25 @@
 #include <necro_multipath/convars/necro_fastrespawndelay>
 #include <necro_multipath/convars/necro_spectatorjointeamdelay>
 #include <necro_multipath/convars/jointeam>
+#include <necro_multipath/convars/say>
 
 #include <necro_multipath/functions/GetChild>
 #include <necro_multipath/functions/AddOutput>
+
+#include <necro_multipath/gamemodes/gungame/gungame>
+
 
 public Plugin myinfo = {
 	name = "Dr.Necro's Black Mesa Servers Multipath",
 	author = "MyGamepedia",
 	description = "This addon is used to significantly expands and improves Dr.Necro's Black Mesa multiplayer servers.",
-	version = "1.1.1",
+	version = "1.1.2",
 	url = ""
 };
 
 public void OnPluginStart()
 {
-	// Проверка на максимальное количество игроков
+	//don't load in singleplayer
 	if (MaxClients < 2)
 	{
 		SetFailState("Don't use this plugin in singleplayer!");
@@ -113,7 +121,6 @@ public void OnPluginStart()
 	sv_always_run = FindConVar("sv_always_run");
 	sv_speed_walk = FindConVar("sv_speed_walk");
 	mp_flashlight = FindConVar("mp_flashlight");
-	mp_teamplay = FindConVar("mp_teamplay");
 	sv_cheats = FindConVar("sv_cheats");
 	
 	//new convars
@@ -137,22 +144,34 @@ public void OnPluginStart()
 	g_ConvarNecroSpectatorJoinTeamDelay = CreateConVar("necro_spectatorjointeamdelay", "15.0", "Amount of time in seconds before spectator can join a team or play deathmatch again after the player joined spectators.");
 	g_ConvarNecroOtherPlayersFlashlight = CreateConVar("necro_otherplayersflashlight", "1", "Allow creation of flashlight effects, used as flashlight from other players perspective.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroOtherPlayersFlashlightTransmit = CreateConVar("necro_otherplayersflashlighttransmit", "1", "Enable \"other players flashlight\" transmit hooks to hide the flashlight effects for owners.", 0, true, 0.0, true, 1.0);
-	
-	//TODO: FIX
+	//TODO: FIX necro_playerscollide
 	g_ConvarNecroPlayersCollide = CreateConVar("necro_playerscollide", "1", "Enable player collision with each other.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroForceTeam = CreateConVar("necro_forceteam", "-1", "Force players to join a specific team. -1 - disabled force team, 0 - unassigned or spectators, 1 - spectators, 2 - team one, 3 - team two.", 0, true, -1.0, true, 3.0);
+	g_ConvarNecroItemSpawnOverride = CreateConVar("necro_itemspawnoverride", "1", "Enable item spawn override for specicif specific item spawn variants via \"Response Context\" keyvalue. item_coop:1 - cooperative mode item, item_sp:1 - singleplayer mode item.", 0, true, 0.0, true, 1.0);
+	
+	//Load custom modes
+	LoadCustomGameModes();
 
 	//hook convars
 	g_ConvarNecroFastRespawnDelay.AddChangeHook(OnFastRespawnDelayChanged);
 	g_ConvarNecroSpectatorJoinTeamDelay.AddChangeHook(OnSpectatorJoinTeamDelayChanged);
 	HookConVarChange(FindConVar("host_timescale"), OnHostTimeScaleChanged);
 	AddCommandListener(Listener_Jointeam, "jointeam"); //note: it was planned to use player_team event hook, but it doesn't store team nums (always 0)
+	AddCommandListener(Listener_Say, "say");
 	
-	//HACK! Use fist (unused) element in the array to store cvar delay value
+	//HACK! Use first (unused) element in the array to store cvar delay value
 	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay);
 	g_fClientSpectatorJoinTeamDelay[0] = GetConVarFloat(g_ConvarNecroSpectatorJoinTeamDelay);
 	
 	//Load detours offsets + some vars from memory
 	LoadGameData();
+
+	LoadTranslations("necro_gungame.phrases");
+}
+
+void LoadCustomGameModes()
+{
+	LoadGunGame();
 }
 
 //Purpose: Load our main game config file and offsets + some vars from memory
@@ -167,12 +186,17 @@ void LoadGameData()
 		SetFailState("Couldn't load game one of the configs!!!");
 
 	InitClassdef_Scrcoop(pGameConfig_Srccoop);
+
+	LoadDHookVirtual(pGameConfig_Srccoop, hkLevelInit, "CServerGameDLL::LevelInit");
+	if (hkLevelInit.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_OnLevelInit) == INVALID_HOOK_ID)
+		SetFailState("Could not hook CServerGameDLL::LevelInit");
 	
 	//Detours
 	LoadDHookDetour(pGameConfig_Necro, hkGiveDefaultItems, "CBlackMesaPlayer::GiveDefaultItems", Hook_GiveDefaultItems);
 	LoadDHookDetour(pGameConfig_Necro, hkBaseCombatWeaponPrecache, "CBaseCombatWeapon::Precache", Hook_BaseCombatWeaponPrecache, Hook_BaseCombatWeaponPrecachePost);
 	LoadDHookDetour(pGameConfig_Necro, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);	
 	LoadDHookDetour(pGameConfig_Necro, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
+//	LoadDHookDetour(pGameConfig_Necro, hkGetUserSettings, "CBaseClient::GetUserSetting", Hook_GetUserSettings);
 	
 	//Offsets
 	LoadDHookVirtual(pGameConfig_Necro, hkAcceptInput, "CBaseEntity::AcceptInput");
@@ -185,14 +209,21 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig_Necro, hkPlayerSpawn, "CBasePlayer::Spawn");
 	LoadDHookVirtual(pGameConfig_Necro, hkFlashlightOff, "CBlackMesaPlayer::FlashlightTurnOff");
 	LoadDHookVirtual(pGameConfig_Necro, hkFlashlightOn, "CBlackMesaPlayer::FlashlightTurnOn");
+	LoadDHookVirtual(pGameConfig_Necro, hkPlayerResourceUpdatePlayerData, "CPlayerResource::UpdatePlayerData");
 	
 	//Memory Vars
 	g_iUserCmdOffset = pGameConfig_Necro.GetOffset("CBasePlayer::GetCurrentUserCommand");
 	pGameConfig_Necro.Close();
 
 	LoadGameData_Srccoop(pGameConfig_Srccoop);
+
+	#if defined ENTPATCH_BARNACLE_PREDICTION
+	HookEntityOutput("npc_barnacle", "OnGrab", Hook_Barnacle_OnGrab);
+	HookEntityOutput("npc_barnacle", "OnRelease", Hook_Barnacle_OnRelease);
+	#endif
 }
 
+//Purpose: Load SourceCoop game config file offsets + some vars from memory
 void LoadGameData_Srccoop(const GameData pGameConfig)
 {
 	g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
@@ -277,7 +308,7 @@ void LoadGameData_Srccoop(const GameData pGameConfig)
 	#if defined ENTPATCH_GOALENTITY_RESOLVENAMES
 	LoadDHookDetour(pGameConfig, hkResolveNames, "CAI_GoalEntity::ResolveNames", Hook_ResolveNames, Hook_ResolveNamesPost);
 	#endif
-	
+
 	#if defined ENTPATCH_GOAL_LEAD
 	LoadDHookDetour(pGameConfig, hkCanSelectSchedule, "CAI_LeadBehavior::CanSelectSchedule", Hook_CanSelectSchedule);
 	#endif
@@ -353,26 +384,60 @@ void LoadGameData_Srccoop(const GameData pGameConfig)
 	pGameConfig.Close();
 }
 
+public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
+{
+	OnMapEnd(); // this does not always get called, so call it here
+
+	char szMapName[MAX_MAPNAME];
+	hParams.GetString(1, szMapName, sizeof(szMapName));
+	g_szPrevMapName = g_szMapName;
+	g_szMapName = szMapName;
+
+	static char szMapEntities[ENTITYSTRING_LENGTH];
+	hParams.GetString(2, szMapEntities, sizeof(szMapEntities));
+
+	// save original string for dumps
+	g_szEntityString = szMapEntities;
+
+	return MRES_Ignored;
+}
+
 //Purspose: Load  gamerule offsets to control various game mechanics when map is loaded
 public void OnMapStart()
 {
 	//gamerules hooks
 	DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
 	DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
+	DHookGamerules(hkRestoreWorld, false, _, Hook_RestoreWorld);
 	DHookGamerules(hkRestoreWorld, true, _, Hook_RestoreWorldPost);
-	
-	//events hooks
-	HookEvent("player_death", Event_PlayerDeath);
 
-	//set teamplay variable state to know if teamplay is enabled or not
-	if(GetConVarBool(mp_teamplay))
+	MapStartCustomGameModes();
+
+	g_bMapStarted = true;
+}
+
+void MapStartCustomGameModes()
+{
+	GunGameMapStart();
+}
+
+public void OnMapEnd()
+{
+	//clear all these values, otherwise this will break many stuff
+	for(int i = 0; i <= MaxClients; i++)
 	{
-		g_iTeamplay = true;
+		g_iActiveScreenOverlayEntity[i] = 0;
+		g_iNextScreenOverlayIndex[i] = 0;
+		g_flNextOverlayTime[i] = 0.0;
 	}
-	else
-	{
-		g_iTeamplay = false;
-	}
+
+	MapEndCustomModes();
+	g_bMapStarted = false;
+}
+
+void MapEndCustomModes()
+{
+	GunGameMapEnd();
 }
 
 /*Purpose: Fix following when player is on the server:
@@ -395,11 +460,13 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawnPost);
 	DHookEntity(hkFlashlightOff, false, client, _, Hook_FlashlightOff);
 	DHookEntity(hkFlashlightOn, false, client, _, Hook_FlashlightOn);
+	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
+
 
 	#if defined PLAYERPATCH_HITREG
 	DHookEntity(hkPlayerWeaponShootPosition, true, client, _, Hook_PlayerWeaponShootPosition_Post);
 	#endif
-	//DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam); //maybe will be used later
+	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam); //maybe will be used later
 	DHookEntity(hkChangeTeam, true, client, _, Hook_PlayerChangeTeamPost);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 	DHookEntity(hkAcceptInput, false, client, _, Hook_PlayerAcceptInput);
@@ -427,12 +494,22 @@ public void OnClientPutInServer(int client)
 	#endif
 }
 
-//Purpose: Hook entity creation to setup our custom entity hooks
-public void OnEntityCreated(int entity, const char[] classname)
+public void OnClientPostAdminCheck(int iClient)
 {
-	SDKHook(entity, SDKHook_Spawn, OnEntitySpawned);
-	SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnedPost); //needed for some entities
-	SDKHook(entity, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
+	if(g_iNecroGunGameCurrentState == 1)
+	{
+		g_iNecroGunGameClientLevel[iClient] = 0;
+		CreateTimer(GUNGAME_HUDTICK, GunGameDisplayHud, iClient);
+	}
+
+}
+
+//Purpose: Hook entity creation to setup our custom entity hooks
+public void OnEntityCreated(int iEntIndex, const char[] szClassname)
+{
+	SDKHook(iEntIndex, SDKHook_Spawn, OnEntitySpawned);
+	SDKHook(iEntIndex, SDKHook_SpawnPost, OnEntitySpawnedPost); //needed for some entities
+	SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
 }
 
 //Purpose: Check entity classname and apply our custom entity hooks
@@ -497,6 +574,21 @@ public void OnEntitySpawned(int iEntIndex)
 		DHookEntity(hkBaseCombatPrimaryAttack, true, iEntIndex, _, Hook_SatchelPrimaryAttackPost);
 		DHookEntity(hkBaseCombatSecondaryAttack, true, iEntIndex, _, Hook_SatchelSecondaryAttackPost);
 		DHookEntity(hkBaseCombatReload, true, iEntIndex, _, Hook_SatchelReloadPost);
+		return;
+	}
+
+	if (strncmp(szClassname, "item_", 5) == 0 || strcmp(szClassname, "prop_soda", false) == 0)
+	{
+		if (pEntity.IsPickupItem())
+		{
+			Item_Path(iEntIndex);
+		}
+		return;
+	}
+
+	if (strcmp(szClassname, "player_manager") == 0)
+	{
+		//DHookEntity(hkPlayerResourceUpdatePlayerData, false, iEntIndex, _, Hook_PlayerResourceUpdatePlayerData);
 		return;
 	}
 
@@ -732,12 +824,24 @@ public void OnEntitySpawned(int iEntIndex)
 			return;
 		}
 		#endif
+
+		#if defined ENTPATCH_ENV_SCREENOVERLAY
+		if (strcmp(szClassname, "env_screenoverlay") == 0)
+		{
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvScreenoverlayAcceptInput);
+			return;
+		}
+		#endif
 	}
 }
 
 //Purpose: Post spawn fixes for some entities
 public void OnEntitySpawnedPost(int iEntIndex)
-{	
+{
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	if (pEntity == NULL_CBASEENTITY)
+		return;
+		
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
@@ -784,6 +888,14 @@ public void OnEntitySpawnedPost(int iEntIndex)
 		return;
 	}
 	#endif
+
+	if (strncmp(szClassname, "item_", 5) == 0 || strcmp(szClassname, "prop_soda", false) == 0)
+	{
+		if (pEntity.IsPickupItem())
+		{
+			Item_PathPost(iEntIndex);
+		}
+	}
 
 	//the rest is SourceCoop code mainly
 	// if some explosions turn out to be damaging all players except one, this is the fix

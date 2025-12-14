@@ -1,0 +1,75 @@
+"Phrases"
+{
+	"#GunGame_Draw"
+	{
+		"en"		"[Gun game] DRAW!"
+	}
+	
+	"#GunGame_Win"
+	{
+		"#format"	"{1:s},{2:d}"
+		"en"		"[Gun game] PLAYER {1} WINS THIS ROUND\nWITH LEVEL {2}!!!"
+	}
+	
+	"#GunGame_Marines"
+	{
+		"en"		"[Gun game] MARINES TEAM TEAM WINS THIS ROUND!!!"
+	}
+	
+	"#GunGame_Scientists"
+	{
+		"en"		"[Gun game] SCIENTISTS TEAM TEAM WINS THIS ROUND!!!"
+	}
+	
+	"#GunGame_HUD"
+	{
+		"#format"	"{1:d},{2:d},{3:d},{4:d}"
+		"en"		"|Gun game|\n|Your Level {1}/{2}|\n|Kills Done {3}/{4}|"
+	}
+	
+	"#GunGame_Skip"
+	{
+		"en"		"Skip"
+	}	
+	
+	"#GunGame_Enable"
+	{
+		"en"		"Enable"
+	}
+	
+	"#GunGame_Disable"
+	{
+		"en"		"Disable"
+	}
+
+	"#GunGame_VoteMenu"
+	{
+		"en"		"\"Gun Game\" Vote"
+	}
+
+	"#GunGame_VoteStart"
+	{
+		"#format"	"{1:s}"
+		"en"		"Player {1:s} started vote for gamemode \"Gun Game\"."
+	}
+	
+	"#GunGame_VoteEndEnable"
+	{
+		"en"		"\"Gun\x07d8bfd8 Game\" starts in 4 seconds..."
+	}
+	
+	"#GunGame_VoteEndDisable"
+	{
+		"en"		"\"Classic Deathmatch\" starts in 4 seconds..."
+	}
+	
+	"#GunGame_VoteEndSkip"
+	{
+		"en"		"Most players decided to skip the vote."
+	}
+	
+	"#GunGame_VoteEndFail"
+	{
+		"en"		"Two or more vote options have the same number of votes. Consider compromises or agree on a choice next time."
+	}
+}

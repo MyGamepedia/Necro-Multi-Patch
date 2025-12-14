@@ -39,6 +39,7 @@ public MRESReturn Hook_PropHevChargerThink(int _this)
 				if (pPlayer.HasSuit() && iArmor < 100)
 				{
 					pPlayer.SetArmor(iArmor + 1);
+					//pPlayer.SendCommand("r_screenoverlay effects/xen_charger_hev_overlay");
 				}
 			}
 		}

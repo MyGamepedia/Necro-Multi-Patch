@@ -188,19 +188,25 @@ ArrayList g_pCoopModeMemPatchList;
 // ----------------------------
 // Plugin variables
 // ----------------------------
+#if defined SRCCOOP_BLACKMESA
+#define MAX_PLAYERS 33 //max players for bms
+#else
+#define MAX_PLAYERS 101 //max players for hl2dm
+#endif
+
 char g_szMapName[MAX_MAPNAME]; //NOTE: left warning here
 char g_szPrevMapName[MAX_MAPNAME];  //NOTE: left warning here
 char g_szEntityString[ENTITYSTRING_LENGTH];  //NOTE: left warning here
-//char g_szSteamIds[MAXPLAYERS+1][32];
+//char g_szSteamIds[MAX_PLAYERS+1][32];
 bool g_bTempDontHookEnts;
 public bool g_bMapStarted;
 int g_iPlayerCount;
-bool g_bPostTeamSelect[MAXPLAYERS+1];
-int g_iAddButtons[MAXPLAYERS+1];
-int g_bUnblockRespawn[MAXPLAYERS+1];
+bool g_bPostTeamSelect[MAX_PLAYERS+1];
+int g_iAddButtons[MAX_PLAYERS+1];
+int g_bUnblockRespawn[MAX_PLAYERS+1];
 OperatingSystem g_serverOS;
 
-//ArrayList g_pPostponedSpawns;
+ArrayList g_pPostponedSpawns;
 
 // Represents the return value of the IsMultiplayer hook.
 bool g_bIsMultiplayerOverride = true;
@@ -213,3 +219,12 @@ int g_iMaxClientsOverrides = 0;
 CBaseEntity g_pLocalPlayerEntity[32] = {NULL_CBASEENTITY, ...};
 int g_iLocalPlayerStackSkips[sizeof(g_pLocalPlayerEntity)];
 int g_iLocalPlayerStackPointer;
+
+//stores active env_screenoverlay for certain player, the first element of the array is for global overlays
+int g_iActiveScreenOverlayEntity[MAX_PLAYERS+1];
+
+//stores next overlay will be played by env_screenoverlay for certain player
+int g_iNextScreenOverlayIndex[MAX_PLAYERS+1];
+
+//stores time value for every player to check if we want to start next overlay for certain player
+float g_flNextOverlayTime[MAX_PLAYERS+1];

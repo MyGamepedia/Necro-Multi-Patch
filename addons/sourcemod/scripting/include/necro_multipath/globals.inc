@@ -1,10 +1,13 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+//===========================
+//NECRO PLUGIN GENERAL VARS
+//===========================
+
 //#define DEBUG
 
 ConVar sk_crossbow_tracer_enabled;
-ConVar mp_teamplay;
 ConVar sv_cheats;
 
 ConVar g_ConvarNecroGiveDefaultItems;
@@ -28,11 +31,14 @@ ConVar g_ConvarNecroSpectatorJoinTeamDelay;
 ConVar g_ConvarNecroOtherPlayersFlashlight;
 ConVar g_ConvarNecroOtherPlayersFlashlightTransmit;
 ConVar g_ConvarNecroPlayersCollide;
+ConVar g_ConvarNecroForceTeam;
+ConVar g_ConvarNecroItemSpawnOverride;
 
 DynamicDetour hkBaseCombatWeaponPrecache;
 //DynamicDetour hkBaseCombatDefaultReload;
 //DynamicDetour hkBaseCombatReload;
 DynamicDetour hkStartLagCompensation;
+DynamicDetour hkGetUserSettings;
 
 //DynamicHook hkBlackMesaBaseDetonatorDetonate;
 //DynamicHook hkItemPostFrame;
@@ -49,10 +55,40 @@ DynamicHook hkWeaponCrossbowFireBolt;
 //DynamicHook hkShowViewPortPanel;
 DynamicHook hkFlashlightOff;
 DynamicHook hkFlashlightOn;
+DynamicHook hkPlayerResourceUpdatePlayerData;
+//DynamicHook hkPlayerResourceUpdateConnectedPlayer;
+//DynamicHook hkPlayerResourceUpdateDisconnectedPlayer;
 
-float g_fClientFastRespawnDelay[MAXPLAYERS+1];
-float g_fClientSpectatorJoinTeamDelay[MAXPLAYERS+1];
+float g_fClientFastRespawnDelay[MAX_PLAYERS+1];
+float g_fClientSpectatorJoinTeamDelay[MAX_PLAYERS+1];
 
 int g_iUserCmdOffset;
 
-bool g_iTeamplay;
+
+//===========================
+//NECRO GUN GAME GLOBALS
+//===========================
+
+int g_iNecroGunGameClientLevel[MAX_PLAYERS + 1];
+int g_iNecroGunGameClientKills[MAX_PLAYERS + 1];
+int g_iNecroGunGameLastTeam[MAX_PLAYERS + 1];
+
+int g_iNecroGunGameCurrentState = -1; //-1 the mode is disabled, 1 the mode isn't finished, 2 the mode is won by a player
+
+ConVar g_ConvarNecroGunGameWeaponState[15];
+ConVar g_ConvarNecroGunGameAmmoPrimary[15];
+ConVar g_ConvarNecroGunGameAmmoSecondary[15];
+ConVar g_ConvarNecroGunGameStateKills[15];
+
+ConVar g_ConvarNecroGunGamePunishingWeaponName;
+ConVar g_ConvarNecroGunGamePunishingWeaponState;
+ConVar g_ConvarNecroGunGameFinalLevelNum;
+ConVar g_ConvarNecroGunGameTeammateKarma;
+ConVar g_ConvarNecroGunGameEnabled;
+
+#define GUNGAME_HUDTICK 1.2
+
+int g_iGunGameNextVoteTime = -1;
+int g_iGunGameVoteEnable = 0;
+int g_iGunGameVoteDisable = 0;
+int g_iGunGameVoteSkip = 0;

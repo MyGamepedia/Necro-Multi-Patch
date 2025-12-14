@@ -1,11 +1,11 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-static float g_vec3PlayerShootPosition[MAXPLAYERS + 1][3];
-static float g_flPlayerMaxSpeed[MAXPLAYERS + 1];
+static float g_vec3PlayerShootPosition[MAX_PLAYERS + 1][3];
+static float g_flPlayerMaxSpeed[MAX_PLAYERS + 1];
 
 #if defined PLAYERPATCH_BM_CLIENT_PREDICTION
-static bool g_bSetJumpModuleActive[MAXPLAYERS + 1];
+static bool g_bSetJumpModuleActive[MAX_PLAYERS + 1];
 #endif
 
 //------------------------------------------------------
@@ -234,7 +234,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 		CBlackMesaBaseCombatWeapon pWeapon = view_as<CBlackMesaBaseCombatWeapon>(pPlayer.GetActiveWeapon());
 		if (pWeapon != NULL_CBASEENTITY)
 		{
-			static bool g_bDisableAttack[MAXPLAYERS + 1];
+			static bool g_bDisableAttack[MAX_PLAYERS + 1];
 
 			// Fixes prediction errors with weapons.
 			bool bIsZooming = pPlayer.IsZooming();
@@ -314,6 +314,12 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 {
 	CBasePlayer pPlayer = CBasePlayer(_this);
 	ClearNpcMemoryForPlayer(pPlayer);
+
+	g_fClientFastRespawnDelay[pPlayer.entindex] = GetGameTime() + g_fClientFastRespawnDelay[0];
+		
+	#if defined DEBUG
+	PrintToServer("Hook_PlayerKilled: g_fClientFastRespawnDelay[%d]: %f", client, g_fClientFastRespawnDelay[client]);
+	#endif
 
 	return MRES_Ignored;
 }
@@ -429,9 +435,7 @@ public MRESReturn Hook_FlashlightOn(int iClient, DHookReturn hReturn, DHookParam
         SetEntProp(beam_flashlight, Prop_Send, "m_nNumBeamEnts", 2);
         SetEntProp(beam_flashlight, Prop_Send, "m_nBeamType", 2);
 
-        DispatchKeyValue(beam_flashlight, "rendercolor", "245 240 225"); //the same as flashlight color
-
-        DispatchSpawn(beam_flashlight);
+        DispatchKeyValue(beam_flashlight, "rendercolor", "0 0 0");
 
         char name[64];
         Format(name, sizeof(name), "beam_otherplayerflashlight_%d", iClient);
@@ -462,10 +466,21 @@ public MRESReturn Hook_FlashlightOn(int iClient, DHookReturn hReturn, DHookParam
             SDKHook(spotlightend_flashlight, SDKHook_SetTransmit, Hook_Player_Flashlight3rdPersonEffects_Transmit);
         }
 
+		DispatchSpawn(beam_flashlight);
+
         Player_OtherPlayersFlashlightUpdateBeamLength(spotlightend_flashlight); //calc pos
+
+		RequestFrame(Hook_Player_Flashlight3rdPersonEffects_SetColor, beam_flashlight);
     }
 
 	return MRES_Ignored;
+}
+
+//Purpose: This is a stupid workaround to make flashlight beam not visible when pointing to 0 0 0 pos on spawn 
+public void Hook_Player_Flashlight3rdPersonEffects_SetColor(int iEntity)
+{
+	if(IsValidEntity(iEntity))
+		DispatchKeyValue(iEntity, "rendercolor", "245 240 225");
 }
 
 //Purpose: Hide "other players flashlight" effect ents for owner
@@ -590,10 +605,12 @@ public bool Player_Flashlight3rdPersonOff(int iClient)
 
 public MRESReturn Hook_GiveDefaultItems(int _this)
 {
-	//don't give items to specs
-	int team = GetEntProp(_this, Prop_Data, "m_iTeamNum");
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(_this);
 
-	if((g_iTeamplay && (team == 1 || team == 0)))
+	//don't give items to specs
+	int team = GetEntProp(pPlayer.entindex, Prop_Data, "m_iTeamNum");
+
+	if((CMultiplayRules.IsTeamplay() && (team == 1 || team == 0)))
 		return MRES_Supercede;
 
 	if(team == 1)
@@ -601,6 +618,12 @@ public MRESReturn Hook_GiveDefaultItems(int _this)
 
 	//give items if allowed
 	if (!GetConVarBool(g_ConvarNecroGiveDefaultItems))
+	{
+		return MRES_Supercede;
+	}
+
+	//don't give def items in gungame
+	if(g_iNecroGunGameCurrentState != -1)
 	{
 		return MRES_Supercede;
 	}
@@ -713,13 +736,13 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		}
 	}
 	
-	//Client don't use weapon when used custom classname to load custom script, force use with client command by checking classname
-	char classname[64];
-	GetEntityClassname(iWeapon, classname, sizeof(classname));
-	
-	if(!StrEqual(classname, "worldspawn")) //send use command if we want to use a weapon
+	if(iWeapon != 0) //send use command if we want to use a weapon
 	{
-		char command[64];
+		//Client don't use weapon when used custom classname to load custom script, force use with client command by checking classname
+		char classname[MAX_CLASSNAME];
+		GetEntityClassname(iWeapon, classname, sizeof(classname));
+
+		char command[128];
 		Format(command, sizeof(command), "use %s", classname);
 		FakeClientCommand(iClient, command);
 		
@@ -818,24 +841,69 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 //	SendClientConvars(iClient, false);
 }
 
+//------------------------------------------------------
+// Player team change hooks
+//------------------------------------------------------
+public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
+{
+	CBasePlayer pPlayer = CBasePlayer(iClient);
+
+	int iTeam = DHookGetParam(hParams, 1);
+	int iForceTeam = GetConVarInt(g_ConvarNecroForceTeam);
+
+	//force team if enabled
+	if (iForceTeam != TEAM_INVALID && iClient != -1)
+	{
+		hParams.Set(1, iForceTeam);
+		iTeam = iForceTeam;
+	}
+
+	bool bJoinedSpectators = (!CMultiplayRules.IsTeamplay() && iTeam == TEAM_SPECTATOR);
+	bool bJoinedSpectatorsTeamplay = (CMultiplayRules.IsTeamplay() && iTeam == TEAM_UNASSIGNED || iTeam == TEAM_SPECTATOR);
+
+	//if joined spectators, force player to drop the carried phys objects or dismount tank entity
+	if(bJoinedSpectators || bJoinedSpectatorsTeamplay)
+	{
+		CBaseEntity pCarriedObject = pPlayer.GetUseEntity();
+		if (pCarriedObject != NULL_CBASEENTITY)
+		{
+			pPlayer.ForceDropOfCarriedPhysObjects();
+		}
+
+		//POWER SALO said that sometimes orig code doesn't remove items itself
+		pPlayer.RemoveAllItems();
+
+		if(GetConVarBool(g_ConvarNecroOtherPlayersFlashlight))
+			Player_Flashlight3rdPersonOff(pPlayer.entindex);
+	}
+
+	if (iForceTeam != TEAM_INVALID && iClient != -1)
+	{
+		return MRES_ChangedHandled;
+	}
+
+	return MRES_Ignored;
+}
+
 public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 {
 	CBasePlayer pPlayer = CBasePlayer(iClient);
 	int iTeam = DHookGetParam(hParams, 1);
 
-	if(g_iTeamplay)
+	//check if joined spectators depending on teamplay state
+	bool bJoinedSpectatorsTeamplay = (CMultiplayRules.IsTeamplay() && iTeam == 1 || iTeam == 0); //teamplay enabled
+	bool bJoinedSpectators = (!CMultiplayRules.IsTeamplay() && iTeam == 1); //templay disabled
+
+	if(bJoinedSpectators || bJoinedSpectatorsTeamplay)
 	{
-		if (iTeam == 1 || iTeam == 0)
-		{
-			ClearNpcMemoryForPlayer(pPlayer);
-		}
+		ClearNpcMemoryForPlayer(pPlayer);
 	}
-	else
+
+	//TODO: move to "jointeam"
+	//fix specgui showing if player tried join specs while forced to be in a team
+	if(g_ConvarNecroForceTeam && !bJoinedSpectators || !bJoinedSpectatorsTeamplay)
 	{
-		if (iTeam == 1)
-		{
-			ClearNpcMemoryForPlayer(pPlayer);
-		}		
+		ShowVGUIPanel(iClient, "specgui", _, false);
 	}
 
 	return MRES_Ignored;

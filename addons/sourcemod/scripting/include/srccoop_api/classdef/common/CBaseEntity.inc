@@ -203,6 +203,17 @@ methodmap CBaseEntity
 	{
 		return SetEntPropString(this.entindex, Prop_Data, "m_iName", szTargetname); 
 	}
+
+	public bool GetResponseContext(char[] szBuffer, const int iMaxLength)
+	{
+		return GetEntPropString(this.entindex, Prop_Data, "m_iszResponseContext", szBuffer, iMaxLength) != 0;
+	}
+
+	public int SetResponseContext(const char[] szResponseContext)
+	{
+		return SetEntPropString(this.entindex, Prop_Data, "m_iszResponseContext", szResponseContext); 
+	}
+
 	public bool GetTarget(char[] szBuffer, const int iMaxLength)
 	{
 		return GetEntPropString(this.entindex, Prop_Data, "m_target", szBuffer, iMaxLength) != 0;
@@ -626,6 +637,17 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_iMaxHealth", iMaxHealth);
 	}
+
+	public int GetTextureFrameIndex()
+	{
+		return GetEntProp(this.entindex, Prop_Data, "m_iTextureFrameIndex");
+	}
+
+	public void SetTextureFrameIndex(const int iTextureFrameIndex)
+	{
+		SetEntProp(this.entindex, Prop_Data, "m_iTextureFrameIndex", iTextureFrameIndex);
+	}
+
 	public bool FVisibleEntity(const CBaseEntity pEntity, int iTraceMask = MASK_BLOCKLOS, CBaseEntity& pBlocker = NULL_CBASEENTITY)
 	{
 		if (pEntity.m_fFlags & FL_NOTARGET)

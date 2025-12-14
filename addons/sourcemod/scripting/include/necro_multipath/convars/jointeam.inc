@@ -1,6 +1,10 @@
 #pragma newdecls required
 #pragma semicolon 1
 
+//Purpose: Ovverides "jointeam" command entirely to:
+// - prevent auto-assign in dm (sort of instant teleport)
+// - add delay when switching from spectator to other team
+//TODO: Add messages with translations support
 public Action Listener_Jointeam(int client, const char[] command, int args)
 {
 	//-2 - auto assign
@@ -16,9 +20,9 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 	int oldteam = GetEntProp(client, Prop_Data, "m_iTeamNum"); //my current team
 
 	//Todo: make it smaller there possible, this code is massive 
-	if(!g_iTeamplay)
+	if(!CMultiplayRules.IsTeamplay())
 	{
-		if(team == -2 || (team != 0 && team != 1)) //IS auto assign OR is not auto assign but also not dm team
+		if(team == TEAM_ANY || (team != TEAM_UNASSIGNED && team != TEAM_SPECTATOR)) //IS auto assign OR is not auto assign but also not dm team
 		{
 			FakeClientCommandEx(client, "jointeam 0"); //this is the assigned value under these conditions
 			return Plugin_Handled;
@@ -29,7 +33,7 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 			return Plugin_Continue;
 		}
 
-		if(oldteam == 1 && team == 0) //if i'm spectator and i want to join dm team - check if my time runned out
+		if(oldteam == TEAM_SPECTATOR && team == TEAM_UNASSIGNED) //if i'm spectator and i want to join dm team - check if my time runned out
 		{
 			if (GetGameTime() < g_fClientSpectatorJoinTeamDelay[client]) //if IS NOT runned out - don't let me and tell me when the time runs out
 			{
@@ -47,18 +51,8 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 			}
 		}
 
-		if(oldteam == 0 && team == 1) //if my current team is dm team and want to join spectator team - let me in no matter what and reset delay
+		if(oldteam == TEAM_UNASSIGNED && team == TEAM_SPECTATOR) //if my current team is dm team and want to join spectator team - let me in no matter what and reset delay
 		{
-			//player controls tanks and physics props when switched team to spectatos, fix by forcing the player to unuse
-			int useentity = GetEntPropEnt(client, Prop_Data, "m_hUseEntity");
-			if(IsValidEntity(useentity))
-			{
-				AcceptEntityInput(client, "ForceDropPhysObjects"); //works for both props and tanks
-			}
-
-			if(GetConVarBool(g_ConvarNecroOtherPlayersFlashlight))
-				Player_Flashlight3rdPersonOff(client);
-
 			g_fClientSpectatorJoinTeamDelay[client] = GetGameTime() + g_fClientSpectatorJoinTeamDelay[0];
 			return Plugin_Continue;
 		}
@@ -68,7 +62,8 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 
 	else
 	{
-		if(team == -2 || (team != 0 && team != 1 && team != 2 && team != 3)) //IS auto assign OR is not auto assign but also not a valid team num
+		//IS auto assign OR is not auto assign but also not a valid team num
+		if(team == TEAM_ANY || (team != TEAM_UNASSIGNED && team != TEAM_SPECTATOR && team != TEAM_ONE && team != TEAM_TWO))
 		{
 			int sci = GetTeamClientCount(2);
 			int mar = GetTeamClientCount(3);
@@ -77,13 +72,13 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 			//(https://github.com/ValveSoftware/source-sdk-2013/blob/39f6dde8fbc238727c020d13b05ecadd31bda4c0/src/game/server/hl2mp/hl2mp_player.cpp#L280)
 			if(sci == 0 || mar == 0)
 			{
-				if(oldteam == 2)
+				if(oldteam == TEAM_ONE)
 				{
 					FakeClientCommandEx(client, "jointeam 3");
 					return Plugin_Handled;
 				}
 
-				else if (oldteam == 3)
+				else if (oldteam == TEAM_TWO)
 				{
 					FakeClientCommandEx(client, "jointeam 2");
 					return Plugin_Handled;
@@ -98,25 +93,25 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 
 			else
 			{
-				if(sci > mar && oldteam != 2)
+				if(sci > mar && oldteam != TEAM_ONE)
 				{
 					FakeClientCommandEx(client, "jointeam 2");
 					return Plugin_Handled;
 				}
-				else if(sci < mar && oldteam != 3)
+				else if(sci < mar && oldteam != TEAM_TWO)
 				{
 					FakeClientCommandEx(client, "jointeam 3");
 					return Plugin_Handled;
 				}
 				else
 				{
-					if(oldteam == 2)
+					if(oldteam == TEAM_ONE)
 					{
 						FakeClientCommandEx(client, "jointeam 3");
 						return Plugin_Handled;
 					}
 
-					else if (oldteam == 3)
+					else if (oldteam == TEAM_TWO)
 					{
 						FakeClientCommandEx(client, "jointeam 2");
 						return Plugin_Handled;
@@ -131,12 +126,13 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 			}
 		}
 
-		if (team == oldteam || ((team <= 1) && (oldteam <= 1)))  //for teamplay, of check if I'm trying to join spec under other num
+		if (team == oldteam || ((team <= TEAM_SPECTATOR) && (oldteam <= TEAM_SPECTATOR)))  //for teamplay, of check if I'm trying to join spec under other num
 		{
 			return Plugin_Continue;
 		}
 
-		if((oldteam == 1 || oldteam == 0) && (team == 2 || team == 3)) //if i'm spectator and i want to join t3 or t3 - check if my time runned out
+		//if i'm spectator and i want to join sci or mar - check if my time runned out
+		if((oldteam == TEAM_SPECTATOR || oldteam == TEAM_UNASSIGNED) && (team == TEAM_ONE || team == TEAM_TWO))
 		{
 			if (GetGameTime() < g_fClientSpectatorJoinTeamDelay[client]) //if IS NOT runned out - don't let me and tell me when the time runs out
 			{
@@ -155,18 +151,9 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 			}
 		}
 
-		if((oldteam == 2 || oldteam == 3) && (team == 1 || team == 0)) //if my current team is t2 or t3 and want to join spectator team - let me in no matter what and reset delay
+		//if my current team is t2 or t3 and want to join spectator team - let me in no matter what and reset delay
+		if((oldteam == TEAM_ONE || oldteam == TEAM_TWO) && (team == TEAM_SPECTATOR || team == TEAM_UNASSIGNED))
 		{
-			//player controls tanks and physics props when switched team to spectatos, fix by forcing the player to unuse
-			int useentity = GetEntPropEnt(client, Prop_Data, "m_hUseEntity");
-			if(IsValidEntity(useentity))
-			{
-				AcceptEntityInput(client, "ForceDropPhysObjects"); //works for both props and tanks
-			}
-
-			if(GetConVarBool(g_ConvarNecroOtherPlayersFlashlight))
-				Player_Flashlight3rdPersonOff(client);
-
 			g_fClientSpectatorJoinTeamDelay[client] = GetGameTime() + g_fClientSpectatorJoinTeamDelay[0];
 			return Plugin_Continue;
 		}
