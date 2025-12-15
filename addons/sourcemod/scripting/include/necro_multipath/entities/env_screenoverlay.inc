@@ -163,7 +163,8 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
-			if (!pPlayer.IsValid() || !IsClientInGame(i) || IsFakeClient(i) || !IsValidEntity(i))
+			//if (!pPlayer.IsValid() || !IsClientInGame(i) || IsFakeClient(i) || !IsValidEntity(i))
+			if (!pPlayer.IsValid() || !IsClientInGame(i) || !IsValidEntity(i))
 				continue;
 
 			// Don't activate if already active for this player
@@ -211,12 +212,15 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
 			int entidx = pPlayer.entindex;
-			if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
+			if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && IsValidEntity(i))
+			//if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
 			{
 				if(pScreenOverlay.GetActiveStoredOverlay(pPlayer) == pScreenOverlay.entindex)
 				{
 					pPlayer.SendCommand("r_screenoverlay off");
 					pScreenOverlay.SetActiveStoredOverlay(0, pPlayer);
+					pScreenOverlay.SetNextOverlayStartTime(-1.0, pPlayer);
+					pScreenOverlay.SetNextOverlay(0, pPlayer);
 				}
 			}
 		}
@@ -294,7 +298,8 @@ public Action Timer_EnvScreenOverlayThink(Handle timer, CEnvScreenOverlay pScree
 		CBasePlayer pPlayer = CBasePlayer(i);
 		int entidx = pPlayer.entindex;
 		// Only proceed if entidx is in valid range (1..MAX_PLAYERS)
-		if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
+		if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && IsValidEntity(i))
+		//if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
 		{
 			if (pScreenOverlay.GetActiveStoredOverlay(pPlayer) == pScreenOverlay.entindex)
 			{
