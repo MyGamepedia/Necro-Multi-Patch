@@ -808,6 +808,11 @@ public void OnClientDisconnect(int client)
 {
 	if (IsFakeClient(client))
 		return;
+
+	//disable screenoverlay for this client
+	g_iActiveScreenOverlayEntity[client] = 0;
+	g_iNextScreenOverlayIndex[client] = 0;
+	g_flNextOverlayTime[client] = 0.0;
 }
 
 public void OnClientDisconnect_Post(int client)

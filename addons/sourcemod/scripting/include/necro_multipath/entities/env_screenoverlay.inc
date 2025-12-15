@@ -219,7 +219,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 				{
 					pPlayer.SendCommand("r_screenoverlay off");
 					pScreenOverlay.SetActiveStoredOverlay(0, pPlayer);
-					pScreenOverlay.SetNextOverlayStartTime(-1.0, pPlayer);
+					pScreenOverlay.SetNextOverlayStartTime(0.0, pPlayer);
 					pScreenOverlay.SetNextOverlay(0, pPlayer);
 				}
 			}
