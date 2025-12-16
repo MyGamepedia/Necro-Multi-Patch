@@ -58,3 +58,9 @@ public MRESReturn Hook_CrossbowFireBoltPost(int _this, DHookReturn hReturn, DHoo
 	g_bIsMultiplayerOverride = true;
 	return MRES_Ignored;
 }
+
+public MRESReturn Hook_WeaponCrossbowItemHolsterFramePost(int _this)
+{
+	Hook_BaseCombatWeaponItemHolsterFramePost(_this, GetConVarFloat(g_ConvarNecroAutoReloadTime_Crossbow));
+	return MRES_Ignored;
+}

@@ -33,6 +33,14 @@ ConVar g_ConvarNecroOtherPlayersFlashlightTransmit;
 ConVar g_ConvarNecroPlayersCollide;
 ConVar g_ConvarNecroForceTeam;
 ConVar g_ConvarNecroItemSpawnOverride;
+ConVar g_ConvarNecroAllowWeaponAutoReload;
+ConVar g_ConvarNecroAutoReloadTime_357;
+ConVar g_ConvarNecroAutoReloadTime_Glock;
+ConVar g_ConvarNecroAutoReloadTime_Assassin_Glock;
+ConVar g_ConvarNecroAutoReloadTime_Mp5;
+ConVar g_ConvarNecroAutoReloadTime_Shotgun;
+ConVar g_ConvarNecroAutoReloadTime_Crossbow;
+	
 
 DynamicDetour hkBaseCombatWeaponPrecache;
 //DynamicDetour hkBaseCombatDefaultReload;
@@ -58,6 +66,9 @@ DynamicHook hkFlashlightOn;
 DynamicHook hkPlayerResourceUpdatePlayerData;
 //DynamicHook hkPlayerResourceUpdateConnectedPlayer;
 //DynamicHook hkPlayerResourceUpdateDisconnectedPlayer;
+DynamicHook hkBaseCombatWeaponHolster;
+DynamicHook hkBaseCombatWeaponItemHolsterFrame;
+
 
 float g_fClientFastRespawnDelay[MAX_PLAYERS+1];
 float g_fClientSpectatorJoinTeamDelay[MAX_PLAYERS+1];

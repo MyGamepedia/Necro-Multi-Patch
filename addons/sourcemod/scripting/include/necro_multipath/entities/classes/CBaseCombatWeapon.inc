@@ -186,6 +186,13 @@ public MRESReturn Hook_BaseCombatWeaponPrecachePost(int _this, DHookParam hParam
 	return MRES_Ignored;
 }
 
+public MRESReturn Hook_BaseCombatWeaponHolsterPost(int _this)
+{
+	CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
+	pWeapon.SetHolsterTime(GetTickedTime());
+	return MRES_Ignored;
+}
+
 //------------------------------------------------------
 // weapons
 // use sp weapon models
@@ -229,4 +236,18 @@ public MRESReturn Hook_WeaponSetModel(int _this, DHookParam hParams)
 		}
 	}
 	return MRES_Ignored;
+}
+
+void Hook_BaseCombatWeaponItemHolsterFramePost(const int iWeaponEntIndex, const float flWeaponAutoReloadTime)
+{
+	CBaseCombatWeapon pWeapon = CBaseCombatWeapon(iWeaponEntIndex);
+	
+	if (GetConVarBool(g_ConvarNecroAllowWeaponAutoReload) && 
+        (GetTickedTime() - pWeapon.GetHolsterTime()) > flWeaponAutoReloadTime)
+	{
+		pWeapon.SetHolsterTime(GetTickedTime());
+		pWeapon.FinishReload();
+	}
+	
+	return;
 }

@@ -2,6 +2,7 @@
 #pragma semicolon 1
 
 static Handle g_pSendWeaponAnim;
+static Handle g_pFinishReload;
 
 static int g_iOffset_Activity = -1;
 static int g_iOffset_IdealSequence = -1;
@@ -25,6 +26,15 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
 			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 			if (!(g_pSendWeaponAnim = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSendWeaponAnim);
+		}
+
+		char szFinishReload[] = "CBaseCombatWeapon::FinishReload";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szFinishReload))
+			LogMessage("Could not obtain gamedata offset %s", szFinishReload);
+		else
+		{
+			if (!(g_pFinishReload = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szFinishReload);
 		}
 	}
 	public CBaseCombatWeapon(const int iEntIndex = -1)
@@ -95,6 +105,17 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	{
 		SetEntPropFloat(this.entindex, Prop_Send, "m_flNextSecondaryAttack", flNextSecondaryAttack); 
 	}
+
+	public void SetHolsterTime(const float flHolsterTime)
+	{
+		SetEntPropFloat(this.entindex, Prop_Send, "m_flElasticity", flHolsterTime); //HACK! Use UNUSED field to store holster time
+	}
+
+	public float GetHolsterTime()
+	{
+		return GetEntPropFloat(this.entindex, Prop_Send, "m_flElasticity");
+	}
+
 	public void DelayNextAttack(float flDelay)
 	{
 		flDelay += GetGameTime();
@@ -132,6 +153,10 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public bool SendWeaponAnim(const Activity eActivity)
 	{
 		return SDKCall(g_pSendWeaponAnim, this.entindex, eActivity);
+	}
+	public bool FinishReload()
+	{
+		return SDKCall(g_pFinishReload, this.entindex);
 	}
 	public bool IsReloading()
 	{

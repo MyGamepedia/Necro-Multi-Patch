@@ -41,7 +41,7 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 				GetClientName(client, szClientName, sizeof(szClientName));
 
 				//Todo: Remove "*DEAD*" if we fix it for spectators (sourcecoop did)
-				PrintToChat(client, "*DEAD* %s : I can join after %.2f seconds!", szClientName, g_fClientSpectatorJoinTeamDelay[client] - GetGameTime());
+				PrintToChat(client, "*DEAD* %s : %t", szClientName, "#SpectatorDelay", g_fClientSpectatorJoinTeamDelay[client] - GetGameTime());
 				return Plugin_Handled;
 			}
 			else

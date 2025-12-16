@@ -53,8 +53,13 @@
 #include <necro_multipath/entities/prop_hev_charger>
 #include <necro_multipath/entities/prop_radiation_charger>
 #include <necro_multipath/entities/scripted_sequence>
+#include <necro_multipath/entities/weapon_357>
+#include <necro_multipath/entities/weapon_assassin_glock>
 #include <necro_multipath/entities/weapon_crossbow>
+#include <necro_multipath/entities/weapon_glock>
+#include <necro_multipath/entities/weapon_mp5>
 #include <necro_multipath/entities/weapon_satchel>
+#include <necro_multipath/entities/weapon_shotgun>
 
 #include <necro_multipath/entities/classes/CAI_BaseNPC>
 #include <necro_multipath/entities/classes/CAI_GoalEntity>
@@ -148,7 +153,14 @@ public void OnPluginStart()
 	g_ConvarNecroPlayersCollide = CreateConVar("necro_playerscollide", "1", "Enable player collision with each other.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroForceTeam = CreateConVar("necro_forceteam", "-1", "Force players to join a specific team. -1 - disabled force team, 0 - unassigned or spectators, 1 - spectators, 2 - team one, 3 - team two.", 0, true, -1.0, true, 3.0);
 	g_ConvarNecroItemSpawnOverride = CreateConVar("necro_itemspawnoverride", "1", "Enable item spawn override for specicif specific item spawn variants via \"Response Context\" keyvalue. item_coop:1 - cooperative mode item, item_sp:1 - singleplayer mode item.", 0, true, 0.0, true, 1.0);
-	
+	g_ConvarNecroAllowWeaponAutoReload = CreateConVar("necro_alloeweaponautoreload", "1", "Enable automatic weapon reload in inventory if passed required amount of time.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroAutoReloadTime_357 = CreateConVar("necro_autoreloadtime_357", "3", "Amount of time in seconds before weapon_357 automatic reload is performed if the weapon is idle in inventory.");
+	g_ConvarNecroAutoReloadTime_Glock = CreateConVar("necro_autoreloadtime_glock", "3", "Amount of time in seconds before weapon_glock automatic reload is performed if the weapon is idle in inventory.");
+	g_ConvarNecroAutoReloadTime_Assassin_Glock = CreateConVar("necro_autoreloadtime_assassin_glock", "3", "Amount of time in seconds before weapon_assassin_glock automatic reload is performed if the weapon is idle in inventory.");
+	g_ConvarNecroAutoReloadTime_Mp5 = CreateConVar("necro_autoreloadtime_mp5", "3", "Amount of time in seconds before weapon_mp5 automatic reload is performed if the weapon is idle in inventory.");
+	g_ConvarNecroAutoReloadTime_Shotgun = CreateConVar("necro_autoreloadtime_shotgun", "3", "Amount of time in seconds before weapon_shotgun automatic reload is performed if the weapon is idle in inventory.");
+	g_ConvarNecroAutoReloadTime_Crossbow = CreateConVar("necro_autoreloadtime_crossbow", "3", "Amount of time in seconds before weapon_crossbow automatic reload is performed if the weapon is idle in inventory.");
+			
 	//Load custom modes
 	LoadCustomGameModes();
 
@@ -166,7 +178,7 @@ public void OnPluginStart()
 	//Load detours offsets + some vars from memory
 	LoadGameData();
 
-	LoadTranslations("necro_gungame.phrases");
+	LoadTranslations("necro.phrases");
 }
 
 void LoadCustomGameModes()
@@ -209,7 +221,8 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig_Necro, hkPlayerSpawn, "CBasePlayer::Spawn");
 	LoadDHookVirtual(pGameConfig_Necro, hkFlashlightOff, "CBlackMesaPlayer::FlashlightTurnOff");
 	LoadDHookVirtual(pGameConfig_Necro, hkFlashlightOn, "CBlackMesaPlayer::FlashlightTurnOn");
-	LoadDHookVirtual(pGameConfig_Necro, hkPlayerResourceUpdatePlayerData, "CPlayerResource::UpdatePlayerData");
+	LoadDHookVirtual(pGameConfig_Necro, hkBaseCombatWeaponHolster, "CBaseCombatWeapon::Holster");
+	LoadDHookVirtual(pGameConfig_Necro, hkBaseCombatWeaponItemHolsterFrame, "CBaseCombatWeapon::ItemHolsterFrame");
 	
 	//Memory Vars
 	g_iUserCmdOffset = pGameConfig_Necro.GetOffset("CBasePlayer::GetCurrentUserCommand");
@@ -527,6 +540,40 @@ public void OnEntitySpawned(int iEntIndex)
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
+	if(StrEqual(szClassname, "weapon_glock"))
+	{
+		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
+		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponGlockItemHolsterFramePost);
+		return;
+	}
+
+	if(StrEqual(szClassname, "weapon_assassin_glock"))
+	{
+		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
+		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponAssassinGlockItemHolsterFramePost);
+		return;
+	}
+
+	if(StrEqual(szClassname, "weapon_357"))
+	{
+		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
+		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_Weapon357ItemHolsterFramePost);
+		return;		
+	}
+
+	if(StrEqual(szClassname, "weapon_mp5"))
+	{
+		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
+		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponMp5ItemHolsterFramePost);
+		return;
+	}
+
+	if(StrEqual(szClassname, "weapon_shotgun"))
+	{
+		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
+		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponShotgunItemHolsterFramePost);
+		return;
+	}
 
 	if(StrEqual(szClassname, "grenade_bolt"))
 	{
@@ -562,6 +609,8 @@ public void OnEntitySpawned(int iEntIndex)
 		
 	if(StrEqual(szClassname, "weapon_crossbow"))
 	{
+		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
+		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponCrossbowItemHolsterFramePost);
 		DHookEntity(hkWeaponCrossbowFireBolt, false, iEntIndex, _, Hook_CrossbowFireBolt); //Use singleplayer rules for bolt creation to make sk_crossbow_tracer_enabled work
 		DHookEntity(hkWeaponCrossbowFireBolt, true, iEntIndex, _, Hook_CrossbowFireBoltPost); //Set back multiplayer rules after bolt creation
 		DHookEntity(hkBaseCombatDeploy, true, iEntIndex, _, Hook_CrossbowDeploy); //Set skin we need
