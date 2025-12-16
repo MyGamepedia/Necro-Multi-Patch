@@ -245,7 +245,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		//following 2 if() mimics orig code behavior
 		if (iSwitchOverlayVal < 0)
 		{
-    		iSwitchOverlayVal = -iSwitchOverlayVal; //0 or -1 become 2, -2 become 3, -3 become 4, etc
+    		iSwitchOverlayVal = -iSwitchOverlayVal;
 		}
 
 		if(iSwitchOverlayVal > 9)
@@ -330,7 +330,7 @@ public Action Timer_EnvScreenOverlayThink(Handle timer, CEnvScreenOverlay pScree
 		// Only switch overlay if the delay has finished
 		if(flNextOverlayStartTime[i] <= flTickedTime && iNextOverlay[i] != -1)
 		{
-			PrintToChatAll("iNextOverlay[%d] == %d", i, iNextOverlay[i]);
+			//PrintToChatAll("iNextOverlay[%d] == %d", i, iNextOverlay[i]);
 
 			//get material that we will apply for screen
 			char szOverlayName[MAX_FORMAT];
