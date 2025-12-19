@@ -3,6 +3,7 @@
 
 static Handle g_pSendWeaponAnim;
 static Handle g_pFinishReload;
+static Handle g_pReload;
 
 static int g_iOffset_Activity = -1;
 static int g_iOffset_IdealSequence = -1;
@@ -35,6 +36,15 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 		else
 		{
 			if (!(g_pFinishReload = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szFinishReload);
+		}
+
+		char szReload[] = "CBaseCombatWeapon::Reload";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szReload))
+			LogMessage("Could not obtain gamedata offset %s", szReload);
+		else
+		{
+			if (!(g_pReload = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szReload);
 		}
 	}
 	public CBaseCombatWeapon(const int iEntIndex = -1)
@@ -157,6 +167,10 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public bool FinishReload()
 	{
 		return SDKCall(g_pFinishReload, this.entindex);
+	}
+	public bool Reload()
+	{
+		return SDKCall(g_pReload, this.entindex);
 	}
 	public bool IsReloading()
 	{

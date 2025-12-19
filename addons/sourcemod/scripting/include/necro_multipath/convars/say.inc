@@ -10,7 +10,7 @@
 	{
 		if(GetTime() < g_iGunGameNextVoteTime)
 		{
-			CPrintToChatAll("%t", "#GunGame_VoteDelay", g_iGunGameNextVoteTime - GetTime());
+			CPrintToChat(iClient, "%t", "#GunGame_VoteDelay", g_iGunGameNextVoteTime - GetTime());
 			return Plugin_Handled;
 		}
 

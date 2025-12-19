@@ -724,6 +724,13 @@
 					}
 				}
 			}
+			"CBaseCombatWeapon::FinishReload"
+			{
+				"offset"	"CBaseCombatWeapon::FinishReload"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
 
 			//   _____  ______ _______ ____  _    _ _____  
 			//  |  __ \|  ____|__   __/ __ \| |  | |  __ \ 
@@ -898,6 +905,13 @@
 				"signature"	"CBlackMesaBaseWeaponIronSights::ToggleIronSights"
 				"callconv"	"thiscall"
 				"return"	"void"
+				"this"		"entity"
+			}
+			"CBlackMesaBaseWeaponThrown::Reload"
+			{
+				"offset"	"CBlackMesaBaseWeaponThrown::Reload"
+				"hooktype"	"entity"
+				"return"	"bool"
 				"this"		"entity"
 			}
 			"CWeapon_Tau::FireBeam"
@@ -1361,6 +1375,11 @@
 				"windows"	"256"
 				"linux"		"257"
 			}
+			"CBaseCombatWeapon::FinishReload"
+			{
+				"windows"	"288"
+				"linux"		"289"
+			}
 			"CServerGameDLL::GameShutdown" // CServerGameDLL::GameShutdown()
 			{
 				"windows"	"8"
@@ -1649,6 +1668,12 @@
 			{
 				"windows"	"207"
 				"linux"		"208"
+			}
+
+			"CBlackMesaBaseWeaponThrown::Reload"
+			{
+				"windows"	"290"
+				"linux"		"291"
 			}
 		}
 	}

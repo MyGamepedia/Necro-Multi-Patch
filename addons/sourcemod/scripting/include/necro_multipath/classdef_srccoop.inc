@@ -85,6 +85,7 @@
 #include <srccoop_api/classdef/bms/CWeapon_Crossbow.inc>
 #include <srccoop_api/classdef/bms/CWeapon_Gluon.inc>
 #include <srccoop_api/classdef/bms/CWeapon_Satchel.inc>
+#include <srccoop_api/classdef/bms/CWeapon_Rpg.inc>
 
 stock void InitClassdef_Scrcoop(const GameData hGameConfig)
 {
@@ -110,6 +111,7 @@ stock void InitClassdef_Scrcoop(const GameData hGameConfig)
 	CBaseTrigger.InitClassdef(hGameConfig);
 	CEntityFactoryDictionary.InitClassdef(hGameConfig);
 	CPlayerResource.InitClassdef(hGameConfig);
+	CWeapon_Rpg.InitClassdef(hGameConfig);
 
 	// Always last.
 	CGlobalVars.InitClassdef(hGameConfig);
