@@ -10,7 +10,7 @@
 	{
 		if(GetTime() < g_iGunGameNextVoteTime)
 		{
-			PrintToChat(iClient, "You have to wait %d seconds before you can start this vote.", g_iGunGameNextVoteTime - GetTime());
+			CPrintToChatAll("%t", "#GunGame_VoteDelay", g_iGunGameNextVoteTime - GetTime());
 			return Plugin_Handled;
 		}
 

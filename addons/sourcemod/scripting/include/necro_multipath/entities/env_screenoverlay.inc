@@ -58,7 +58,6 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		{
 			//don't use this code unless debugging or you just want to have a very heavy spam in server console
 			/*
-			//note: added entindex so we can define "invalid" entity by index if no targetname for it
 			char szTargetname[MAX_FORMAT];
 			pScreenOverlay.GetTargetname(szTargetname, sizeof(szTargetname));
 			PrintToServer("WARNING: env_screenoverlay (%d) with targetname \"%s\" has no overlays to display.\n", pScreenOverlay.entindex, szTargetname);
@@ -278,6 +277,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 //------------------------------------------------------
 public Action Timer_EnvScreenOverlayThink(Handle timer, CEnvScreenOverlay pScreenOverlay)
 {
+	//check if entity is still valid and active
 	if(!IsValidEntity(pScreenOverlay.entindex) || pScreenOverlay.GetActiveState() == false)
 	{
 		if (timer != null)
@@ -287,47 +287,52 @@ public Action Timer_EnvScreenOverlayThink(Handle timer, CEnvScreenOverlay pScree
 		return Plugin_Continue;
 	}
 
-	float flTickedTime = GetTickedTime(); //store ingame time in this var so we don't call func every time
+	float flTickedTime = GetTickedTime();
 
+	//store data in these vars
 	int iNextOverlayIndex = -1;
-	int iNextOverlay[MAX_PLAYERS + 1] = {-1}; //store next overlays to set for certain players
+	int iNextOverlay[MAX_PLAYERS + 1] = {-1};
 	float flNextOverlayStartTime[MAX_PLAYERS + 1] = {-1.0};
 
+	//first pass: gather data for all players
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		CBasePlayer pPlayer = CBasePlayer(i);
 		int entidx = pPlayer.entindex;
-		// Only proceed if entidx is in valid range (1..MAX_PLAYERS)
-		if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && IsValidEntity(i))
-		//if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
+
+		//Only proceed if entidx is in valid range (1..MAX_PLAYERS)
+		if (entidx > 0 && entidx <= MAX_PLAYERS && IsClientInGame(i) && !IsFakeClient(i) && IsValidEntity(i))
 		{
+			//Only proceed if this overlay is active for this player
 			if (pScreenOverlay.GetActiveStoredOverlay(pPlayer) == pScreenOverlay.entindex)
 			{
-				iNextOverlayIndex = pScreenOverlay.GetNextOverlay(pPlayer);
-				if(iNextOverlayIndex <= 9 && iNextOverlayIndex >= 0)
+				iNextOverlayIndex = pScreenOverlay.GetNextOverlay(pPlayer); //get next overlay index for this player
+				if(iNextOverlayIndex <= 9 && iNextOverlayIndex >= 0) //check if valid next overlay index
 				{
-					iNextOverlay[i] = pScreenOverlay.GetNextOverlay(pPlayer);
+					iNextOverlay[i] = pScreenOverlay.GetNextOverlay(pPlayer); //store next overlay index for this player
 				}
 				else
 				{
-					iNextOverlay[i] = -1;
+					iNextOverlay[i] = -1; //else mark as invalid
 				}
 
-				flNextOverlayStartTime[i] = pScreenOverlay.GetNextOverlayStartTime(pPlayer);
+				flNextOverlayStartTime[i] = pScreenOverlay.GetNextOverlayStartTime(pPlayer); //store next overlay start time for this player
 				continue;
 			}
 		}
+		//mark as invalid if we can't proceed
 		iNextOverlay[i] = -1;
 		flNextOverlayStartTime[i] = -1.0;
 	}
 
+	//second pass: apply overlays for all players that need it
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		CBasePlayer pPlayer = CBasePlayer(i);
-		if(!pPlayer.IsValid())
+		if(!pPlayer.IsValid()) //don't if this player is not valid
 			continue;
 
-		// Only switch overlay if the delay has finished
+		//switch overlay only after the delay is finished
 		if(flNextOverlayStartTime[i] <= flTickedTime && iNextOverlay[i] != -1)
 		{
 			//PrintToChatAll("iNextOverlay[%d] == %d", i, iNextOverlay[i]);
@@ -336,7 +341,7 @@ public Action Timer_EnvScreenOverlayThink(Handle timer, CEnvScreenOverlay pScree
 			char szOverlayName[MAX_FORMAT];
 			pScreenOverlay.GetOverlayName(iNextOverlay[i], szOverlayName, sizeof(szOverlayName));
 
-			//print warning and do nothing if the first overlay keyvalue is empty, just like in source sdk
+			//don't do anything if overlay name is empty
 			if (szOverlayName[0] == '\0')
 			{
 				continue;
@@ -347,7 +352,7 @@ public Action Timer_EnvScreenOverlayThink(Handle timer, CEnvScreenOverlay pScree
 			Format(szPlayerCommand, sizeof(szPlayerCommand), "r_screenoverlay %s", szOverlayName);
 			pPlayer.SendCommand(szPlayerCommand);
 
-			// If at last overlay (9), do not increment further, but still set timer for this overlay
+			//if at last overlay (9), do not increment further, but still set timer for this overlay
 			if(iNextOverlayIndex <= 9 && iNextOverlayIndex >= 0)
 			{
 				pScreenOverlay.SetNextOverlay(iNextOverlay[i] + 1, pPlayer);

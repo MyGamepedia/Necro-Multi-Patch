@@ -47,6 +47,7 @@ DynamicDetour hkBaseCombatWeaponPrecache;
 //DynamicDetour hkBaseCombatReload;
 DynamicDetour hkStartLagCompensation;
 DynamicDetour hkGetUserSettings;
+DynamicDetour hkPostChatMessage;
 
 //DynamicHook hkBlackMesaBaseDetonatorDetonate;
 //DynamicHook hkItemPostFrame;

@@ -3,18 +3,16 @@
 
 public MRESReturn Hook_GetUserSettings(int _this, DHookReturn hReturn, DHookParam hParams)
 {
-    PrintToChatAll("Hook_GetUserSettings");
-    /*
-	char szClientCommand[MAX_FORMAT];
-	DHookGetParamString(hParams, 2, szClientCommand, sizeof(szClientCommand));
+    char szCvar[MAX_FORMAT];
+    DHookGetParamString(hParams, 1, szCvar, sizeof(szCvar));
 
-    int iCBasePlayer = DHookGetParam(hParams, 1);
+    int iClient = _this;
 
-    if(IsFakeClient(iCBasePlayer) && StrEqual(szClientCommand, "cl_toggle_duck"))
+    if(IsFakeClient(iClient) && StrEqual(szCvar, "cl_toggle_duck"))
     {
-        DHookSetReturn(hReturn, "");
+        DHookSetReturnString(hReturn, "");
         return MRES_Supercede;
-    }*/
+    }
 
     return MRES_Ignored;
 }

@@ -238,6 +238,7 @@ public MRESReturn Hook_WeaponSetModel(int _this, DHookParam hParams)
 	return MRES_Ignored;
 }
 
+//Purpose: Auto reload weapon when holster time exceeds defined convar time
 void Hook_BaseCombatWeaponItemHolsterFramePost(const int iWeaponEntIndex, const float flWeaponAutoReloadTime)
 {
 	CBaseCombatWeapon pWeapon = CBaseCombatWeapon(iWeaponEntIndex);

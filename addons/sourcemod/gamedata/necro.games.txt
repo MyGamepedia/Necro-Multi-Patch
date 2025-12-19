@@ -172,14 +172,29 @@
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
-			}
-			
-			"CBaseCombatWeapon::FinishReload" //CBaseCombatWeapon::FinishReload()
+			}	
+
+			"CBaseCombatWeapon::ItemHolsterFrame"
 			{
-				"offset"	"CBaseCombatWeapon::FinishReload"
+				"offset"	"CBaseCombatWeapon::ItemHolsterFrame"
 				"hooktype"	"entity"
 				"return"	"void"
 				"this"		"entity"
+			}
+
+			"CBaseCombatWeapon::Holster"
+			{
+				"offset"	"CBaseCombatWeapon::Holster"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pSwitchingTo"
+					{
+						"type"		"cbaseentity"
+					}
+				}
 			}
 			
 			"CBaseCombatWeapon::DefaultReload" //bool CBaseCombatWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
@@ -420,6 +435,25 @@
 				}
 			}
 
+			"CBlackMesaKillStreaks::PostChatMessage"
+			{
+				"signature"	"CBlackMesaKillStreaks::PostChatMessage"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"ignore"
+				"arguments"
+				{
+					"szMessage"
+					{
+						"type"	"charptr"
+					}
+					"pPlayer"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
+
 			//"CPointSpotlight::SpotlightCurrentPos"
 			//{
 			//	"signature"	"CPointSpotlight::SpotlightCurrentPos"
@@ -566,11 +600,17 @@
 				"windows"	"290"
 				"linux"		"291"
 			}
-			
-			"CBaseCombatWeapon::FinishReload"
+
+			"CBaseCombatWeapon::ItemHolsterFrame"
 			{
-				"windows"	"288"
-				"linux"		"289"
+				"windows"	"281"
+				"linux"		"282"
+			}
+			
+			"CBaseCombatWeapon::Holster"
+			{
+				"windows"	"269"
+				"linux"		"270"
 			}
 			
 			"CBaseCombatWeapon::PrimaryAttack"
@@ -691,6 +731,18 @@
 				"windows"	"207"
 				"linux"		"208"
 			}
+
+			"CBM_GameRulesStateIntermission::IsStateDone"
+			{
+				"windows"	"11"
+				"linux"		"12"
+			}
+
+			"CBM_GameRulesStateWarmup::IsStateDone"
+			{
+				"windows"	"11"
+				"linux"		"12"
+			}
 		}
 
 		"Signatures"
@@ -711,9 +763,15 @@
 
 		"Signatures"
 		{
+			"CBlackMesaKillStreaks::PostChatMessage" //find by string ''got FIRST BLOOD!''
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x8D\x4D\xE0\xE8\x02\x47\xEE\xFF\x8D\x4D\xE0\xE8\x7A\x4E\xEE\xFF\x8D\x4D\xE0\xE8\x02\x48\xEE\xFF\x6A\x01\xFF\x75\x0C\x8D\x45\xE0\xFF\x75\x08\x50\xE8\xC1\x8A\xF3\x2A\x2A\x2A\x2A\x8D\x4D\xE0\xE8\x16\x47\xEE\xFF\x8B\xE5\x5D\xC2\x08\x00"
+				"linux"		"_ZN21CBlackMesaKillStreaks15PostChatMessageEPKcP11CBasePlayer"
+			}
+			
 			"CBaseClient::GetUserSetting" //find by string ''GetUserSetting: cvar''
 			{
-				"windows"	"\x55\x8B\xEC\x56\x57\x8B\xF9\x8B\x8F\x84\x00\x00\x00\x85\xC9\x74\x47\x8B\x75\x08\x85\xF6\x74\x40\x80\x3E\x00\x74\x3B\x53\x68\x2A\x2A\x2A\x2A\x56\xE8\x37\x78\x1D\x00\x8B\xD8\x80\x3B\x00\x75\x1F\x8B\x8F\x84\x00\x00\x00\x56\xE8\x04\x76\x1D\x00\x85\xC0\x75\x0F"
+				"windows"	"\x55\x8B\xEC\x56\x57\x8B\xF9\x8B\x8F\x84\x00\x00\x00\x85\xC9\x74\x2A\x8B\x75\x08\x85\xF6\x74\x2A\x80\x3E\x00\x74\x2A\x53\x68\x2A\x2A\x2A\x2A\x56\xE8\x2A\x2A\x2A\x2A"
 				"linux"		"_ZNK11CBaseClient14GetUserSettingEPKc"
 			}
 

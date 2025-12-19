@@ -1,5 +1,11 @@
 "Phrases"
 {
+	"#SpectatorDelay"
+	{
+		"#format"	"{1:.2f}"
+		"en"		"\01xFF4040 I can join after {1} seconds!"
+	}
+
 	"#GunGame_Draw"
 	{
 		"en"		"[Gun game] DRAW!"
@@ -50,12 +56,12 @@
 	"#GunGame_VoteStart"
 	{
 		"#format"	"{1:s}"
-		"en"		"Player {1:s} started vote for gamemode \"Gun Game\"."
+		"en"         "{white}Player {green}{1:s}{default} started vote for gamemode {blue}\"Gun Game\"{default}."
 	}
 	
 	"#GunGame_VoteEndEnable"
 	{
-		"en"		"\"Gun\x07d8bfd8 Game\" starts in 4 seconds..."
+		"en"		"\"Gun Game\" starts in 4 seconds..."
 	}
 	
 	"#GunGame_VoteEndDisable"
@@ -71,5 +77,53 @@
 	"#GunGame_VoteEndFail"
 	{
 		"en"		"Two or more vote options have the same number of votes. Consider compromises or agree on a choice next time."
+	}
+	
+	"#GunGame_VoteDelay"
+	{
+		"#format"	"{1:d}"
+		"en"		"You have to wait {1:d} seconds before you can start this vote."
+	}
+	
+	"#Necro_FIRST_BLOOD"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1:s} got FIRST BLOOD!"
+	}
+	
+	"#Necro_KillingSpree"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1:s} is on a KILLING SPREE!"
+	}
+	
+	"#Necro_RAMPAGE"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1:s} is on a RAMPAGE!"
+	}
+	
+	"#Necro_DOMINATING"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1:s} is DOMINATING!"
+	}
+	
+	"#Necro_UNSTOPPABLE"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1:s} is UNSTOPPABLE!"
+	}
+	
+	"#Necro_GODLIKE"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1:s} is GODLIKE!"
+	}
+	
+	"#Necro_WICKED_SICK"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1:s} is WICKED SICK!"
 	}
 }

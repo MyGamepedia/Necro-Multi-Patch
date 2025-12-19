@@ -8,6 +8,7 @@
 #include <dhooks>
 #include <entity>
 
+#include <multicolors>
 #include <sourcescramble>
 
 #include <necro_multipath/macros_scrcoop>
@@ -71,6 +72,7 @@
 #include <necro_multipath/entities/classes/CBasePickup>
 #include <necro_multipath/entities/classes/CBasePlayer>
 #include <necro_multipath/entities/classes/CBlackMesaBaseWeaponIronSights>
+#include <necro_multipath/entities/classes/CBlackMesaKillStreaks>
 #include <necro_multipath/entities/classes/CBoneSetup>
 #include <necro_multipath/entities/classes/CMultiplayRules>
 
@@ -195,7 +197,7 @@ void LoadGameData()
 	
 	//Check if is valid 
 	if (pGameConfig_Necro == null || pGameConfig_Srccoop == null)
-		SetFailState("Couldn't load game one of the configs!!!");
+		SetFailState("Couldn't load one of the configs!!!");
 
 	InitClassdef_Scrcoop(pGameConfig_Srccoop);
 
@@ -208,7 +210,8 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig_Necro, hkBaseCombatWeaponPrecache, "CBaseCombatWeapon::Precache", Hook_BaseCombatWeaponPrecache, Hook_BaseCombatWeaponPrecachePost);
 	LoadDHookDetour(pGameConfig_Necro, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);	
 	LoadDHookDetour(pGameConfig_Necro, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
-//	LoadDHookDetour(pGameConfig_Necro, hkGetUserSettings, "CBaseClient::GetUserSetting", Hook_GetUserSettings);
+	//LoadDHookDetour(pGameConfig_Necro, hkGetUserSettings, "CBaseClient::GetUserSetting", Hook_GetUserSettings);
+	LoadDHookDetour(pGameConfig_Necro, hkPostChatMessage, "CBlackMesaKillStreaks::PostChatMessage", Hook_PostChatMessage);
 	
 	//Offsets
 	LoadDHookVirtual(pGameConfig_Necro, hkAcceptInput, "CBaseEntity::AcceptInput");

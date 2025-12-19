@@ -149,15 +149,27 @@ methodmap CEnvScreenOverlay  < CBaseEntity
 	}
 
 	//Fire StartOverlays input.
-	public void StartOverlays()
+	public void StartOverlays(const CBasePlayer pPlayer)
 	{
-		AcceptEntityInput(this.entindex, "StartOverlays");
+		AcceptEntityInput(this.entindex, "StartOverlays", pPlayer.entindex);
 	}
 
 	//Fire StopOverlays input.
-	public void StopOverlays()
+	public void StopOverlays(const CBasePlayer pPlayer)
 	{
-		AcceptEntityInput(this.entindex, "StopOverlays");
+		AcceptEntityInput(this.entindex, "StopOverlays", pPlayer.entindex);
+	}
+
+	//Fire StartOverlaysForEveryone input.
+	public void StartOverlaysForEveryone(const CBasePlayer pPlayer)
+	{
+		AcceptEntityInput(this.entindex, "StartOverlaysForEveryone", pPlayer.entindex);
+	}
+
+	//Fire StopOverlaysForEveryone input.
+	public void StopOverlaysForEveryone(const CBasePlayer pPlayer)
+	{
+		AcceptEntityInput(this.entindex, "StopOverlaysForEveryone", pPlayer.entindex);
 	}
 
 	//Fire SwitchOverlay input, defined by number from 1 to 10.

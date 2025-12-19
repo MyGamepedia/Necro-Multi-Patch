@@ -3,6 +3,7 @@
 
 #define MAX_SHOTGUN_CLIP 8 //todo: it's better not hardcode this
 
+//Purpurse: Auto reload shotgun when holster time exceeds defined convar time
 public MRESReturn Hook_WeaponShotgunItemHolsterFramePost(int _this)
 {
 	CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
