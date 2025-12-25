@@ -15,9 +15,10 @@
 #include <necro_multipath/typedef_srccoop>
 #include <necro_multipath/globals_srccoop>
 #include <srccoop_api/util>
-#include <necro_multipath/classdef_srccoop>
 
 #include <necro_multipath/globals>
+
+#include <necro_multipath/classdef_srccoop>
 
 #include <necro_multipath/entities/ai_goal_lead>
 #include <necro_multipath/entities/ai_script_conditions>
@@ -43,6 +44,7 @@
 #include <necro_multipath/entities/npc_ichthyosaur>
 #include <necro_multipath/entities/npc_lav>
 #include <necro_multipath/entities/npc_puffballfungus>
+#include <necro_multipath/entities/npc_snark>
 #include <necro_multipath/entities/npc_sniper>
 #include <necro_multipath/entities/npc_xenturret>
 #include <necro_multipath/entities/player_loadsaved>
@@ -59,8 +61,10 @@
 #include <necro_multipath/entities/weapon_crossbow>
 #include <necro_multipath/entities/weapon_glock>
 #include <necro_multipath/entities/weapon_mp5>
+#include <necro_multipath/entities/weapon_rpg>
 #include <necro_multipath/entities/weapon_satchel>
 #include <necro_multipath/entities/weapon_shotgun>
+//#include <necro_multipath/entities/weapon_snark>
 
 #include <necro_multipath/entities/classes/CAI_BaseNPC>
 #include <necro_multipath/entities/classes/CAI_GoalEntity>
@@ -120,6 +124,10 @@ public void OnPluginStart()
 	}
 	
 	//existing convars
+	sk_weapon_snark_throw_uspeed =  FindConVar("sk_weapon_snark_throw_uspeed");
+	sk_weapon_snark_throw_fspeed = FindConVar("sk_weapon_snark_throw_fspeed");
+	sk_weapon_snark_lob_fspeed =  FindConVar("sk_weapon_snark_lob_fspeed");
+	sk_weapon_snark_lob_uspeed =  FindConVar("sk_weapon_snark_lob_uspeed");
 	sk_crossbow_tracer_enabled = FindConVar("sk_crossbow_tracer_enabled");
 	sv_long_jump_manacost = FindConVar("sv_long_jump_manacost");
 	sv_jump_long_enabled = FindConVar("sv_jump_long_enabled");
@@ -204,7 +212,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig_Srccoop, hkLevelInit, "CServerGameDLL::LevelInit");
 	if (hkLevelInit.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_OnLevelInit) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CServerGameDLL::LevelInit");
-	
+
 	//Detours
 	LoadDHookDetour(pGameConfig_Necro, hkGiveDefaultItems, "CBlackMesaPlayer::GiveDefaultItems", Hook_GiveDefaultItems);
 	LoadDHookDetour(pGameConfig_Necro, hkBaseCombatWeaponPrecache, "CBaseCombatWeapon::Precache", Hook_BaseCombatWeaponPrecache, Hook_BaseCombatWeaponPrecachePost);
@@ -212,6 +220,7 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig_Necro, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
 	//LoadDHookDetour(pGameConfig_Necro, hkGetUserSettings, "CBaseClient::GetUserSetting", Hook_GetUserSettings);
 	LoadDHookDetour(pGameConfig_Necro, hkPostChatMessage, "CBlackMesaKillStreaks::PostChatMessage", Hook_PostChatMessage);
+	LoadDHookDetour(pGameConfig_Necro, hkUTIL_Remove, "UTIL_Remove", Hook_UTIL_Remove);
 	
 	//Offsets
 	LoadDHookVirtual(pGameConfig_Necro, hkAcceptInput, "CBaseEntity::AcceptInput");
@@ -226,6 +235,8 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig_Necro, hkFlashlightOn, "CBlackMesaPlayer::FlashlightTurnOn");
 	LoadDHookVirtual(pGameConfig_Necro, hkBaseCombatWeaponHolster, "CBaseCombatWeapon::Holster");
 	LoadDHookVirtual(pGameConfig_Necro, hkBaseCombatWeaponItemHolsterFrame, "CBaseCombatWeapon::ItemHolsterFrame");
+	LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaPlayerCreateAmmoBox, "CBlackMesaPlayer::CreateAmmoBox");
+	LoadDHookVirtual(pGameConfig_Necro, hkWeaponSnarkOperatorHandleAnimEvent, "CWeapon_Snark::Operator_HandleAnimEvent");
 	
 	//Memory Vars
 	g_iUserCmdOffset = pGameConfig_Necro.GetOffset("CBasePlayer::GetCurrentUserCommand");
@@ -237,6 +248,19 @@ void LoadGameData()
 	HookEntityOutput("npc_barnacle", "OnGrab", Hook_Barnacle_OnGrab);
 	HookEntityOutput("npc_barnacle", "OnRelease", Hook_Barnacle_OnRelease);
 	#endif
+
+	/*char szCreateWeaponTracedBoneMergeEntity[] = "CreateWeaponTracedBoneMergeEntity";
+	StartPrepSDKCall(SDKCall_Entity);
+	if (!PrepSDKCall_SetFromConf(pGameConfig_Necro, SDKConf_Signature, szCreateWeaponTracedBoneMergeEntity))
+		LogMessage("Could not obtain gamedata signature %s", szCreateWeaponTracedBoneMergeEntity);
+	else
+	{
+		PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+		if (!(g_pCreateWeaponTracedBoneMergeEntity = EndPrepSDKCall())) 
+			SetFailState("Could not prep SDK call %s", szCreateWeaponTracedBoneMergeEntity);
+	}*/
 }
 
 //Purpose: Load SourceCoop game config file offsets + some vars from memory
@@ -542,6 +566,20 @@ public void OnEntitySpawned(int iEntIndex)
 
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
+
+	if(StrEqual(szClassname, "weapon_snark"))
+	{
+		//DHookEntity(hkWeaponSnarkOperatorHandleAnimEvent, true, iEntIndex, _, Hook_WeaponSnarkOperatorHandleAnimEvent);
+		return;
+	}
+
+	if(StrEqual(szClassname, "weapon_rpg"))
+	{
+		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_WeaponRpgHolsterPost);
+		DHookEntity(hkBaseCombatDeploy, true, iEntIndex, _, Hook_WeaponRpgDeploy);
+		DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_WeaponRpgAcceptInput);
+		return;
+	}
 
 	if(StrEqual(szClassname, "weapon_glock"))
 	{
@@ -897,6 +935,12 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
+	if(StrEqual(szClassname, "npc_snark"))
+	{
+		Snark_PathPost(iEntIndex);
+		return;
+	}
+
 	if(StrEqual(szClassname, "env_laser_dot"))
 	{
 		LaserDot_PathPost(iEntIndex); //set new rendering after spawn
@@ -956,4 +1000,14 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	// 	Hook_ExplosionSpawn(iEntIndex);
 	// 	return;
 	// }
+}
+
+public MRESReturn Hook_UTIL_Remove(DHookParam hParams)
+{
+	Address pEntIndex = hParams.GetAddress(1);
+
+    if (pEntIndex == Address_Null)
+        return MRES_Ignored;
+	
+	return MRES_Ignored;
 }

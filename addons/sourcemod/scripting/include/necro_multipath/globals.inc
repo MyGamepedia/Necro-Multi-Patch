@@ -9,6 +9,10 @@
 
 ConVar sk_crossbow_tracer_enabled;
 ConVar sv_cheats;
+ConVar sk_weapon_snark_throw_uspeed;
+ConVar sk_weapon_snark_throw_fspeed;
+ConVar sk_weapon_snark_lob_fspeed;
+ConVar sk_weapon_snark_lob_uspeed;
 
 ConVar g_ConvarNecroGiveDefaultItems;
 ConVar g_ConvarNecroOverrideDefaultWeaponParams;
@@ -46,8 +50,10 @@ DynamicDetour hkBaseCombatWeaponPrecache;
 //DynamicDetour hkBaseCombatDefaultReload;
 //DynamicDetour hkBaseCombatReload;
 DynamicDetour hkStartLagCompensation;
-DynamicDetour hkGetUserSettings;
+//DynamicDetour hkGetUserSettings;
 DynamicDetour hkPostChatMessage;
+//DynamicDetour hkDropAmmoBox;
+DynamicDetour hkUTIL_Remove;
 
 //DynamicHook hkBlackMesaBaseDetonatorDetonate;
 //DynamicHook hkItemPostFrame;
@@ -64,17 +70,22 @@ DynamicHook hkWeaponCrossbowFireBolt;
 //DynamicHook hkShowViewPortPanel;
 DynamicHook hkFlashlightOff;
 DynamicHook hkFlashlightOn;
-DynamicHook hkPlayerResourceUpdatePlayerData;
+//DynamicHook hkPlayerResourceUpdatePlayerData;
 //DynamicHook hkPlayerResourceUpdateConnectedPlayer;
 //DynamicHook hkPlayerResourceUpdateDisconnectedPlayer;
 DynamicHook hkBaseCombatWeaponHolster;
 DynamicHook hkBaseCombatWeaponItemHolsterFrame;
+DynamicHook hkBlackMesaPlayerCreateAmmoBox;
+DynamicHook hkWeaponSnarkOperatorHandleAnimEvent;
 
 
 float g_fClientFastRespawnDelay[MAX_PLAYERS+1];
 float g_fClientSpectatorJoinTeamDelay[MAX_PLAYERS+1];
 
+int g_hClientSnarks[MAX_PLAYERS + 1][20]; //store snark ents for each client
 int g_iUserCmdOffset;
+
+//Handle g_pCreateWeaponTracedBoneMergeEntity;
 
 
 //===========================

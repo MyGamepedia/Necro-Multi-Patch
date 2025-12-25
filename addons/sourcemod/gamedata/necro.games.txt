@@ -542,6 +542,29 @@
 						"type"	"int"
 					}
 				}
+			}
+
+			"CBlackMesaPlayer::CreateAmmoBox"
+			{
+				"offset"	"CBlackMesaPlayer::CreateAmmoBox"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}		
+
+			"CBlackMesaPlayer::DropAmmoBox"
+			{
+				"offset"	"CBlackMesaPlayer::DropAmmoBox"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"pAmmoPackList"
+					{
+						"type"	"int"
+					}
+				}
 			}	
 
 			"CBasePlayer::DeathSound"
@@ -558,10 +581,95 @@
 						"flags" "byref"
 					}
 				}
-			}		
+			}	
+						
+			"CWeapon_Snark::Operator_HandleAnimEvent" // void CWeapon_Snark::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator )
+			{
+				"offset"	"CWeapon_Snark::Operator_HandleAnimEvent"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"pEvent"
+					{
+						"type"	"objectptr"
+					}
+
+					"pOperator"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+				
+			}
+
+			"CreateWeaponTracedBoneMergeEntity" // CBaseAnimating* CreateWeaponTracedBoneMergeEntity(char* szClassname, CBaseAnimating* pWeaponOwner)
+			{
+				"signature"	"CreateWeaponTracedBoneMergeEntity"
+				"callconv"	"cdecl"
+				"return"	"cbaseentity"
+				"arguments"
+				{
+					"szClassname"
+					{
+						"type"	"charptr"
+					}
+
+					"pWeaponOwner"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}	
+
+			"CBlackMesaKillStreaks::PostChatMessage"
+			{
+				"signature"	"CBlackMesaKillStreaks::PostChatMessage"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"ignore"
+				"arguments"
+				{
+					"szMessage"
+					{
+						"type"	"charptr"
+					}
+					"pPlayer"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
+
+			"UTIL_Remove" // void UTIL_Remove( CBaseEntity *oldObj )
+			{
+				"signature"	"UTIL_Remove"
+				"callconv"	"cdecl"
+				"return"	"void"
+				"arguments"
+				{
+					"oldObj"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
 		}
 		"Offsets"
 		{
+			"CWeapon_Snark::Operator_HandleAnimEvent"
+			{
+				"windows"	"387"
+				"linux"		"388"
+			}
+
+			"CBlackMesaPlayer::CreateAmmoBox"
+			{
+				"windows"	"516"
+				"linux"		"518"
+			}
+
 			"CMultiplayRules::FAllowFlashlight" // CMultiplayRules::FAllowFlashlight()
 			{
 				"windows"	"56"
@@ -832,6 +940,23 @@
 
 		"Signatures"
 		{
+			"UTIL_Remove" //how to find: find by string ''npc_snark.Explode'', 2 refs, the first the funcs will be one that prechache stuff for snark, the other is one of the funcs that removes snark by calling this and putting ent prt
+			{
+				"windows"	"\x55\x8B\xEC\x2A\x2A\x2A\x85\xC0\x74\x0C\x83\xC0\x0C\x2A\x2A\x2A\x5D\xE9\x0A\x00\x00\x00\x5D\xC3"
+				"linux"		"_Z11UTIL_RemoveP11CBaseEntity"
+			}
+			"CreateWeaponTracedBoneMergeEntity" //how to find: search by string ''item_snark_grenade'', one of the funcs will put this as param_1 and use pointer to ''something'' to call other func, the other is what you need
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x18\x57\x2A\x2A\x2A\x85\xFF\x75\x07\x33\xC0\x5F\x8B\xE5\x5D\xC3\x53\x56\x6A\xFF\x2A\x2A\x2A\xE8\x3F\x79\xD4\xFF\x8B\xD8\x83\xC4\x08\x85\xDB\x0F\x84\xC9\x00\x00\x00\x8B\x13\x8B\xCB\xFF\x92\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x0F\x84\xC0\x00"
+				"linux"		"_Z33CreateWeaponTracedBoneMergeEntityPKcP14CBaseAnimating"
+			}
+			
+			"CBlackMesaPlayer::DropAmmoBox" //how to find: CEventQueue::AddEvent by string ''KilledNPC'', you will find CBaseCombatCharacter::Event_Killed that also uses ''item_healthvial'' and ''BaseCombatCharacter.StopWeaponSounds'', go to CEventQueue::AddEvent, right click -> References -> Show Call Trees, new funcs will use ''Kill'', but only one seems to set input delay via variable (not hardcoded val), go to that func, you found CBlackMesaPlayer::DropAmmoBox
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x4C\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x8B\x45\x08\x56\x8B\xF1\x89\x45\xCC\x89\x75\xD0\x83\x78\x0C\x00\x0F\x84\xE7\x01\x00\x00\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x88\x00\x00\x00\xFF\xD0\x84\xC0\x0F\x84\xCF\x01\x00\x00\x8B\x0D"
+				"linux"		"_ZN16CBlackMesaPlayer11DropAmmoBoxERK10CUtlVectorI12SDroppedAmmo10CUtlMemoryIS1_iEE"
+			}
+
 			"CBlackMesaKillStreaks::PostChatMessage" //find by string ''got FIRST BLOOD!''
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x8D\x4D\xE0\xE8\x02\x47\xEE\xFF\x8D\x4D\xE0\xE8\x7A\x4E\xEE\xFF\x8D\x4D\xE0\xE8\x02\x48\xEE\xFF\x6A\x01\xFF\x75\x0C\x8D\x45\xE0\xFF\x75\x08\x50\xE8\xC1\x8A\xF3\x2A\x2A\x2A\x2A\x8D\x4D\xE0\xE8\x16\x47\xEE\xFF\x8B\xE5\x5D\xC2\x08\x00"
@@ -840,7 +965,7 @@
 			
 			"CBaseClient::GetUserSetting" //find by string ''GetUserSetting: cvar''
 			{
-				"windows"	"\x55\x8B\xEC\x56\x57\x8B\xF9\x8B\x8F\x84\x00\x00\x00\x85\xC9\x74\x2A\x8B\x75\x08\x85\xF6\x74\x2A\x80\x3E\x00\x74\x2A\x53\x68\x2A\x2A\x2A\x2A\x56\xE8\x2A\x2A\x2A\x2A"
+				"windows"	"\x55\x8B\xEC\x56\x57\x8B\xF9\x8B\x8F\x2A\x2A\x2A\x2A\x85\xC9\x74\x47\x2A\x2A\x2A\x85\xF6\x74\x40\x2A\x2A\x2A\x74\x3B\x53\x68\x13\xE2\x31\x10"
 				"linux"		"_ZNK11CBaseClient14GetUserSettingEPKc"
 			}
 

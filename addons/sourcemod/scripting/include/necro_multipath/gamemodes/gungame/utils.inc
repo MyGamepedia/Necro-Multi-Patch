@@ -83,10 +83,10 @@ public void GunGameProcessHumiliation(CBlackMesaPlayer pPlayerVictim, const char
         g_iNecroGunGameClientLevel[pPlayerVictim.entindex]--;
 
         //let everyone know that this player is humiliated
-        PrintToChatAll("\x04\x01[GunGame]\x04 %s\x04\x01 humiliated \x04%s\x04\x01", iszAttackerName, iszVictimName);
+        PrintToChatAll("\x03[GunGame]\x01 \x02%s\x01 downgraded level of \x04%s", iszAttackerName, iszVictimName);
 
-        CreateTimer(0.1, GunGameRemoveWeapons, pPlayerVictim.entindex);
-        CreateTimer(0.5, GunGameWeapons, pPlayerVictim.entindex);
+        GunGameRemoveWeapons(pPlayerVictim);
+       //CreateTimer(0.5, GunGameWeapons, pPlayerVictim.entindex);
     }
 }
 
@@ -121,8 +121,8 @@ public bool GunGameLevelUpActions(int iAttackerLevel, CBlackMesaPlayer pPlayerAt
 		}
 		else //remove level's gun and give new for the next level
 		{
-			CreateTimer(0.1, GunGameRemoveWeapons, pPlayerAttacker);
-			CreateTimer(0.5, GunGameWeapons, pPlayerAttacker);
+			GunGameRemoveWeapons(pPlayerAttacker);
+			//CreateTimer(0.5, GunGameWeapons, pPlayerAttacker);
 		}
 	}
 	

@@ -112,7 +112,6 @@ public void GunGameEventSpawn(Handle event, const char[] name, bool dontBroadcas
     if(!IsValidEntity(pPlayer.entindex))
         return;
     
-    CreateTimer(0.1, GunGameRemoveWeapons, pPlayer.entindex);
     CreateTimer(0.4, GunGameWeapons, pPlayer.entindex);
 }
 
@@ -169,19 +168,25 @@ public Action GunGameEventDeath(Handle event, const char[] name, bool dontBroadc
     //get punishing weapon name to define if we need to punish victim
     g_ConvarNecroGunGamePunishingWeaponName.GetString(iszPunishingWeaponName, sizeof(iszPunishingWeaponName));
 
-    //if is punishing weapon - do punishing logic
-    if (StrEqual(weaponName, iszPunishingWeaponName, false))
+    //if is punishing weapon - do punishing logic if victim's level > 0
+    if (StrEqual(weaponName, iszPunishingWeaponName, false) && g_iNecroGunGameClientLevel[pPlayerVictim.entindex] > 0)
     {
-        //if is punishing weapon and victim's level isn't starting level - punish
-        if (g_iNecroGunGameClientKills[pPlayerVictim.entindex] > 0)
+        int iVictimLevel = g_iNecroGunGameClientLevel[pPlayerVictim.entindex];
+        int iVictimKills = g_iNecroGunGameClientKills[pPlayerVictim.entindex];
+
+        //if victim has more than 50% of needed kills - set kills to 50% of current kills
+        if (iVictimKills > GetConVarInt(g_ConvarNecroGunGameStateKills[iVictimLevel]) / 2)
         {
-            g_iNecroGunGameClientKills[pPlayerVictim.entindex]--; //remove 1 kill in the victim's counter
+            g_iNecroGunGameClientKills[pPlayerVictim.entindex] = iVictimKills / 2;
+        }
+        else //else - set 50% of kills needed to level up from prev level and process humiliation
+        { 
+            g_iNecroGunGameClientKills[pPlayerVictim.entindex] = GetConVarInt(g_ConvarNecroGunGameStateKills[iVictimLevel - 1]) / 2;
+            GunGameProcessHumiliation(pPlayerVictim, iszVictimName, iszAttackerName);
         }
 
-        //process humiliation
-        GunGameProcessHumiliation(pPlayerVictim, iszVictimName, iszAttackerName);
-
-        if (StrEqual(weaponName, iszPunishingWeaponName, false)) //if punishing weapon is also used for the current level - also process normal kill 
+        //if punishing weapon is also used for the current level - also process normal kill
+        if (StrEqual(weaponName, iszPunishingWeaponName, false)) 
         {
             GunGameLevelUpActions(g_iNecroGunGameClientLevel[pPlayerAttacker.entindex], pPlayerAttacker, weaponName, iszAttackerName);
         }

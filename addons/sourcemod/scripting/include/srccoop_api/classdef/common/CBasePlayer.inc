@@ -4,6 +4,7 @@
 static Handle g_pRemoveAllItems;
 static Handle g_pCreateViewModel;
 static Handle g_pSetSuitUpdate;
+static Handle g_pStartObserverMode;
 
 methodmap CBasePlayer < CBaseCombatCharacter
 {
@@ -39,6 +40,16 @@ methodmap CBasePlayer < CBaseCombatCharacter
 			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 			if (!(g_pSetSuitUpdate = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetSuitUpdate);
+		}
+
+		char szStartObserverMode[] = "CBasePlayer::StartObserverMode";
+		StartPrepSDKCall(SDKCall_Player);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szStartObserverMode))
+			LogMessage("Could not obtain gamedata offset %s", szStartObserverMode);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pStartObserverMode = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szStartObserverMode);
 		}
 	}
 	public CBasePlayer(const int iEntIndex = -1)
@@ -98,6 +109,10 @@ methodmap CBasePlayer < CBaseCombatCharacter
 	public void SetSuitUpdate(const char[] szName, int fgroup, int iNoRepeat)
 	{
 		SDKCall(g_pSetSuitUpdate, this.entindex, szName, fgroup, iNoRepeat);
+	}
+	public void StartObserverMode(const int iObserverMode)
+	{
+		SDKCall(g_pStartObserverMode, this.entindex, iObserverMode);
 	}
 	public void ClearSuitQueue()
 	{

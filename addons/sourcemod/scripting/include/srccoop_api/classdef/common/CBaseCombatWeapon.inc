@@ -4,6 +4,7 @@
 static Handle g_pSendWeaponAnim;
 static Handle g_pFinishReload;
 static Handle g_pReload;
+static Handle g_pHolster;
 
 static int g_iOffset_Activity = -1;
 static int g_iOffset_IdealSequence = -1;
@@ -45,6 +46,17 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 		else
 		{
 			if (!(g_pReload = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szReload);
+		}
+
+		char szHolster[] = "CBaseCombatWeapon::Holster";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szHolster))
+			LogMessage("Could not obtain gamedata offset %s", szHolster);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Plain);
+			if (!(g_pHolster = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szHolster);
 		}
 	}
 	public CBaseCombatWeapon(const int iEntIndex = -1)
@@ -167,6 +179,10 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 	public bool FinishReload()
 	{
 		return SDKCall(g_pFinishReload, this.entindex);
+	}
+	public bool Holster(CBaseCombatWeapon pSwitchingTo) 
+	{
+		return SDKCall(g_pHolster, this.entindex, pSwitchingTo.entindex);
 	}
 	public bool Reload()
 	{

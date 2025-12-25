@@ -914,6 +914,27 @@
 				"return"	"bool"
 				"this"		"entity"
 			}
+			"CBaseCombatWeapon::Reload"
+			{
+				"offset"	"CBaseCombatWeapon::Reload"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CBaseCombatWeapon::Holster"
+			{
+				"offset"	"CBaseCombatWeapon::Holster"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pSwitchingTo"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
 			"CWeapon_Tau::FireBeam"
 			{
 				"signature"	"CWeapon_Tau::FireBeam"
@@ -1070,6 +1091,34 @@
 				"callconv"	"thiscall"
 				"return"	"void"
 				"this"		"entity"
+			}
+			"CBaseEntity::ApplyLocalAngularVelocityImpulse"
+			{
+				"signature"	"CBaseEntity::ApplyLocalAngularVelocityImpulse"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"angImpulse"
+					{
+						"type"	"vectorptr"
+					}
+				}
+			}
+			"CBaseEntity::ApplyLocalVelocityImpulse"
+			{
+				"signature"	"CBaseEntity::ApplyLocalVelocityImpulse"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"inVecImpulse"
+					{
+						"type"	"vectorptr"
+					}
+				}
 			}
 		}
 	}
@@ -1286,6 +1335,18 @@
 				// str: "script \"%s\" kicking script \"%s\" out of the queue\n"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x10\x53\x8B\xD9\x8B\x8B\x2A\x2A\x00\x00"
 				"linux"		"@_ZN20CAI_ScriptedSequence11StartScriptEv"
+			}
+			"CBaseEntity::ApplyLocalVelocityImpulse" // void CBaseEntity::ApplyLocalVelocityImpulse( const Vector &inVecImpulse )
+			{
+				// str: "Clamping ApplyLocalVelocityImpulse(%f,%f,%f) on %s\n"
+				"windows"	"\x55\x8B\xEC\xF3\x0F\x10\x05\x2A\x2A\x2A\x2A\x83\xEC\x20\x56\x2A\x2A\x2A\x57\x8B\xF9\x0F\x2E\x06\x9F\xF6\xC4\x44\x7A\x28\xF3\x0F\x10\x05\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x9F\xF6\xC4\x44\x7A\x16\xF3\x0F\x10\x05\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x9F\xF6\xC4\x44"
+				"linux"		"_ZN11CBaseEntity25ApplyLocalVelocityImpulseERK6Vector"
+			}
+			"CBaseEntity::ApplyLocalAngularVelocityImpulse" // void CBaseEntity::ApplyLocalAngularVelocityImpulse( const AngularImpulse &angImpulse )
+			{
+				// str: "Bad ApplyLocalAngularVelocityImpulse(%f,%f,%f) on %s\n"
+				"windows"	"\x55\x8B\xEC\xF3\x0F\x10\x05\x2A\x2A\x2A\x2A\x83\xEC\x0C\x56\x2A\x2A\x2A\xF3\x0F\x10\x16\x0F\x2E\xC2\x9F\xF6\xC4\x44\x7A\x28\xF3\x0F\x10\x05\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x9F\xF6\xC4\x44\x7A\x16\xF3\x0F\x10\x05\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x9F\xF6\xC4"
+				"linux"		"_ZN11CBaseEntity32ApplyLocalAngularVelocityImpulseERK6Vector"
 			}
 		}
 
@@ -1674,6 +1735,17 @@
 			{
 				"windows"	"290"
 				"linux"		"291"
+			}
+
+			"CBaseCombatWeapon::Reload"
+			{
+				"windows"	"290"
+				"linux"		"291"
+			}
+			"CBaseCombatWeapon::Holster"
+			{
+				"windows"	"269"
+				"linux"		"270"
 			}
 		}
 	}

@@ -21,55 +21,98 @@ public void GunGameRemoveItems()
 }
 
 //Remove weapon used for the past level
-public void GunGameRemoveWeapons(Handle timer, CBlackMesaPlayer pPlayer)
+public void GunGameRemoveWeapons(CBlackMesaPlayer pPlayer)
 {
- //   if(IsFakeClient(client))
-//		return;
+    //   if(IsFakeClient(client))
+    //     return;
 
-    int offset = FindSendPropInfo("CBlackMesaPlayer", "m_hMyWeapons"); //offset num for m_hMyWeapons
-
-    int maxGuns = (g_iNecroGunGameClientLevel[pPlayer.entindex] < 100) ? 20 : 0; //?get max guns? isn't my code, not sure for what this is
-
-    char weaponClass[MAX_CLASSNAME], punishingWeaponName[MAX_CLASSNAME]; //weapon classname to compare and punishing weapon name we set in the cvar
-
-    g_ConvarNecroGunGamePunishingWeaponName.GetString(punishingWeaponName, sizeof(punishingWeaponName)); //get punishing weapon name we set in the cvar
-
-    int weaponId; //weapon index
-    
-    for(int x = 0; x < maxGuns; x += 4)
+    int entidx = pPlayer.entindex;
+    int iLevel = g_iNecroGunGameClientLevel[entidx] - 1; // get past level
+    if (iLevel < 0)
     {
-        weaponId = GetEntDataEnt2(pPlayer.entindex, offset + x); //get weapon
-        
-        if(weaponId > 0)
-        {	
-            GetEdictClassname(weaponId, weaponClass, sizeof(weaponClass)); //get classname for weapon we found
-            
-			if (StrEqual(weaponClass, punishingWeaponName, false)) //never remove punishing weapons
-            {
-                continue;
-            }
-			
-            //remove not punishing weapon
-            pPlayer.RemoveWeapon(CBaseCombatWeapon(weaponId));
-            RemoveEdict(weaponId);
+        #if defined DEBUG
+        PrintToChatAll("Invalid level for weapon removal: %d", iLevel);
+        #endif
+        return;
+    }
+
+    char szWeaponName[MAX_CLASSNAME];
+    g_ConvarNecroGunGameWeaponState[iLevel].GetString(szWeaponName, sizeof(szWeaponName));
+    CBaseCombatWeapon pWeaponState = pPlayer.GetWeapon(szWeaponName);
+
+    char szPunishingWeapon[MAX_CLASSNAME];
+    CBaseCombatWeapon pWeaponPunishing = NULL_CBASEENTITY;
+    bool bHasPunishing = false;
+    if (g_iNecroGunGameClientLevel[entidx] >= GetConVarInt(g_ConvarNecroGunGamePunishingWeaponState))
+    {
+        g_ConvarNecroGunGamePunishingWeaponName.GetString(szPunishingWeapon, sizeof(szPunishingWeapon));
+        pWeaponPunishing = pPlayer.GetWeapon(szPunishingWeapon);
+        bHasPunishing = pWeaponPunishing.IsValid();
+    }
+
+    #if defined DEBUG
+    PrintToChatAll("Removing for %N: state '%s' (entidx %d), punishing '%s' (entidx %d)", 
+    entidx, szWeaponName, pWeaponState.entindex, bHasPunishing ? szPunishingWeapon : "none", bHasPunishing ? pWeaponPunishing.entindex : -1);
+    #endif
+
+    if (IsValidEntity(pWeaponState.entindex))
+    {
+        if (pPlayer.GetActiveWeapon().entindex == pWeaponState.entindex)
+        {
+            pWeaponState.Holster(pWeaponState); //note: use active weap for this func, doesn't cause issues
+            pWeaponState.SetNextPrimaryAttack(FLT_MAX);
+            pWeaponState.SetNextSecondaryAttack(FLT_MAX);
+
+            if(pWeaponState.entindex != pWeaponPunishing.entindex)
+                pWeaponPunishing.Kill(); //immediate kill to avoid issues with switching to it
         }
+        char iszLevelStr[3];
+        IntToString(g_iNecroGunGameClientLevel[entidx], iszLevelStr, sizeof(iszLevelStr));
+
+        //FIX ME!
+        //0.22 - 0.25, for hidding anim
+        pWeaponState.AddOutput("OnUser1", "!activator", "GiveGunGameResources", iszLevelStr, 0.22, 1); //give resources after removal
+        pWeaponState.AddOutput("OnUser1", "!self", "Kill", "",0.22, 1); //remove weapon
+        pWeaponState.AcceptInput("FireUser1", pPlayer);
+        AcceptEntityInput(pWeaponState.entindex, "FireUser1", pPlayer.entindex, pPlayer.entindex, 0);
+    }
+    else 
+    {
+        #if defined DEBUG
+        PrintToChatAll("Weapon state entity invalid for '%s'", szWeaponName);
+        #endif
+        return;
+    }
+
+    if (bHasPunishing)
+    {
+        if (pPlayer.GetActiveWeapon().entindex == pWeaponPunishing.entindex) 
+        {
+            pWeaponPunishing.Holster(pWeaponPunishing);
+            pWeaponPunishing.SetNextPrimaryAttack(FLT_MAX);
+            pWeaponPunishing.SetNextSecondaryAttack(FLT_MAX);
+            
+            if(pWeaponState.entindex != pWeaponPunishing.entindex)
+                pWeaponState.Kill(); //immediate kill to avoid issues with switching to it
+        }
+        pWeaponPunishing.KillDelayed(0.22); //0.22 - 0.25, for hidding anim
     }
 
     return;
 }
 
 //Gives weapon and resources needed for the next level
-public Action GunGameGiveResources(int casenum, CBlackMesaPlayer pPlayer)
+public Action GunGameGiveResources(int iLevel, CBlackMesaPlayer pPlayer)
 {
 	char primaryWeapon[MAX_CLASSNAME], punishingWeaponName[MAX_CLASSNAME]; //weapon names
 
 	int primaryAmmo, secondaryAmmo; //ammo values
 		
-	g_ConvarNecroGunGameWeaponState[casenum].GetString(primaryWeapon, sizeof(primaryWeapon)); //get weapon name needed for this level
+	g_ConvarNecroGunGameWeaponState[iLevel].GetString(primaryWeapon, sizeof(primaryWeapon)); //get weapon name needed for this level
     g_ConvarNecroGunGamePunishingWeaponName.GetString(punishingWeaponName, sizeof(punishingWeaponName)); //get punishing weapon name
 
-	primaryAmmo = g_ConvarNecroGunGameAmmoPrimary[casenum].IntValue; //get int value for main ammo
-	secondaryAmmo = g_ConvarNecroGunGameAmmoSecondary[casenum].IntValue; //get int value for second ammo
+	primaryAmmo = g_ConvarNecroGunGameAmmoPrimary[iLevel].IntValue; //get int value for main ammo
+	secondaryAmmo = g_ConvarNecroGunGameAmmoSecondary[iLevel].IntValue; //get int value for second ammo
 	
     pPlayer.GiveWeapon(primaryWeapon); //give weapon we want for the next level
 
@@ -77,7 +120,7 @@ public Action GunGameGiveResources(int casenum, CBlackMesaPlayer pPlayer)
 
     int PunishingWeaponState = GetConVarInt(g_ConvarNecroGunGamePunishingWeaponState);
 		
-	if(PunishingWeaponState <= casenum) //also give punishing weapon if current level value is <=
+	if(PunishingWeaponState <= iLevel) //also give punishing weapon if current level value is <=
 	{
         pPlayer.GiveWeapon(punishingWeaponName); //give punishing weapon
 	}
@@ -104,13 +147,12 @@ public void GunGameForceSwitchToPrimary(CBlackMesaPlayer pPlayer)
  //   if(IsFakeClient(client))
 //		return Plugin_Continue;
     
-    char primaryWeapon[MAX_CLASSNAME];
+    char iszPrimaryWeapon[MAX_CLASSNAME];
 
-	int level = g_iNecroGunGameClientLevel[pPlayer.entindex]; //get current level
+	int iLevel = g_iNecroGunGameClientLevel[pPlayer.entindex]; //get current level
 	
-	g_ConvarNecroGunGameWeaponState[level].GetString(primaryWeapon, sizeof(primaryWeapon)); //get weapon we need switch to force current level
-
-    ClientCommand(pPlayer.entindex, "use %s", primaryWeapon); //use weapon via console command
+	g_ConvarNecroGunGameWeaponState[iLevel].GetString(iszPrimaryWeapon, sizeof(iszPrimaryWeapon)); //get weapon we need switch to force current level
+    ClientCommand(pPlayer.entindex, "use %s", iszPrimaryWeapon); //use weapon via console command
 
     return;
 }
@@ -199,72 +241,78 @@ public bool GunGameGetFullWeaponName(char[] weaponName, int size)
 }
 
 //Set ammo for player by checking level's weapon
-public void GunGameClientSetWeaponPlayerAmmo(CBlackMesaPlayer pPlayer, char primaryWeapon[MAX_CLASSNAME], int primaryAmmo, int secondaryAmmo)
+public void GunGameClientSetWeaponPlayerAmmo(CBlackMesaPlayer pPlayer, char iszPrimaryWeapon[MAX_CLASSNAME], int iPrimaryAmmo, int iSecondaryAmmo)
 {
-    if (StrEqual(primaryWeapon, "weapon_glock", false) || StrEqual(primaryWeapon, "weapon_assassin_glock", false))
+    if (StrEqual(iszPrimaryWeapon, "weapon_glock", false) || StrEqual(iszPrimaryWeapon, "weapon_assassin_glock", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_9MM, primaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_9MM, iPrimaryAmmo);
         return;
     }
 
-    else if(StrEqual(primaryWeapon, "weapon_357", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_357", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_357, primaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_357, iPrimaryAmmo);
         return;
     }
 
-    else if(StrEqual(primaryWeapon, "weapon_shotgun", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_shotgun", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_SHELLS, primaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_SHELLS, iPrimaryAmmo);
         return;
     }
 
-    else if(StrEqual(primaryWeapon, "weapon_gluon", false) || StrEqual(primaryWeapon, "weapon_tau", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_gluon", false) || StrEqual(iszPrimaryWeapon, "weapon_tau", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_ENERGY, primaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_ENERGY, iPrimaryAmmo);
         return;
     }
 
-    else if(StrEqual(primaryWeapon, "weapon_mp5", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_mp5", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_9MM, primaryAmmo);
-        pPlayer.SetAmmoFromIndex(AMMO_MP5NADE, secondaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_9MM, iPrimaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_MP5NADE, iSecondaryAmmo);
         return;
     }
 
-    else if(StrEqual(primaryWeapon, "weapon_rpg", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_rpg", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_ROCKETS, primaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_ROCKETS, iPrimaryAmmo);
         return;
     }   
 
-    else if(StrEqual(primaryWeapon, "weapon_frag", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_frag", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_NADES, primaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_NADES, iPrimaryAmmo);
         return;
     }
 
-    else if(StrEqual(primaryWeapon, "weapon_satchel", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_satchel", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_SATCHELS, primaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_SATCHELS, iPrimaryAmmo);
         return;
     }
 
-    else if(StrEqual(primaryWeapon, "weapon_tripmine", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_tripmine", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_TRIPMINES, primaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_TRIPMINES, iPrimaryAmmo);
         return;
     }
 
-    else if(StrEqual(primaryWeapon, "weapon_hivehand", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_hivehand", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_HIVEGUN, primaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_HIVEGUN, iPrimaryAmmo);
         return;
     }
 
-    else if(StrEqual(primaryWeapon, "weapon_snark", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_snark", false))
     {
-        pPlayer.SetAmmoFromIndex(AMMO_SNARKS, primaryAmmo);
+        pPlayer.SetAmmoFromIndex(AMMO_SNARKS, iPrimaryAmmo);
+        return;
+    }
+
+    if(StrEqual(iszPrimaryWeapon, "weapon_snark", false))
+    {
+        pPlayer.SetAmmoFromIndex(AMMO_BOLTS, iPrimaryAmmo);
         return;
     }
 }

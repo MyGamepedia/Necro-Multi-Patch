@@ -8,6 +8,8 @@ static Handle g_pSetNextThinkNullString;
 static Handle g_pWorldSpaceCenter;
 static Handle g_pIsNPC;
 static Handle g_pSetMinMaxSize;
+static Handle g_pApplyLocalVelocityImpulse;
+static Handle g_pApplyLocalAngularVelocityImpulse;
 
 const any NULL_CBASEENTITY = -1;
 
@@ -70,6 +72,26 @@ methodmap CBaseEntity
 			PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
 			PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
 			if (!(g_pSetMinMaxSize = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetMinMaxSize);
+		}
+
+		char szApplyLocalVelocityImpulse[] = "CBaseEntity::ApplyLocalVelocityImpulse";
+		StartPrepSDKCall(SDKCall_Static);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Signature, szApplyLocalVelocityImpulse))
+			LogMessage("Could not obtain gamedata signature %s", szApplyLocalVelocityImpulse);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+			if (!(g_pApplyLocalVelocityImpulse = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szApplyLocalVelocityImpulse);
+		}
+
+		char szApplyLocalAngularVelocityImpulse[] = "CBaseEntity::ApplyLocalAngularVelocityImpulse";
+		StartPrepSDKCall(SDKCall_Static);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Signature, szApplyLocalAngularVelocityImpulse))
+			LogMessage("Could not obtain gamedata signature %s", szApplyLocalAngularVelocityImpulse);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
+			if (!(g_pApplyLocalAngularVelocityImpulse = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szApplyLocalAngularVelocityImpulse);
 		}
 
 		g_hEntityData = new IntMap();
@@ -291,6 +313,10 @@ methodmap CBaseEntity
 	{
 		return GetEntProp(this.entindex, Prop_Data, "m_iTeamNum");
 	}
+	public void SetTeam(const int iTeamNum)
+	{
+		SetEntProp(this.entindex, Prop_Data, "m_iTeamNum", iTeamNum);
+	}
 	public void GetEyePosition(float vec3Buffer[3])
 	{
 		if (this.IsPlayer())
@@ -431,6 +457,15 @@ methodmap CBaseEntity
 	{
 		SDKCall(g_pWorldSpaceCenter, this.entindex, vec3Center);
 	}
+	public void ApplyLocalVelocityImpulse(float vec3Center[3])
+	{
+		SDKCall(g_pApplyLocalVelocityImpulse, this.entindex, vec3Center);
+	}
+	public void ApplyLocalAngularVelocityImpulse(float vec3Center[3])
+	{
+		SDKCall(g_pApplyLocalAngularVelocityImpulse, this.entindex, vec3Center);
+	}
+
 	public CBaseEntity GetOwner()
 	{
 		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hOwnerEntity"));
@@ -843,12 +878,41 @@ static bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntInd
 static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
 {
 	StringMap hEntityData;
-	int iKey = CBaseEntity(iEntIndex).entref;
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	int iKey = pEntity.entref;
 
-	if (g_hEntityData.GetValue(iKey, hEntityData))
+	char szClassname[MAX_CLASSNAME];
+	pEntity.GetClassname(szClassname, sizeof(szClassname));
+
+	if (StrEqual(szClassname, "npc_snark"))
 	{
-		hEntityData.Close();
-		g_hEntityData.Remove(iKey);
+		int iOwner = GetEntPropEnt(pEntity.entindex, Prop_Data, "m_hOwner");
+		if (iOwner == NULL_CBASEENTITY)
+			return;
+
+		int iSnarkNum = pEntity.GetUserData("m_iSnarkNum");
+
+		//if (iSnarkNum < 0 || iSnarkNum >= 20)
+		//	return;
+
+		//shift left
+		for (int i = iSnarkNum; i < 19; i++)
+		{
+			int nextEnt = g_hClientSnarks[iOwner][i + 1];
+			g_hClientSnarks[iOwner][i] = nextEnt;
+
+			if (nextEnt != 0)
+			{
+				CNpc_Snark snark = CNpc_Snark(nextEnt);
+				if (snark.IsValid())
+				{
+					snark.SetUserData("m_iSnarkNum", i);
+				}
+			}
+		}
+
+	//clean the last element
+    g_hClientSnarks[iOwner][19] = 0;
 	}
 }
 
