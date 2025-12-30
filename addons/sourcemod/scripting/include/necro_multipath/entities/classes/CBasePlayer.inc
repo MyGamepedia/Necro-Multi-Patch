@@ -487,17 +487,12 @@ public MRESReturn Hook_FlashlightOn(int iClient, DHookReturn hReturn, DHookParam
 
         Player_OtherPlayersFlashlightUpdateBeamLength(spotlightend_flashlight); //calc pos
 
-		RequestFrame(Hook_Player_Flashlight3rdPersonEffects_SetColor, beam_flashlight);
+		CBaseEntity pBeam_flashlight = CBaseEntity(beam_flashlight);
+		pBeam_flashlight.AddOutput("OnUser1", "!self", "AddOutput", "rendercolor 245 240 225", 0.01, 1);
+		pBeam_flashlight.FireOutput("OnUser1");
     }
 
 	return MRES_Ignored;
-}
-
-//Purpose: This is a stupid workaround to make flashlight beam not visible when pointing to 0 0 0 pos on spawn 
-public void Hook_Player_Flashlight3rdPersonEffects_SetColor(int iEntity)
-{
-	if(IsValidEntity(iEntity))
-		DispatchKeyValue(iEntity, "rendercolor", "245 240 225");
 }
 
 //Purpose: Hide "other players flashlight" effect ents for owner
