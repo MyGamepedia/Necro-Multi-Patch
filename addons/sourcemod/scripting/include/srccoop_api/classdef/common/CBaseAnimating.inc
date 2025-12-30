@@ -2,6 +2,7 @@
 #pragma semicolon 1
 
 static Handle g_pGetSequenceLinearMotion;
+static Handle g_pSetBodygroup;
 
 #if defined SRCCOOP_BLACKMESA
 static Handle g_pSelectWeightedSequence;
@@ -35,6 +36,17 @@ methodmap CBaseAnimating < CBaseEntity
 			if (!(g_pSelectWeightedSequence = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSelectWeightedSequence);
 		}
 		#endif
+
+		char szSetBodygroup[] = "CBaseAnimating::SetBodygroup";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Signature, szSetBodygroup))
+			LogMessage("Could not obtain gamedata signature %s", szSetBodygroup);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pSetBodygroup = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetBodygroup);
+		}
 	}
 	public CBaseAnimating(const int iEntIndex = -1)
 	{
@@ -174,5 +186,9 @@ methodmap CBaseAnimating < CBaseEntity
 	public void SetAnimationTime(const float flAnimationTime)
 	{
 		SetEntPropFloat(this.entindex, Prop_Data, "m_flAnimTime", flAnimationTime);
+	}
+	public void SetBodygroup(const int iGroup, const int iValue)
+	{
+		SDKCall(g_pSetBodygroup, this.entindex, iGroup, iValue);
 	}
 }

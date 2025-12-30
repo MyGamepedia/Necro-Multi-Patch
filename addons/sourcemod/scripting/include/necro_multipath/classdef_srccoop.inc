@@ -119,5 +119,6 @@ stock void InitClassdef_Scrcoop(const GameData hGameConfig)
 
 	#if defined SRCCOOP_BLACKMESA
 	CParamsManager.InitClassdef(hGameConfig);
+	CBlackMesaBaseDetonator.InitClassdef(hGameConfig);
 	#endif
 }

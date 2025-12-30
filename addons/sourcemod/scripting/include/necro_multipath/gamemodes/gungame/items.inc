@@ -63,18 +63,23 @@ public void GunGameRemoveWeapons(CBlackMesaPlayer pPlayer)
             pWeaponState.SetNextPrimaryAttack(FLT_MAX);
             pWeaponState.SetNextSecondaryAttack(FLT_MAX);
 
-            if(pWeaponState.entindex != pWeaponPunishing.entindex)
-                pWeaponPunishing.Kill(); //immediate kill to avoid issues with switching to it
-        }
-        char iszLevelStr[3];
-        IntToString(g_iNecroGunGameClientLevel[entidx], iszLevelStr, sizeof(iszLevelStr));
+            //this should fix issues for certain weapons if clip is empty
+            if(StrEqual(szWeaponName, "weapon_glock") || StrEqual(szWeaponName, "weapon_assassin_glock") || StrEqual(szWeaponName, "weapon_mp5") 
+                || StrEqual(szWeaponName, "weapon_357") || StrEqual(szWeaponName, "weapon_shotgun") || StrEqual(szWeaponName, "weapon_crossbow"))
+            {
+                pWeaponState.FinishReload();
+            }
 
-        //FIX ME!
+            if(pWeaponState.entindex != pWeaponPunishing.entindex && pWeaponPunishing.IsValid())
+            {
+                pWeaponPunishing.Kill(); //immediate kill to avoid issues with switching to it
+            }
+        }
+
         //0.22 - 0.25, for hidding anim
-        pWeaponState.AddOutput("OnUser1", "!activator", "GiveGunGameResources", iszLevelStr, 0.22, 1); //give resources after removal
-        pWeaponState.AddOutput("OnUser1", "!self", "Kill", "",0.22, 1); //remove weapon
-        pWeaponState.AcceptInput("FireUser1", pPlayer);
-        AcceptEntityInput(pWeaponState.entindex, "FireUser1", pPlayer.entindex, pPlayer.entindex, 0);
+        pWeaponState.AddOutput("OnUser1", "!activator", "GiveGunGameResources", "", 0.22, 1); //give resources after removal
+        pWeaponState.AddOutput("OnUser1", "!self", "Kill", "", 0.22, 1); //remove weapon
+        pWeaponState.FireOutput("OnUser1", pPlayer.entindex);
     }
     else 
     {
@@ -113,6 +118,26 @@ public Action GunGameGiveResources(int iLevel, CBlackMesaPlayer pPlayer)
 
 	primaryAmmo = g_ConvarNecroGunGameAmmoPrimary[iLevel].IntValue; //get int value for main ammo
 	secondaryAmmo = g_ConvarNecroGunGameAmmoSecondary[iLevel].IntValue; //get int value for second ammo
+
+    //fix viewmodel disappear issues
+    if(GetConVarBool(g_ConvarNecroCreateNewViewmodel))
+    {
+        for (int i = 0; i < MAX_VIEWMODELS; i++)
+        {
+            CPredictedViewModel vm = pPlayer.GetViewModel(i);
+            if (vm != NULL_CBASEENTITY)
+            {
+                vm.Kill();
+                pPlayer.SetViewModel(NULL_CBASEENTITY, i);
+                CPredictedViewModel nvm = CPredictedViewModel(pPlayer.CreateViewModel(i));
+
+                DataPack pack = new DataPack();
+                pack.WriteCell(pPlayer.entindex);
+                pack.WriteCell(nvm.entindex);
+                RequestFrame(GunGameResetViewModelBodyGroup, pack);
+            }
+        }
+    }
 	
     pPlayer.GiveWeapon(primaryWeapon); //give weapon we want for the next level
 
@@ -128,6 +153,65 @@ public Action GunGameGiveResources(int iLevel, CBlackMesaPlayer pPlayer)
     RequestFrame(GunGameForceSwitchToPrimary, pPlayer); //switch to level's weapon (in case if we are killer's active weapon is punishing weapon)
 
 	return Plugin_Continue;
+}
+
+//Fixes issue when the player is using HEV hands while should use character's hands
+//NOTE: I tried SetBodygroup call, but it doesn't work with a hight delay
+public void GunGameResetViewModelBodyGroup(DataPack pack)
+{
+    pack.Reset();
+
+    int playerEnt = pack.ReadCell();
+    int nvmEnt = pack.ReadCell();
+    delete pack;
+
+    CBlackMesaPlayer pPlayer = CBlackMesaPlayer(playerEnt);
+    CPredictedViewModel nvm = CPredictedViewModel(nvmEnt);
+
+    if (!pPlayer.IsValid() || !nvm.IsValid())
+        return;
+
+    if (nvm != NULL_CBASEENTITY)
+    {         
+        char szCharacterType[MAX_MODELNAME];
+        pPlayer.GetModelName(szCharacterType, sizeof(szCharacterType));
+
+        #if defined DEBUG
+        PrintToChatAll("Model: %s", szCharacterType);
+        #endif
+
+        //TODO: This isn't perfect, because it may switch other bodygroups, should be replaced with SetBodyGroup call
+        if((StrContains(szCharacterType, "mp_scientist") != -1)) //2
+        {
+            if(StrContains(szCharacterType, "mp_scientist_hev") == -1)
+                nvm.SetBody(2);
+        }
+
+        else if(StrContains(szCharacterType, "mp_gman") != -1) //6
+        {
+            nvm.SetBody(6);
+        }
+
+        else if(StrContains(szCharacterType, "mp_zombie_sci") != -1) //4
+        {
+            nvm.SetBody(4);
+        }
+
+        else if(StrContains(szCharacterType, "mp_zombie_guard") != -1) //5
+        {
+            nvm.SetBody(5);
+        }
+
+        else if(StrContains(szCharacterType, "mp_marine") != -1) //1
+        {
+            nvm.SetBody(1);
+        }
+
+        else if(StrContains(szCharacterType, "mp_guard") != -1) //3
+        {
+            nvm.SetBody(3);
+        }
+    }
 }
 
 //Timer to give resources
@@ -310,7 +394,7 @@ public void GunGameClientSetWeaponPlayerAmmo(CBlackMesaPlayer pPlayer, char iszP
         return;
     }
 
-    if(StrEqual(iszPrimaryWeapon, "weapon_snark", false))
+    if(StrEqual(iszPrimaryWeapon, "weapon_crossbow", false))
     {
         pPlayer.SetAmmoFromIndex(AMMO_BOLTS, iPrimaryAmmo);
         return;

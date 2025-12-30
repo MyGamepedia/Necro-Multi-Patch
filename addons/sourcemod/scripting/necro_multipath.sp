@@ -8,7 +8,6 @@
 #include <dhooks>
 #include <entity>
 
-#include <multicolors>
 #include <sourcescramble>
 
 #include <necro_multipath/macros_scrcoop>
@@ -33,6 +32,7 @@
 #include <necro_multipath/entities/func_rotating>
 #include <necro_multipath/entities/grenade_bolt>
 #include <necro_multipath/entities/grenade_frag>
+#include <necro_multipath/entities/grenade_hornet>
 #include <necro_multipath/entities/grenade_mp5_contact>
 #include <necro_multipath/entities/item_ammo_canister>
 #include <necro_multipath/entities/item_weapon_snark>
@@ -117,17 +117,13 @@ public Plugin myinfo = {
 
 public void OnPluginStart()
 {
-	//don't load in singleplayer
+	//don't load this plugin in singleplayer
 	if (MaxClients < 2)
 	{
 		SetFailState("Don't use this plugin in singleplayer!");
 	}
 	
 	//existing convars
-	sk_weapon_snark_throw_uspeed =  FindConVar("sk_weapon_snark_throw_uspeed");
-	sk_weapon_snark_throw_fspeed = FindConVar("sk_weapon_snark_throw_fspeed");
-	sk_weapon_snark_lob_fspeed =  FindConVar("sk_weapon_snark_lob_fspeed");
-	sk_weapon_snark_lob_uspeed =  FindConVar("sk_weapon_snark_lob_uspeed");
 	sk_crossbow_tracer_enabled = FindConVar("sk_crossbow_tracer_enabled");
 	sv_long_jump_manacost = FindConVar("sv_long_jump_manacost");
 	sv_jump_long_enabled = FindConVar("sv_jump_long_enabled");
@@ -170,7 +166,8 @@ public void OnPluginStart()
 	g_ConvarNecroAutoReloadTime_Mp5 = CreateConVar("necro_autoreloadtime_mp5", "3", "Amount of time in seconds before weapon_mp5 automatic reload is performed if the weapon is idle in inventory.");
 	g_ConvarNecroAutoReloadTime_Shotgun = CreateConVar("necro_autoreloadtime_shotgun", "3", "Amount of time in seconds before weapon_shotgun automatic reload is performed if the weapon is idle in inventory.");
 	g_ConvarNecroAutoReloadTime_Crossbow = CreateConVar("necro_autoreloadtime_crossbow", "3", "Amount of time in seconds before weapon_crossbow automatic reload is performed if the weapon is idle in inventory.");
-			
+	g_ConvarNecroCreateNewViewmodel = CreateConVar("necro_createnewviewmodel", "1", "Before we give new weapon, certain code may want to kill and create new weapon model to avoid prediction issues.", 0, true, 0.0, true, 1.0);
+
 	//Load custom modes
 	LoadCustomGameModes();
 
@@ -220,7 +217,6 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig_Necro, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
 	//LoadDHookDetour(pGameConfig_Necro, hkGetUserSettings, "CBaseClient::GetUserSetting", Hook_GetUserSettings);
 	LoadDHookDetour(pGameConfig_Necro, hkPostChatMessage, "CBlackMesaKillStreaks::PostChatMessage", Hook_PostChatMessage);
-	LoadDHookDetour(pGameConfig_Necro, hkUTIL_Remove, "UTIL_Remove", Hook_UTIL_Remove);
 	
 	//Offsets
 	LoadDHookVirtual(pGameConfig_Necro, hkAcceptInput, "CBaseEntity::AcceptInput");
@@ -236,7 +232,6 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig_Necro, hkBaseCombatWeaponHolster, "CBaseCombatWeapon::Holster");
 	LoadDHookVirtual(pGameConfig_Necro, hkBaseCombatWeaponItemHolsterFrame, "CBaseCombatWeapon::ItemHolsterFrame");
 	LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaPlayerCreateAmmoBox, "CBlackMesaPlayer::CreateAmmoBox");
-	LoadDHookVirtual(pGameConfig_Necro, hkWeaponSnarkOperatorHandleAnimEvent, "CWeapon_Snark::Operator_HandleAnimEvent");
 	
 	//Memory Vars
 	g_iUserCmdOffset = pGameConfig_Necro.GetOffset("CBasePlayer::GetCurrentUserCommand");
@@ -248,19 +243,6 @@ void LoadGameData()
 	HookEntityOutput("npc_barnacle", "OnGrab", Hook_Barnacle_OnGrab);
 	HookEntityOutput("npc_barnacle", "OnRelease", Hook_Barnacle_OnRelease);
 	#endif
-
-	/*char szCreateWeaponTracedBoneMergeEntity[] = "CreateWeaponTracedBoneMergeEntity";
-	StartPrepSDKCall(SDKCall_Entity);
-	if (!PrepSDKCall_SetFromConf(pGameConfig_Necro, SDKConf_Signature, szCreateWeaponTracedBoneMergeEntity))
-		LogMessage("Could not obtain gamedata signature %s", szCreateWeaponTracedBoneMergeEntity);
-	else
-	{
-		PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-		if (!(g_pCreateWeaponTracedBoneMergeEntity = EndPrepSDKCall())) 
-			SetFailState("Could not prep SDK call %s", szCreateWeaponTracedBoneMergeEntity);
-	}*/
 }
 
 //Purpose: Load SourceCoop game config file offsets + some vars from memory
@@ -567,9 +549,9 @@ public void OnEntitySpawned(int iEntIndex)
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
-	if(StrEqual(szClassname, "weapon_snark"))
+	if(StrEqual(szClassname, "weapon_hivehand"))
 	{
-		//DHookEntity(hkWeaponSnarkOperatorHandleAnimEvent, true, iEntIndex, _, Hook_WeaponSnarkOperatorHandleAnimEvent);
+		PrecacheSound(")weapons/hivehand/pickup.wav"); //fix console spam
 		return;
 	}
 
@@ -655,6 +637,7 @@ public void OnEntitySpawned(int iEntIndex)
 		DHookEntity(hkWeaponCrossbowFireBolt, false, iEntIndex, _, Hook_CrossbowFireBolt); //Use singleplayer rules for bolt creation to make sk_crossbow_tracer_enabled work
 		DHookEntity(hkWeaponCrossbowFireBolt, true, iEntIndex, _, Hook_CrossbowFireBoltPost); //Set back multiplayer rules after bolt creation
 		DHookEntity(hkBaseCombatDeploy, true, iEntIndex, _, Hook_CrossbowDeploy); //Set skin we need
+		PrecacheSound("npc/sniper/sniper1_close.wav"); //fix console spam for sp bolts
 		return;
 	}
 		
@@ -935,6 +918,12 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
+	if(StrEqual(szClassname, "grenade_hornet"))
+	{
+		//Hornet_PathPost(iEntIndex);
+		return;
+	}
+
 	if(StrEqual(szClassname, "npc_snark"))
 	{
 		Snark_PathPost(iEntIndex);
@@ -943,7 +932,7 @@ public void OnEntitySpawnedPost(int iEntIndex)
 
 	if(StrEqual(szClassname, "env_laser_dot"))
 	{
-		LaserDot_PathPost(iEntIndex); //set new rendering after spawn
+		LaserDot_PathPost(iEntIndex); //set new rendering way after spawn
 		return;
 	}
 
@@ -1002,12 +991,23 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	// }
 }
 
-public MRESReturn Hook_UTIL_Remove(DHookParam hParams)
+public void Hook_OnEntityDeleted(const CBaseEntity pEntity)
 {
-	Address pEntIndex = hParams.GetAddress(1);
+	char szClassname[MAX_CLASSNAME];
+	pEntity.GetClassname(szClassname, sizeof(szClassname));
 
-    if (pEntIndex == Address_Null)
-        return MRES_Ignored;
-	
-	return MRES_Ignored;
+	if (StrEqual(szClassname, "npc_snark"))
+	{
+		Hook_Snark_OnDeleted(CNpc_Snark(pEntity.entindex));
+		return;
+	}
+
+	/*
+	if (StrEqual(szClassname, "grenade_hornet"))
+	{
+		Hook_Hornet_OnDeleted(CBlackMesaBaseDetonator(pEntity.entindex));
+		return;
+	}
+	*/
 }
+

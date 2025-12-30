@@ -19,7 +19,7 @@ public void GunGameApplyGunModeScoreToClient(int client)
 {
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(client);
 
-	pPlayer.ModifyScore(50);
+	pPlayer.ModifyScore(100);
 }
 
 //-50 to current clients score, also takes 1 kill if the current value is not 0
@@ -35,7 +35,7 @@ public void GunGameApplyGunModeNegScoreToClient(int client)
 
         //don't for starting clients for instant
         if(pPlayer.GetScore() > 0)
-		    pPlayer.ModifyScore(-50);
+		    pPlayer.ModifyScore(-100);
 	}
 }
 
@@ -83,10 +83,9 @@ public void GunGameProcessHumiliation(CBlackMesaPlayer pPlayerVictim, const char
         g_iNecroGunGameClientLevel[pPlayerVictim.entindex]--;
 
         //let everyone know that this player is humiliated
-        PrintToChatAll("\x03[GunGame]\x01 \x02%s\x01 downgraded level of \x04%s", iszAttackerName, iszVictimName);
+        PrintToChatAll("%t", "#GunGame_Humiliation",iszAttackerName, iszVictimName);
 
         GunGameRemoveWeapons(pPlayerVictim);
-       //CreateTimer(0.5, GunGameWeapons, pPlayerVictim.entindex);
     }
 }
 
@@ -122,7 +121,6 @@ public bool GunGameLevelUpActions(int iAttackerLevel, CBlackMesaPlayer pPlayerAt
 		else //remove level's gun and give new for the next level
 		{
 			GunGameRemoveWeapons(pPlayerAttacker);
-			//CreateTimer(0.5, GunGameWeapons, pPlayerAttacker);
 		}
 	}
 	

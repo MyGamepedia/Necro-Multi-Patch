@@ -1,7 +1,7 @@
 #pragma newdecls required
 #pragma semicolon 1
  
-public void GunGameStartVote()
+public Action GunGameStartVote(Handle timer, int iPlayerIndex)
 {
 	Menu gungamemenu = new Menu(GunGameVoteMenuHandler, MenuAction_DisplayItem | MenuAction_Display);
 
@@ -28,6 +28,8 @@ public void GunGameStartVote()
     gungamemenu.ExitButton = false;
 
     gungamemenu.DisplayVoteToAll(20);
+
+    return Plugin_Stop;
 }
 
 public void GunGameVoteMenuHandler(Menu menu, MenuAction action, int iParam1, int iParam2)

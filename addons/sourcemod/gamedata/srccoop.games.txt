@@ -1120,6 +1120,24 @@
 					}
 				}
 			}
+			"CBaseAnimating::SetBodygroup"
+			{
+				"signature"	"CBaseAnimating::SetBodygroup"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"iGroup"
+					{
+						"type"	"int"
+					}
+					"iValue"
+					{
+						"type"	"int"
+					}
+				}
+			}
 		}
 	}
 	
@@ -1347,6 +1365,16 @@
 				// str: "Bad ApplyLocalAngularVelocityImpulse(%f,%f,%f) on %s\n"
 				"windows"	"\x55\x8B\xEC\xF3\x0F\x10\x05\x2A\x2A\x2A\x2A\x83\xEC\x0C\x56\x2A\x2A\x2A\xF3\x0F\x10\x16\x0F\x2E\xC2\x9F\xF6\xC4\x44\x7A\x28\xF3\x0F\x10\x05\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x9F\xF6\xC4\x44\x7A\x16\xF3\x0F\x10\x05\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x9F\xF6\xC4"
 				"linux"		"_ZN11CBaseEntity32ApplyLocalAngularVelocityImpulseERK6Vector"
+			}
+			"CBaseAnimating::SetBodygroup"
+			{
+				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x57\x80\xBE\x31\x2A\x2A\x2A\x2A\x8B\x86\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x75\x28\x83\xBE\x80\x2A\x2A\x2A\x2A\x75\x10\xE8\x28\x27\x02\x00\x85\xC0\x74\x07\x8B\xCE\xE8\x1D\xF1\xFF\xFF\x8B\x86\x2A\x2A\x2A\x2A\x85\xC0\x74\x05\x2A\x2A\x2A"
+				"linux"		"_ZN14CBaseAnimating12SetBodygroupEii"
+			}
+			"CBlackMesaBaseDetonator::SetDetonateTimer" //how to find: find CAI_BaseMarine::HandleAnimEvent by string ''It was at this moment that Commander knew he screwed up\n'', the only func it calls by putting this prt and a float val is the func you want
+			{
+				"windows"	"\x55\x8B\xEC\xF3\x2A\x2A\x2A\x2A\x0F\x2F\x0D\x2A\x2A\x2A\x2A\x72\x1A\xA1\x2A\x2A\x2A\x2A\xF3\x2A\x2A\x2A\x2A\xF3\x0F\x58\xC1\xF3\x0F\x11\x81\x2A\x2A\x2A\x2A\x5D\xC2\x04\x00\xC7\x81\xBC\x04\x00\x00\x2A\x2A\x2A\x2A\x5D\xC2\x04\x00"
+				"linux"		"_ZN23CBlackMesaBaseDetonator16SetDetonateTimerEf"
 			}
 		}
 
@@ -1747,6 +1775,11 @@
 				"windows"	"269"
 				"linux"		"270"
 			}
+			"CBlackMesaBaseDetonator::Detonate"
+			{
+				"windows"	"242"
+				"linux"		"243"
+			}		
 		}
 	}
 

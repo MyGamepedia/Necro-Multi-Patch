@@ -306,6 +306,23 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, DHookReturn hReturn, DHookPa
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
 		}
+
+		if (strcmp(szInputType, "GiveGunGameResources", false) == 0)
+		{
+			if(g_iNecroGunGameCurrentState != -1)
+			{
+				if(GetConVarInt(g_ConvarNecroGunGamePunishingWeaponState) == g_iNecroGunGameClientLevel[_this])
+    			{
+        			PrintToChat(_this, "%t", "#GunGame_GotPunishingWeapon");
+    			}
+
+				if(CBlackMesaPlayer(_this).IsValid())
+					GunGameGiveResources(g_iNecroGunGameClientLevel[_this], CBlackMesaPlayer(_this));
+			}
+
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+		}
 	}
 	return MRES_Ignored;
 }

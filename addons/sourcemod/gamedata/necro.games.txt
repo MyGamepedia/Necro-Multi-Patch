@@ -682,7 +682,7 @@
 				"linux"		"284"
 			}
 			
-			"CBlackMesaBaseDetonator::Detonate" //CBlackMesaBaseDetonator::DispatchExplodeSound
+			"CBlackMesaBaseDetonator::Detonate"
 			{
 				"windows"	"240"
 				"linux"		"241"
@@ -940,6 +940,11 @@
 
 		"Signatures"
 		{
+			"CBaseAnimating::SetBodygroup"
+			{
+				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x57\x80\xBE\x31\x2A\x2A\x2A\x2A\x8B\x86\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x75\x28\x83\xBE\x80\x2A\x2A\x2A\x2A\x75\x10\xE8\x28\x27\x02\x00\x85\xC0\x74\x07\x8B\xCE\xE8\x1D\xF1\xFF\xFF\x8B\x86\x2A\x2A\x2A\x2A\x85\xC0\x74\x05\x2A\x2A\x2A"
+				"linux"		"_ZN14CBaseAnimating12SetBodygroupEii"
+			}
 			"UTIL_Remove" //how to find: find by string ''npc_snark.Explode'', 2 refs, the first the funcs will be one that prechache stuff for snark, the other is one of the funcs that removes snark by calling this and putting ent prt
 			{
 				"windows"	"\x55\x8B\xEC\x2A\x2A\x2A\x85\xC0\x74\x0C\x83\xC0\x0C\x2A\x2A\x2A\x5D\xE9\x0A\x00\x00\x00\x5D\xC3"

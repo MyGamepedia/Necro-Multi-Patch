@@ -10,7 +10,7 @@
 	{
 		if(GetTime() < g_iGunGameNextVoteTime)
 		{
-			CPrintToChat(iClient, "%t", "#GunGame_VoteDelay", g_iGunGameNextVoteTime - GetTime());
+			PrintToChat(iClient, "%t", "#GunGame_VoteDelay", g_iGunGameNextVoteTime - GetTime());
 			return Plugin_Handled;
 		}
 
@@ -23,8 +23,7 @@
 
 		g_iGunGameNextVoteTime = GetTime() + 60;
 
-		GunGameStartVote();
-
+		CreateTimer(4.00, GunGameStartVote, pPlayer.entindex, TIMER_FLAG_NO_MAPCHANGE);
 		return Plugin_Handled;
 	}
 

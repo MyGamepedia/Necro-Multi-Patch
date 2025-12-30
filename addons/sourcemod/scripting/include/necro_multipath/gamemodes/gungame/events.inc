@@ -44,7 +44,7 @@ public void GunGameOnRoundIntermission(Event event, const char[] theGoatName, bo
 	}
     else //else trigger victory for one of the clients
     {
-        CreateTimer(0.0, WonRound, topClient);
+        CreateTimer(0.0, WonRound, topClient, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 
@@ -112,7 +112,7 @@ public void GunGameEventSpawn(Handle event, const char[] name, bool dontBroadcas
     if(!IsValidEntity(pPlayer.entindex))
         return;
     
-    CreateTimer(0.4, GunGameWeapons, pPlayer.entindex);
+    CreateTimer(0.4, GunGameWeapons, pPlayer.entindex, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 //A player killed other player event

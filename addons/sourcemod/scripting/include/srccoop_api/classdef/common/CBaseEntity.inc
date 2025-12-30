@@ -877,42 +877,16 @@ static bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntInd
 
 static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
 {
-	StringMap hEntityData;
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	Hook_OnEntityDeleted(pEntity);
+
+	StringMap hEntityData;
 	int iKey = pEntity.entref;
 
-	char szClassname[MAX_CLASSNAME];
-	pEntity.GetClassname(szClassname, sizeof(szClassname));
-
-	if (StrEqual(szClassname, "npc_snark"))
+	if (g_hEntityData.GetValue(iKey, hEntityData))
 	{
-		int iOwner = GetEntPropEnt(pEntity.entindex, Prop_Data, "m_hOwner");
-		if (iOwner == NULL_CBASEENTITY)
-			return;
-
-		int iSnarkNum = pEntity.GetUserData("m_iSnarkNum");
-
-		//if (iSnarkNum < 0 || iSnarkNum >= 20)
-		//	return;
-
-		//shift left
-		for (int i = iSnarkNum; i < 19; i++)
-		{
-			int nextEnt = g_hClientSnarks[iOwner][i + 1];
-			g_hClientSnarks[iOwner][i] = nextEnt;
-
-			if (nextEnt != 0)
-			{
-				CNpc_Snark snark = CNpc_Snark(nextEnt);
-				if (snark.IsValid())
-				{
-					snark.SetUserData("m_iSnarkNum", i);
-				}
-			}
-		}
-
-	//clean the last element
-    g_hClientSnarks[iOwner][19] = 0;
+		hEntityData.Close();
+		g_hEntityData.Remove(iKey);
 	}
 }
 

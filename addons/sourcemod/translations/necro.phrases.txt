@@ -3,7 +3,7 @@
 	"#SpectatorDelay"
 	{
 		"#format"	"{1:.2f}"
-		"en"		"\01xFF4040 I can join after {1} seconds!"
+		"en"		"I can join after {1} seconds!"
 	}
 
 	"#GunGame_Draw"
@@ -56,7 +56,7 @@
 	"#GunGame_VoteStart"
 	{
 		"#format"	"{1:s}"
-		"en"         "{white}Player {green}{1:s}{default} started vote for gamemode {blue}\"Gun Game\"{default}."
+		"en"         "{1:s} starts voting for gamemode \"Gun Game\" in 4 seconds."
 	}
 	
 	"#GunGame_VoteEndEnable"
@@ -125,5 +125,16 @@
 	{
 		"#format"	"{1:s}"
 		"en"		"{1:s} is WICKED SICK!"
+	}
+	
+	"#GunGame_Humiliation"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"[Gun game] {1:s} demoted level of {2:s}!"
+	}
+	
+	"#GunGame_GotPunishingWeapon"
+	{
+		"en"		"[Gun game] You now have a punishing weapon! Use it to demote other players."
 	}
 }
