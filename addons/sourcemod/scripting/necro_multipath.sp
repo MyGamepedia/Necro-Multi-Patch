@@ -55,6 +55,7 @@
 #include <necro_multipath/entities/point_viewcontrol>
 #include <necro_multipath/entities/prop_hev_charger>
 #include <necro_multipath/entities/prop_radiation_charger>
+#include <necro_multipath/entities/prop_ragdoll>
 #include <necro_multipath/entities/scripted_sequence>
 #include <necro_multipath/entities/weapon_357>
 #include <necro_multipath/entities/weapon_assassin_glock>
@@ -167,6 +168,7 @@ public void OnPluginStart()
 	g_ConvarNecroAutoReloadTime_Shotgun = CreateConVar("necro_autoreloadtime_shotgun", "3", "Amount of time in seconds before weapon_shotgun automatic reload is performed if the weapon is idle in inventory.");
 	g_ConvarNecroAutoReloadTime_Crossbow = CreateConVar("necro_autoreloadtime_crossbow", "3", "Amount of time in seconds before weapon_crossbow automatic reload is performed if the weapon is idle in inventory.");
 	g_ConvarNecroCreateNewViewmodel = CreateConVar("necro_createnewviewmodel", "1", "Before we give new weapon, certain code may want to kill and create new weapon model to avoid prediction issues.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroAllowPickupObjects = CreateConVar("necro_allowpickupobjects", "0", "Enable the ability to pick up certain objects, such as prop_physics and prop_ragdoll.", 0, true, 0.0, true, 1.0);
 
 	//Load custom modes
 	LoadCustomGameModes();
@@ -217,6 +219,8 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig_Necro, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
 	//LoadDHookDetour(pGameConfig_Necro, hkGetUserSettings, "CBaseClient::GetUserSetting", Hook_GetUserSettings);
 	LoadDHookDetour(pGameConfig_Necro, hkPostChatMessage, "CBlackMesaKillStreaks::PostChatMessage", Hook_PostChatMessage);
+	//LoadDHookDetour(pGameConfig_Srccoop, hkEventQueuAddEvent, "CEventQueue::AddEvent", Hook_EventQueueAddEvent);
+	LoadDHookDetour(pGameConfig_Srccoop, hkPropBreakableRagdollInitRagdoll, "CPropBreakableRagdoll::InitRagdoll", Hook_PropBreakableRagdollInitRagdoll, Hook_PropBreakableRagdollInitRagdollPost);
 	
 	//Offsets
 	LoadDHookVirtual(pGameConfig_Necro, hkAcceptInput, "CBaseEntity::AcceptInput");
@@ -232,9 +236,12 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig_Necro, hkBaseCombatWeaponHolster, "CBaseCombatWeapon::Holster");
 	LoadDHookVirtual(pGameConfig_Necro, hkBaseCombatWeaponItemHolsterFrame, "CBaseCombatWeapon::ItemHolsterFrame");
 	LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaPlayerCreateAmmoBox, "CBlackMesaPlayer::CreateAmmoBox");
+	LoadDHookVirtual(pGameConfig_Srccoop, hkBlackMesaPlayerPickupObject, "CBlackMesaPlayer::PickupObject");
+	//LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaBaseDetonatorExplodeTouch, "CBlackMesaBaseDetonator::ExplodeTouch");
 	
 	//Memory Vars
 	g_iUserCmdOffset = pGameConfig_Necro.GetOffset("CBasePlayer::GetCurrentUserCommand");
+	
 	pGameConfig_Necro.Close();
 
 	LoadGameData_Srccoop(pGameConfig_Srccoop);
@@ -483,6 +490,8 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkFlashlightOff, false, client, _, Hook_FlashlightOff);
 	DHookEntity(hkFlashlightOn, false, client, _, Hook_FlashlightOn);
 	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
+	DHookEntity(hkBlackMesaPlayerPickupObject, false, client, _, Hook_PickupObject);
+	DHookEntity(hkBlackMesaPlayerPickupObject, true, client, _, Hook_PickupObjectPost);
 
 
 	#if defined PLAYERPATCH_HITREG
@@ -524,6 +533,64 @@ public void OnClientPostAdminCheck(int iClient)
 		CreateTimer(GUNGAME_HUDTICK, GunGameDisplayHud, iClient);
 	}
 
+}
+
+public void OnConfigsExecuted()
+{
+	RequestFrame(OnConfigsExecutedPost); // prevents a bug where this is fired too early if map changes in OnMapStart
+}
+
+public void OnConfigsExecutedPost()
+{
+	#if defined SRCCOOP_BLACKMESA
+	//PrecacheScriptSound("HL2Player.SprintStart");
+
+	#if defined ENTPATCH_BM_XENTURRET
+	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.dx80.vtx");
+	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.dx90.vtx");
+	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.mdl");
+	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.phy");
+	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.sw.vtx");
+	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.vvd");
+	#endif
+
+	#endif // SRCCOOP_BLACKMESA
+
+	char szDownloadContent[PLATFORM_MAX_PATH];
+
+	//Weapon scripts
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_357_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_ASSASSIN_GLOCK_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_CROSSBOW_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_CROWBAR_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_FRAG_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_GLOCK_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_GLUON_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_HEADCRAB_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_HIVEHAND_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_MP5_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_RPG_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_SATCHEL_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_SHOTGUN_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_SNARK_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_TAU_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
+	Format(szDownloadContent, sizeof(szDownloadContent), "scripts/gameplay/weapons/%s.dmx", WEAPON_TRIPMINE_SERVER);
+	AddFileToDownloadsTable(szDownloadContent);
 }
 
 //Purpose: Hook entity creation to setup our custom entity hooks
@@ -656,12 +723,6 @@ public void OnEntitySpawned(int iEntIndex)
 		{
 			Item_Path(iEntIndex);
 		}
-		return;
-	}
-
-	if (strcmp(szClassname, "player_manager") == 0)
-	{
-		//DHookEntity(hkPlayerResourceUpdatePlayerData, false, iEntIndex, _, Hook_PlayerResourceUpdatePlayerData);
 		return;
 	}
 
@@ -918,15 +979,21 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
-	if(StrEqual(szClassname, "grenade_hornet"))
+	/*if(StrEqual(szClassname, "grenade_bolt"))
 	{
-		//Hornet_PathPost(iEntIndex);
+		Bolt_PathPost(iEntIndex);
 		return;
-	}
+	}*/
 
 	if(StrEqual(szClassname, "npc_snark"))
 	{
 		Snark_PathPost(iEntIndex);
+		return;
+	}
+
+	if(StrEqual(szClassname, "grenade_hornet"))
+	{
+		Hornet_PathPost(iEntIndex);
 		return;
 	}
 
@@ -938,7 +1005,7 @@ public void OnEntitySpawnedPost(int iEntIndex)
 
 	if(StrEqual(szClassname, "grenade_frag"))
 	{
-		Frag_PathPost(iEntIndex); //reset multiplayer state back for this entity after setting VPhysics
+		Frag_PathPost(iEntIndex); //reset multiplayer state back for this entity after setting VPhysics 
 		return;
 	}
 
@@ -1002,12 +1069,27 @@ public void Hook_OnEntityDeleted(const CBaseEntity pEntity)
 		return;
 	}
 
-	/*
 	if (StrEqual(szClassname, "grenade_hornet"))
 	{
 		Hook_Hornet_OnDeleted(CBlackMesaBaseDetonator(pEntity.entindex));
 		return;
 	}
-	*/
 }
+/*
+MRESReturn Hook_EventQueueAddEvent(Address pThis, DHookParam hParams)
+{
+    char szInput[256];
 
+    // action (char*)
+    DHookGetParamString(hParams, 2, szInput, sizeof(szInput));
+    TrimString(szInput);
+
+    // вывод адреса this
+    PrintToChatAll(
+        "[EventQueue] this = 0x%X | action = %s",
+        view_as<int>(pThis),
+        szInput
+    );
+
+    return MRES_Ignored;
+}*/
