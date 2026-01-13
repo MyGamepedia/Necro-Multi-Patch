@@ -1,5 +1,22 @@
 #define BASECOMBATWEAPONPRECACHE_RETURN_CLASSNAME
 
+#define WEAPON_357_SERVER 				"weapon_357_necro"
+#define WEAPON_ASSASSIN_GLOCK_SERVER 	"weapon_assassin_glock_necro"
+#define WEAPON_CROSSBOW_SERVER 			"weapon_crossbow_necro"
+#define WEAPON_CROWBAR_SERVER 			"weapon_crowbar_necro"
+#define WEAPON_FRAG_SERVER 				"weapon_frag_necro"
+#define WEAPON_GLOCK_SERVER 			"weapon_glock_necro"
+#define WEAPON_GLUON_SERVER 			"weapon_gluon_necro"
+#define WEAPON_HEADCRAB_SERVER 			"weapon_headcrab_necro"
+#define WEAPON_HIVEHAND_SERVER 			"weapon_hivehand_necro"
+#define WEAPON_MP5_SERVER 				"weapon_mp5_necro"
+#define WEAPON_RPG_SERVER 				"weapon_rpg_necro"
+#define WEAPON_SATCHEL_SERVER 			"weapon_satchel_necro"
+#define WEAPON_SHOTGUN_SERVER 			"weapon_shotgun_necro"
+#define WEAPON_SNARK_SERVER 			"weapon_snark_necro"
+#define WEAPON_TAU_SERVER 				"weapon_tau_necro"
+#define WEAPON_TRIPMINE_SERVER 			"weapon_tripmine_necro"
+
 //Purpose: Override default weapon classnames to load custom Necro weapon scripts
 public MRESReturn Hook_BaseCombatWeaponPrecache(int _this, DHookParam hParams)
 {
@@ -10,82 +27,82 @@ public MRESReturn Hook_BaseCombatWeaponPrecache(int _this, DHookParam hParams)
 		
 		if(StrEqual(classname, "weapon_357"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_357_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_357_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_assassin_glock"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_assassin_glock_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_ASSASSIN_GLOCK_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_crossbow"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_crossbow_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_CROSSBOW_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_crowbar"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_crowbar_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_CROWBAR_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_frag"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_frag_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_FRAG_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_glock"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_glock_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_GLOCK_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_gluon"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_gluon_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_GLUON_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_headcrab"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_headcrab_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_HEADCRAB_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_hivehand"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_hivehand_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_HIVEHAND_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_mp5"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_mp5_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_MP5_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_rpg"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_rpg_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_RPG_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_satchel"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_satchel_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_SATCHEL_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_shotgun"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_shotgun_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_SHOTGUN_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_snark"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_snark_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_SNARK_SERVER); 
 		}
 		
 		if(StrEqual(classname, "weapon_tau"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_tau_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_TAU_SERVER); 
 		}
 
 		if(StrEqual(classname, "weapon_tripmine"))
 		{
-			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_tripmine_necro"); 
+			SetEntPropString(_this, Prop_Data, "m_iClassname", WEAPON_TRIPMINE_SERVER); 
 		}
 	}
 
@@ -101,82 +118,82 @@ public MRESReturn Hook_BaseCombatWeaponPrecachePost(int _this, DHookParam hParam
 		char classname[64];
 		GetEntityClassname(_this, classname, sizeof(classname));
 		
-		if(StrEqual(classname, "weapon_357_necro"))
+		if(StrEqual(classname, WEAPON_357_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_357"); 
 		}
 		
-		if(StrEqual(classname, "weapon_assassin_glock_necro"))
+		if(StrEqual(classname, WEAPON_ASSASSIN_GLOCK_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_assassin_glock"); 
 		}
 		
-		if(StrEqual(classname, "weapon_crossbow_necro"))
+		if(StrEqual(classname, WEAPON_CROSSBOW_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_crossbow"); 
 		}
 		
-		if(StrEqual(classname, "weapon_crowbar_necro"))
+		if(StrEqual(classname, WEAPON_CROWBAR_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_crowbar"); 
 		}
 		
-		if(StrEqual(classname, "weapon_frag_necro"))
+		if(StrEqual(classname, WEAPON_FRAG_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_frag"); 
 		}
 		
-		if(StrEqual(classname, "weapon_glock_necro"))
+		if(StrEqual(classname, WEAPON_GLOCK_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_glock"); 
 		}
 		
-		if(StrEqual(classname, "weapon_gluon_necro"))
+		if(StrEqual(classname, WEAPON_GLUON_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_gluon"); 
 		}
 		
-		if(StrEqual(classname, "weapon_headcrab_necro"))
+		if(StrEqual(classname, WEAPON_HEADCRAB_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_headcrab"); 
 		}
 		
-		if(StrEqual(classname, "weapon_hivehand_necro"))
+		if(StrEqual(classname, WEAPON_HIVEHAND_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_hivehand"); 
 		}
 		
-		if(StrEqual(classname, "weapon_mp5_necro"))
+		if(StrEqual(classname, WEAPON_MP5_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_mp5"); 
 		}
 		
-		if(StrEqual(classname, "weapon_rpg_necro"))
+		if(StrEqual(classname, WEAPON_RPG_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_rpg"); 
 		}
 		
-		if(StrEqual(classname, "weapon_satchel_necro"))
+		if(StrEqual(classname, WEAPON_SATCHEL_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_satchel"); 
 		}
 		
-		if(StrEqual(classname, "weapon_shotgun_necro"))
+		if(StrEqual(classname, WEAPON_SHOTGUN_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_shotgun"); 
 		}
 		
-		if(StrEqual(classname, "weapon_snark_necro"))
+		if(StrEqual(classname, WEAPON_SNARK_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_snark"); 
 		}
 		
-		if(StrEqual(classname, "weapon_tau_necro"))
+		if(StrEqual(classname, WEAPON_TAU_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_tau"); 
 		}
 
-		if(StrEqual(classname, "weapon_tripmine_necro"))
+		if(StrEqual(classname, WEAPON_TRIPMINE_SERVER))
 		{
 			SetEntPropString(_this, Prop_Data, "m_iClassname", "weapon_tripmine"); 
 		}

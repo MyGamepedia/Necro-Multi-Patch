@@ -2,7 +2,7 @@
 #pragma semicolon 1
 
 //NOTE:All the code in this file is not used right now due to tick and expls issues
-/*
+
 public void Hornet_PathPost(const int iEntIndex)
 {
     CBlackMesaBaseDetonator pHornet = CBlackMesaBaseDetonator(iEntIndex);
@@ -23,8 +23,7 @@ public void Hornet_PathPost(const int iEntIndex)
 
         if (pOldHornet.IsValid())
         {
-            PrintToChatAll("Removing");
-            pOldHornet.SetDetonateTimer(-1.0);
+            pOldHornet.Kill(); //NOTE: this is good enough for the goal, but but ideally it should explode, unfortunately calling methods didn't work for me
         }
     }
 
@@ -77,4 +76,3 @@ public void Hook_Hornet_OnDeleted(const CBlackMesaBaseDetonator pHornet)
 	//clean the last element
 	g_hClientHornets[pPlayer.entindex][19] = 0;
 }
-*/

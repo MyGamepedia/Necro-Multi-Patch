@@ -68,6 +68,7 @@
 #include <srccoop_api/classdef/common/IServerTools.inc>
 #include <srccoop_api/classdef/common/Task_t.inc>
 #include <srccoop_api/classdef/common/CEnvScreenOverlay.inc>
+#include <srccoop_api/classdef/common/CEventQueue.inc>
 
 //Black Mesa
 #include <srccoop_api/classdef/bms/CBlackMesaBaseCombatWeapon.inc>
@@ -113,6 +114,7 @@ stock void InitClassdef_Scrcoop(const GameData hGameConfig)
 	CEntityFactoryDictionary.InitClassdef(hGameConfig);
 	CPlayerResource.InitClassdef(hGameConfig);
 	CWeapon_Rpg.InitClassdef(hGameConfig);
+	CEventQueue.InitClassdef(hGameConfig);
 
 	// Always last.
 	CGlobalVars.InitClassdef(hGameConfig);

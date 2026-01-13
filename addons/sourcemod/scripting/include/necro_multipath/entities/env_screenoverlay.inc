@@ -12,7 +12,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 	if (DHookIsNullParam(hParams, 1))
 	{
 		DHookSetReturn(hReturn, true);
-		return MRES_Supercede;
+		return MRES_Ignored;
 	}
 
 	//get input name
@@ -98,7 +98,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		{
 			pScreenOverlay.SetActiveState(true);
 
-			//Think() does seem to work on this entity at all, use timer
+			//Think() doesn't seem to work on this entity at all, use timer
 			CreateTimer(0.01, Timer_EnvScreenOverlayThink, pScreenOverlay, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 		}
 

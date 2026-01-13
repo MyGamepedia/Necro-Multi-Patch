@@ -260,6 +260,7 @@ public void Hook_PlayerPreThinkPost(int iClient)
 				{
 					pGluon.SetFiringState(0);
 					StopSound(iClient, SNDCHAN_WEAPON, ")weapons/gluon/special1.wav");
+					pGluon.SetNextPrimaryAttack(FLT_MAX);
 				}
 			}
 
@@ -319,6 +320,15 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, DHookReturn hReturn, DHookPa
 				if(CBlackMesaPlayer(_this).IsValid())
 					GunGameGiveResources(g_iNecroGunGameClientLevel[_this], CBlackMesaPlayer(_this));
 			}
+
+			DHookSetReturn(hReturn, true);
+			return MRES_Supercede;
+		}
+
+		if (strcmp(szInputType, "PreventObsModeCrash", false) == 0)
+		{
+			CBlackMesaPlayer(_this).StartObserverMode(OBS_MODE_CHASE);
+			//ClientCommand(_this, "spec_mode");
 
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
@@ -658,19 +668,18 @@ public MRESReturn Hook_PlayerForceRespawn(int iClient)
 
 public MRESReturn Hook_PlayerStartObserverMode(int iClient, DHookReturn hReturn, DHookParam hParams)
 {
-	int observermode = hParams.Get(1);
-	int observertarget = GetEntPropEnt(iClient, Prop_Data, "m_hObserverTarget");
+	int iObservertarget = CBlackMesaPlayer(iClient).GetObserverTarget().entindex;
+	Obs_Mode eObserverMode = hParams.Get(1);
 
-	//todo: make a better fix by counting the time so we switch before spec_freeze_traveltime is finished
-	if(observertarget != iClient) //check if the target is me, if yes - don't do anything, so the camera don't flying "to infinity and being"
+	if (iObservertarget != iClient) //check if the target is me, if yes - don't do anything, so the camera don't flying "to infinity and being"
 	{
-		if (observermode == 2)
+		if (eObserverMode == OBS_MODE_FREEZECAM)
 		{
-			hParams.Set(1, 5);
+			hParams.Set(1, OBS_MODE_CHASE);
 			return MRES_Handled;
 		}
 	}
-
+	
 	return MRES_Ignored;
 }
 
@@ -748,7 +757,7 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		}
 	}
 	
-	if(iWeapon != 0) //send use command if we want to use a weapon
+	if(iWeapon != 0 && CBlackMesaPlayer(iClient).GetCarriedObject() == NULL_CBASEENTITY) //send use command if we want to use a weapon
 	{
 		//Client don't use weapon when used custom classname to load custom script, force use with client command by checking classname
 		char classname[MAX_CLASSNAME];
@@ -771,7 +780,7 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 {
 	//Respawn player if: allowed by convar, player pressed any of the buttons, player is dead, player is not on spectator team and the delay time is passed
     if(GetConVarBool(g_ConvarNecroAllowFastRespawn) && buttons & (IN_ATTACK|IN_JUMP|IN_DUCK|IN_FORWARD|IN_BACK|IN_ATTACK2) 
-	   && !IsPlayerAlive(client) && GetClientTeam(client) != 1 && GetGameTime() >= g_fClientFastRespawnDelay[client])
+	   && !IsPlayerAlive(client) && GetClientTeam(client) != 1 && GetGameTime() >= g_fClientFastRespawnDelay[client] && CBlackMesaPlayer(client).IsValid())
 	{
 		#if defined DEBUG
 		PrintToServer("OnPlayerRunCmdPost: Client (%d) respawned without waiting.", client);
@@ -958,6 +967,26 @@ public MRESReturn Hook_PlayerShouldCollide(int _this, DHookReturn hReturn, DHook
 	{
 		DHookSetReturn(hReturn, false);
 		return MRES_Supercede;
+	}
+	return MRES_Ignored;
+}
+
+//Purpose: Allow pick up objects if we want
+public MRESReturn Hook_PickupObject(int _this)
+{
+	if (GetConVarBool(g_ConvarNecroAllowPickupObjects))
+	{
+		g_bIsMultiplayerOverride = false;
+	}
+	return MRES_Ignored;
+}
+
+//Purpose: Post spawn hook for PickupObject to reset multiplayer override
+public MRESReturn Hook_PickupObjectPost(int _this)
+{
+	if (GetConVarBool(g_ConvarNecroAllowPickupObjects))
+	{
+		g_bIsMultiplayerOverride = true;
 	}
 	return MRES_Ignored;
 }

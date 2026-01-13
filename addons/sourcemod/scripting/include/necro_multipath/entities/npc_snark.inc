@@ -47,7 +47,7 @@ public void Snark_PathPost(const int iEntIndex)
     pSnark.SetRenderMode(RENDER_NONE);
     pSnark.AcceptInput("DisableShadow");
     pSnark.AddOutput("OnUser4", "!self", "Addoutput", "rendermode 0", 0.02, 1);
-    pSnark.AddOutput("OnUser4", "!self", "Addoutput", "EnableShadow", 0.02, 1);
+    pSnark.AddOutput("OnUser4", "!self", "EnableShadow", "", 0.02, 1);
     pSnark.FireOutput("OnUser4");
 }
 

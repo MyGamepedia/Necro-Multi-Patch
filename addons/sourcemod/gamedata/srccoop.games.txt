@@ -1138,6 +1138,126 @@
 					}
 				}
 			}
+			"CEventQueue::AddEvent" //void CEventQueue::AddEvent( CBaseEntity *target, const char *action, float fireDelay, CBaseEntity *pActivator, CBaseEntity *pCaller, int outputID )
+			{
+				"signature"	"CEventQueue::AddEvent"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"address"
+				"arguments"
+				{
+					"target"
+					{
+						"type"	"cbaseentity"
+					}
+					"action"
+					{
+						"type"	"charptr"
+					}
+					"fireDelay"
+					{
+						"type"	"float"
+					}
+					"pActivator"
+					{
+						"type"	"cbaseentity"
+					}
+					"pCaller"
+					{
+						"type"	"cbaseentity"
+					}
+					"outputID"
+					{
+						"type"	"int"
+					}
+				}
+			}
+			"CBlackMesaPlayer::PickupObject"
+			{
+				"offset"	"CBlackMesaPlayer::PickupObject"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"pObject"
+					{
+						"type"	"cbaseentity"
+					}
+					"bLimitMassAndSize"
+					{
+						"type"	"bool"
+					}
+				}
+			}
+			"CPropBreakableRagdoll::InitRagdoll" //void CPropBreakableRagdoll::InitRagdoll(Vector *param_1, int param_2,Vector *param_3, matrix3x4_t *param_4,matrix3x4_t *param_5,float param_6,int param_7,bool param_8, bool param_9)
+			{
+				"signature"	"CPropBreakableRagdoll::InitRagdoll"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"pParam1"
+					{
+						"type"	"vectorptr"
+					}
+					"iParam2"
+					{
+						"type"	"int"
+					}
+					"pParam3"
+					{
+						"type"	"vectorptr"
+					}
+					"pParam4"
+					{
+						"type"	"objectptr"
+					}
+					"pParam5"
+					{
+						"type"	"objectptr"
+					}
+					"flParam6"
+					{
+						"type"	"float"
+					}
+					"iParam7"
+					{
+						"type"	"int"
+					}
+					"bParam8"
+					{
+						"type"	"bool"
+					}
+					"bParam9"
+					{
+						"type"	"bool"
+					}
+				}
+			}
+			"CBaseCombatWeapon::Precache"
+			{
+				"signature"	"CBaseCombatWeapon::Precache"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+			}
+			"CBlackMesaBaseDetonator::ExplodeTouch"
+			{
+				"offset"	"CBlackMesaBaseDetonator::ExplodeTouch"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"pEntity"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+				
+			}
 		}
 	}
 	
@@ -1151,6 +1271,20 @@
 				"linux"		"72"
 			}
 		}
+
+		"Addresses"
+		{
+			"g_EventQueue"
+			{
+				"windows"
+				{
+					"library" "server"
+					"signature" "\xB9\x2A\x2A\x2A\x2A"
+					"offset" "1"
+				}
+			}
+		}
+
 		//   ____  __  __  _____     _____ _____ _____ _   _       _______ _    _ _____  ______  _____ 
 		//  |  _ \|  \/  |/ ____|   / ____|_   _/ ____| \ | |   /\|__   __| |  | |  __ \|  ____|/ ____|
 		//  | |_) | \  / | (___    | (___   | || |  __|  \| |  /  \  | |  | |  | | |__) | |__  | (___  
@@ -1375,6 +1509,21 @@
 			{
 				"windows"	"\x55\x8B\xEC\xF3\x2A\x2A\x2A\x2A\x0F\x2F\x0D\x2A\x2A\x2A\x2A\x72\x1A\xA1\x2A\x2A\x2A\x2A\xF3\x2A\x2A\x2A\x2A\xF3\x0F\x58\xC1\xF3\x0F\x11\x81\x2A\x2A\x2A\x2A\x5D\xC2\x04\x00\xC7\x81\xBC\x04\x00\x00\x2A\x2A\x2A\x2A\x5D\xC2\x04\x00"
 				"linux"		"_ZN23CBlackMesaBaseDetonator16SetDetonateTimerEf"
+			}
+			"CEventQueue::AddEvent" //how to find: find ''CProtoSniper::Event_Killed'' find by string ''NPC_Sniper.Die'', this func will also use this func by putting ''KilledNPC'' with 0.3 delay
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x14\x2A\x2A\x2A\x2A\x2A\x2A\x8B\xD1\x2A\x2A\x2A\x33\xC0\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x83\xEC\x18\x8B\xCC\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\xC7\x01\x2A\x2A\x2A\x2A\xC7\x41\x0C\x2A\x2A\x2A"
+				"linux"		"_ZN11CEventQueue8AddEventEP11CBaseEntityPKcfS1_S1_i"
+			}
+			"CPropBreakableRagdoll::InitRagdoll" //how to find: find CPropBreakableRagdoll::BloodColorFromRagdoll by string ''alienflesh'', open call trees for it, the func that calls this func is the func we want 
+			{
+				"windows"	"\x55\x8B\xEC\x2A\x2A\x2A\x83\xEC\x10\x53\x2A\x2A\x2A\x8B\xD9\x2A\x2A\x2A\x2A\x2A\x2A\x51\xD9\x1C\x24\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\xE8\x53\x75\xED\xFF\xD9\x05\x2A\x2A\x2A\x2A\x83\xEC\x08\x2A\x2A\x2A\x2A\xD9\x05\x2A\x2A\x2A\x2A"
+				"linux"		"_ZN21CPropBreakableRagdoll11InitRagdollERK6VectoriS2_P11matrix3x4_tS4_fibb"
+			}
+			"CBaseCombatWeapon::Precache"
+			{
+				"windows"	"\x55\x8B\xEC\x51\x53\x56\x57\x8B\xF9\x83\xBF\xDC\x04\x00\x00\xFF\x8D\x9F\xDC\x04\x00\x00\x74\x2E\x80\xBB\x78\xFB\xFF\xFF\x00\x8D\x8B\x24\xFB\xFF\xFF\x74\x06\x80\x49\x58\x01\xEB\x13\x8B\x51\x18\x85\xD2\x74\x0C\x8B\xC3\x2B\xC1\x8B\x2A\x2A\x2A\x2A\xDB\xF4\xFF"
+				"linux"		"@_ZN17CBaseCombatWeapon8PrecacheEv"
 			}
 		}
 
@@ -1779,7 +1928,17 @@
 			{
 				"windows"	"242"
 				"linux"		"243"
-			}		
+			}
+			"CPropBreakableRagdoll::InitRagdoll"
+			{
+				"windows"	"235"
+				"linux"		"236"
+			}	
+			"CBlackMesaBaseDetonator::ExplodeTouch" // CBlackMesaBaseDetonator::ExplodeTouch(CBaseEntity*)
+			{
+				"windows"	"243"
+				"linux"		"244"		
+			}
 		}
 	}
 

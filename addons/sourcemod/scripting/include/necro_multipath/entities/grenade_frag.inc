@@ -8,6 +8,13 @@ public void Frag_Path(int entity)
 	{
 		g_bIsMultiplayerOverride = false;
 	}
+
+	CBlackMesaBaseDetonator pFrag = CBlackMesaBaseDetonator(entity);
+	pFrag.SetRenderMode(RENDER_NONE);
+    pFrag.AcceptInput("DisableShadow");
+    pFrag.AddOutput("OnUser4", "!self", "Addoutput", "rendermode 0", 0.01, 1);
+    pFrag.AddOutput("OnUser4", "!self", "EnableShadow", "", 0.01, 1);
+    pFrag.FireOutput("OnUser4"); 
 }
 
 //Purpose: Post spawn hook for grenade_frag to reset multiplayer override

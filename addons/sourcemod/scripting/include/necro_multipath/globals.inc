@@ -41,6 +41,7 @@ ConVar g_ConvarNecroAutoReloadTime_Mp5;
 ConVar g_ConvarNecroAutoReloadTime_Shotgun;
 ConVar g_ConvarNecroAutoReloadTime_Crossbow;
 ConVar g_ConvarNecroCreateNewViewmodel;
+ConVar g_ConvarNecroAllowPickupObjects;
 	
 
 DynamicDetour hkBaseCombatWeaponPrecache;
@@ -51,6 +52,8 @@ DynamicDetour hkStartLagCompensation;
 DynamicDetour hkPostChatMessage;
 //DynamicDetour hkDropAmmoBox;
 //DynamicDetour hkUTIL_Remove;
+//DynamicDetour hkEventQueuAddEvent;
+DynamicDetour hkPropBreakableRagdollInitRagdoll;
 
 //DynamicHook hkBlackMesaBaseDetonatorDetonate;
 //DynamicHook hkItemPostFrame;
@@ -74,16 +77,20 @@ DynamicHook hkBaseCombatWeaponHolster;
 DynamicHook hkBaseCombatWeaponItemHolsterFrame;
 DynamicHook hkBlackMesaPlayerCreateAmmoBox;
 //DynamicHook hkWeaponSnarkOperatorHandleAnimEvent;
+DynamicHook hkBlackMesaPlayerPickupObject;
+//DynamicHook hkBlackMesaBaseDetonatorExplodeTouch;
 
 
 float g_fClientFastRespawnDelay[MAX_PLAYERS+1];
 float g_fClientSpectatorJoinTeamDelay[MAX_PLAYERS+1];
 
 int g_hClientSnarks[MAX_PLAYERS + 1][20]; //store snark ents for each client
-//int g_hClientHornets[MAX_PLAYERS + 1][20]; //store hornets ents for each client
+int g_hClientHornets[MAX_PLAYERS + 1][20]; //store hornets ents for each client
 int g_iUserCmdOffset;
 
 //Handle g_pCreateWeaponTracedBoneMergeEntity;
+
+Address g_EventQueue;
 
 
 //===========================

@@ -36,3 +36,18 @@ public void Bolt_Path(int entity)
 		ActivateEntity(particle);	//needed to start particle effect
 	}
 }
+
+public void Bolt_PathPost(int entity)
+{
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(GetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity"));
+
+	if(pPlayer.IsValid())
+	{
+		float flPlrEyeAng[3], flPlrEyePos[3];
+
+		pPlayer.GetEyeAngles(flPlrEyeAng);
+		pPlayer.GetEyePosition(flPlrEyePos);
+
+		TeleportEntity(entity, flPlrEyePos, flPlrEyeAng, NULL_VECTOR);
+	}
+}
