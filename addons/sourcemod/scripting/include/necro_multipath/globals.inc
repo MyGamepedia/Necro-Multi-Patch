@@ -84,8 +84,11 @@ DynamicHook hkBlackMesaPlayerPickupObject;
 float g_fClientFastRespawnDelay[MAX_PLAYERS+1];
 float g_fClientSpectatorJoinTeamDelay[MAX_PLAYERS+1];
 
-int g_hClientSnarks[MAX_PLAYERS + 1][20]; //store snark ents for each client
-int g_hClientHornets[MAX_PLAYERS + 1][20]; //store hornets ents for each client
+#define MAX_SNARKS 20
+#define MAX_HORNETS 20
+
+int g_hClientSnarks[MAX_PLAYERS + 1][MAX_SNARKS]; //store snark ents for each client
+int g_hClientHornets[MAX_PLAYERS + 1][MAX_HORNETS]; //store hornets ents for each client
 int g_iUserCmdOffset;
 
 //Handle g_pCreateWeaponTracedBoneMergeEntity;

@@ -2,6 +2,7 @@
 #pragma semicolon 1
 
 static Handle g_pSetDetonateTimer;
+static Handle g_pExplodeTouch;
 
 methodmap CBlackMesaBaseDetonator < CBaseAnimating
 {
@@ -15,6 +16,16 @@ methodmap CBlackMesaBaseDetonator < CBaseAnimating
 		{
 			PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
 			if (!(g_pSetDetonateTimer = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetDetonateTimer);
+		}
+
+		char szExplodeTouch[] = "CBlackMesaBaseDetonator::ExplodeTouch";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szExplodeTouch))
+			LogMessage("Could not obtain gamedata offset %s", szExplodeTouch);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+			if (!(g_pExplodeTouch = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szExplodeTouch);
 		}
 	}
 	public CBlackMesaBaseDetonator(const int iEntIndex = -1)
@@ -70,6 +81,11 @@ methodmap CBlackMesaBaseDetonator < CBaseAnimating
 	public void SetDetonateTimer(const float flDetonateTimer)
 	{
 		SDKCall(g_pSetDetonateTimer, this.entindex, flDetonateTimer);
+	}
+
+	public void ExplodeTouch(const CBaseEntity pEntity)
+	{
+		SDKCall(g_pExplodeTouch, this.entindex, pEntity.entindex);
 	}
 }
 

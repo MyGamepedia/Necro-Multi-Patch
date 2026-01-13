@@ -14,19 +14,19 @@ public void Snark_PathPost(const int iEntIndex)
     pSnark.SetSnarkOwner(pPlayer.entindex); //store here if we lost owner, because it does somehow, right before it should be removed, idk why
     
     //trigger the first snark explosion and clean from the array
-    if (g_hClientSnarks[pPlayer.entindex][19] != 0)
+    if (g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] != 0)
     {
-        CNpc_Snark pOldSnark = CNpc_Snark(g_hClientSnarks[pPlayer.entindex][19]);
+        CNpc_Snark pOldSnark = CNpc_Snark(g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1]);
         if (pOldSnark.IsValid())
         {
             pOldSnark.AcceptInputInt("SetHealth", 0);
         }
 
-        g_hClientSnarks[pPlayer.entindex][19] = 0;
+        g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] = 0;
     }
 
     //shift to right everyone
-    for (int i = 19; i > 0; i--)
+    for (int i = MAX_SNARKS - 1; i > 0; i--)
     {
         int iOldEnt = g_hClientSnarks[pPlayer.entindex][i - 1];
         g_hClientSnarks[pPlayer.entindex][i] = iOldEnt;
@@ -59,11 +59,11 @@ public void Hook_Snark_OnDeleted(CNpc_Snark pSnark)
 
 	int iSnarkNum = pSnark.GetUserData("m_iSnarkNum");
 
-	if (iSnarkNum < 0 || iSnarkNum >= 20)
+	if (iSnarkNum < 0 || iSnarkNum >= MAX_SNARKS)
 		return;
 
 	//shift to left
-	for (int i = iSnarkNum; i < 19; i++)
+	for (int i = iSnarkNum; i < MAX_SNARKS - 1; i++)
 	{
 		int nextEnt = g_hClientSnarks[pPlayer.entindex][i + 1];
 		g_hClientSnarks[pPlayer.entindex][i] = nextEnt;
@@ -79,5 +79,5 @@ public void Hook_Snark_OnDeleted(CNpc_Snark pSnark)
 	}
 
 	//clean the last element
-	g_hClientSnarks[pPlayer.entindex][19] = 0;
+	g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] = 0;
 }

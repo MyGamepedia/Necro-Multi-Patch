@@ -1,8 +1,6 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-//NOTE:All the code in this file is not used right now due to tick and expls issues
-
 public void Hornet_PathPost(const int iEntIndex)
 {
     CBlackMesaBaseDetonator pHornet = CBlackMesaBaseDetonator(iEntIndex);
@@ -16,10 +14,10 @@ public void Hornet_PathPost(const int iEntIndex)
     pHornet.SetOriginalThrower(pPlayer); //?doesn't seem to set for hornets by the game itself?
     
     //trigger the first hornet explosion and clean from the array
-    if (g_hClientHornets[pPlayer.entindex][19] != 0)
+    if (g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] != 0)
     {
         CBlackMesaBaseDetonator pOldHornet =
-            CBlackMesaBaseDetonator(g_hClientHornets[pPlayer.entindex][19]);
+            CBlackMesaBaseDetonator(g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1]);
 
         if (pOldHornet.IsValid())
         {
@@ -28,7 +26,7 @@ public void Hornet_PathPost(const int iEntIndex)
     }
 
     //shift to right
-    for (int i = 19; i > 0; i--)
+    for (int i = MAX_HORNETS - 1; i > 0; i--)
     {
         int oldEnt = g_hClientHornets[pPlayer.entindex][i - 1];
         g_hClientHornets[pPlayer.entindex][i] = oldEnt;
@@ -54,11 +52,11 @@ public void Hook_Hornet_OnDeleted(const CBlackMesaBaseDetonator pHornet)
 
 	int iHornetNum = pHornet.GetUserData("m_iHornetNum");
 
-	if (iHornetNum < 0 || iHornetNum >= 20)
+	if (iHornetNum < 0 || iHornetNum >= MAX_HORNETS)
 		return;
 
 	//shift to left
-	for (int i = iHornetNum; i < 19; i++)
+	for (int i = iHornetNum; i < MAX_HORNETS - 1; i++)
 	{
 		int nextEnt = g_hClientHornets[pPlayer.entindex][i + 1];
 		g_hClientHornets[pPlayer.entindex][i] = nextEnt;
@@ -74,5 +72,5 @@ public void Hook_Hornet_OnDeleted(const CBlackMesaBaseDetonator pHornet)
 	}
 
 	//clean the last element
-	g_hClientHornets[pPlayer.entindex][19] = 0;
+	g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] = 0;
 }
