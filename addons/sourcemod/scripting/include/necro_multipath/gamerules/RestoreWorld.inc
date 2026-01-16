@@ -2,24 +2,25 @@
 #pragma semicolon 1
 
 //Purpose: fix stuff before restore world
-public MRESReturn Hook_RestoreWorld(int _this)
+public MRESReturn Hook_RestoreWorld(DHookReturn hReturn)
 {
-    g_iActiveScreenOverlayEntity[0] = 0; //mark that no global overlay entity is active
-    //stop overlay for active env_screenoverlays
-    for (int i = 1; i <= MaxClients; i++)
+    if (GetConVarBool(g_ConvarNecroAllowRestoreWorld) == false)
     {
-        if(g_iActiveScreenOverlayEntity[i] != 0)
-        {
-            AcceptEntityInput(g_iActiveScreenOverlayEntity[i], "StopOverlaysForEveryone");
-        }
+		DHookSetReturn(hReturn, 0);
+		return MRES_Supercede;
     }
 
 	return MRES_Ignored;
 }
 
-//Purpose: let us player with everyone if we have team spawn delay 
-public MRESReturn Hook_RestoreWorldPost(int _this)
+//Purpose: let us play with everyone if we had team spawn delay 
+public MRESReturn Hook_RestoreWorldPost(DHookReturn hReturn)
 {
+    if (GetConVarBool(g_ConvarNecroAllowRestoreWorld) == false)
+    {
+        return MRES_Ignored;
+    }
+
     for (int i = 1; i <= MaxClients; i++)
     {
         g_fClientSpectatorJoinTeamDelay[i] = 0.0;

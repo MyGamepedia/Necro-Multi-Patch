@@ -42,6 +42,7 @@ ConVar g_ConvarNecroAutoReloadTime_Shotgun;
 ConVar g_ConvarNecroAutoReloadTime_Crossbow;
 ConVar g_ConvarNecroCreateNewViewmodel;
 ConVar g_ConvarNecroAllowPickupObjects;
+ConVar g_ConvarNecroAllowRestoreWorld;
 	
 
 DynamicDetour hkBaseCombatWeaponPrecache;
@@ -88,7 +89,7 @@ float g_fClientSpectatorJoinTeamDelay[MAX_PLAYERS+1];
 #define MAX_HORNETS 20
 
 int g_hClientSnarks[MAX_PLAYERS + 1][MAX_SNARKS]; //store snark ents for each client
-int g_hClientHornets[MAX_PLAYERS + 1][MAX_HORNETS]; //store hornets ents for each client
+int g_hClientHornets[MAX_PLAYERS + 1][MAX_HORNETS]; //store hornet ents for each client
 int g_iUserCmdOffset;
 
 //Handle g_pCreateWeaponTracedBoneMergeEntity;

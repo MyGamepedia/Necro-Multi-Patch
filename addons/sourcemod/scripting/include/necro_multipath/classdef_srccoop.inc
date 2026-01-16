@@ -89,7 +89,7 @@
 #include <srccoop_api/classdef/bms/CWeapon_Satchel.inc>
 #include <srccoop_api/classdef/bms/CWeapon_Rpg.inc>
 
-stock void InitClassdef_Scrcoop(const GameData hGameConfig)
+stock void InitClassdef(const GameData hGameConfig)
 {
 	CBaseEntity.InitClassdef(hGameConfig);
 	CBasePlayer.InitClassdef(hGameConfig);

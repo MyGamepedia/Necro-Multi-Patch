@@ -878,6 +878,8 @@ static bool TraceEntityFilter_FVisible(int iEntIndex, int iMask, int iThisEntInd
 static void Hook_CBaseEntity_OnDeleted(const int iEntIndex)
 {
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+
+	//do other stuff if required before removing user data in "public void Hook_OnEntityDeleted(const CBaseEntity pEntity)"
 	Hook_OnEntityDeleted(pEntity);
 
 	StringMap hEntityData;

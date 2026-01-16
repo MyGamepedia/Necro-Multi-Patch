@@ -10,7 +10,7 @@
 
 #include <sourcescramble>
 
-#include <necro_multipath/macros_scrcoop>
+#include <necro_multipath/macros_srccoop>
 #include <necro_multipath/typedef_srccoop>
 #include <necro_multipath/globals_srccoop>
 #include <srccoop_api/util>
@@ -169,6 +169,7 @@ public void OnPluginStart()
 	g_ConvarNecroAutoReloadTime_Crossbow = CreateConVar("necro_autoreloadtime_crossbow", "3", "Amount of time in seconds before weapon_crossbow automatic reload is performed if the weapon is idle in inventory.");
 	g_ConvarNecroCreateNewViewmodel = CreateConVar("necro_createnewviewmodel", "1", "Before we give new weapon, certain code may want to kill and create new weapon model to avoid prediction issues.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroAllowPickupObjects = CreateConVar("necro_allowpickupobjects", "0", "Enable the ability to pick up certain objects, such as prop_physics and prop_ragdoll.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroAllowRestoreWorld = CreateConVar("necro_allowrestoreworld", "1", "Allow world restore after warmup intermission time.", 0, true, 0.0, true, 1.0);
 
 	//Load custom modes
 	LoadCustomGameModes();
@@ -206,7 +207,7 @@ void LoadGameData()
 	if (pGameConfig_Necro == null || pGameConfig_Srccoop == null)
 		SetFailState("Couldn't load one of the configs!!!");
 
-	InitClassdef_Scrcoop(pGameConfig_Srccoop);
+	InitClassdef(pGameConfig_Srccoop);
 
 	LoadDHookVirtual(pGameConfig_Srccoop, hkLevelInit, "CServerGameDLL::LevelInit");
 	if (hkLevelInit.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_OnLevelInit) == INVALID_HOOK_ID)
@@ -452,14 +453,6 @@ void MapStartCustomGameModes()
 
 public void OnMapEnd()
 {
-	//clear all these values, otherwise this will break many stuff
-	for(int i = 0; i <= MaxClients; i++)
-	{
-		g_iActiveScreenOverlayEntity[i] = 0;
-		g_iNextScreenOverlayIndex[i] = 0;
-		g_flNextOverlayTime[i] = 0.0;
-	}
-
 	MapEndCustomModes();
 	g_bMapStarted = false;
 }
@@ -962,6 +955,7 @@ public void OnEntitySpawned(int iEntIndex)
 		#if defined ENTPATCH_ENV_SCREENOVERLAY
 		if (strcmp(szClassname, "env_screenoverlay") == 0)
 		{
+			CBaseEntity(iEntIndex).SetUserData("m_bIsActive", false); //needed to fix not working switching overlays
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvScreenoverlayAcceptInput);
 			return;
 		}
@@ -1072,6 +1066,12 @@ public void Hook_OnEntityDeleted(const CBaseEntity pEntity)
 	if (StrEqual(szClassname, "grenade_hornet"))
 	{
 		Hook_Hornet_OnDeleted(CBlackMesaBaseDetonator(pEntity.entindex));
+		return;
+	}
+
+	if (StrEqual(szClassname, "env_screenoverlay"))
+	{
+		pEntity.AcceptInput("StopOverlaysAll");
 		return;
 	}
 }
