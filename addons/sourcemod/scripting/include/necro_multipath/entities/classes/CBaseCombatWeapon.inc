@@ -205,8 +205,12 @@ public MRESReturn Hook_BaseCombatWeaponPrecachePost(int _this, DHookParam hParam
 
 public MRESReturn Hook_BaseCombatWeaponHolsterPost(int _this)
 {
-	CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
-	pWeapon.SetHolsterTime(GetTickedTime());
+	if (GetConVarBool(g_ConvarNecroAllowWeaponAutoReload))
+	{
+		CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
+		pWeapon.SetUserData("m_flHolsterTime", GetTickedTime());
+	}
+
 	return MRES_Ignored;
 }
 
@@ -261,9 +265,9 @@ void Hook_BaseCombatWeaponItemHolsterFramePost(const int iWeaponEntIndex, const 
 	CBaseCombatWeapon pWeapon = CBaseCombatWeapon(iWeaponEntIndex);
 	
 	if (GetConVarBool(g_ConvarNecroAllowWeaponAutoReload) && 
-        (GetTickedTime() - pWeapon.GetHolsterTime()) > flWeaponAutoReloadTime)
+        (GetTickedTime() - view_as<float>(pWeapon.GetUserData("m_flHolsterTime"))) > flWeaponAutoReloadTime)
 	{
-		pWeapon.SetHolsterTime(GetTickedTime());
+		pWeapon.SetUserData("m_flHolsterTime", GetTickedTime());
 		pWeapon.FinishReload();
 	}
 	

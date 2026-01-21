@@ -78,6 +78,7 @@
 #include <necro_multipath/entities/classes/CBasePlayer>
 #include <necro_multipath/entities/classes/CBlackMesaBaseWeaponIronSights>
 #include <necro_multipath/entities/classes/CBlackMesaKillStreaks>
+#include <necro_multipath/entities/classes/CBM_MP_GameRules>
 #include <necro_multipath/entities/classes/CBoneSetup>
 #include <necro_multipath/entities/classes/CMultiplayRules>
 
@@ -93,8 +94,6 @@
 #include <necro_multipath/entities/general/Physics_RunThinkFunctions>
 
 #include <necro_multipath/engine/CLagCompensationManagerStartLagCompensation>
-
-#include <necro_multipath/gamerules/RestoreWorld>
 
 #include <necro_multipath/convars/host_timescale>
 #include <necro_multipath/convars/necro_fastrespawndelay>
@@ -169,7 +168,8 @@ public void OnPluginStart()
 	g_ConvarNecroAutoReloadTime_Crossbow = CreateConVar("necro_autoreloadtime_crossbow", "3", "Amount of time in seconds before weapon_crossbow automatic reload is performed if the weapon is idle in inventory.");
 	g_ConvarNecroCreateNewViewmodel = CreateConVar("necro_createnewviewmodel", "1", "Before we give new weapon, certain code may want to kill and create new weapon model to avoid prediction issues.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroAllowPickupObjects = CreateConVar("necro_allowpickupobjects", "0", "Enable the ability to pick up certain objects, such as prop_physics and prop_ragdoll.", 0, true, 0.0, true, 1.0);
-	g_ConvarNecroAllowRestoreWorld = CreateConVar("necro_allowrestoreworld", "1", "Allow world restore after warmup intermission time.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroBlockRestoreWorld = CreateConVar("necro_blockrestoreworld", "0", "Block world restore after warmup intermission time.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroBlockRestoreWorldRespawnPlayers = CreateConVar("necro_blockrestoreworldrespawnplayers", "0", "Block all players respawn after warmup intermission time.", 0, true, 0.0, true, 1.0);
 
 	//Load custom modes
 	LoadCustomGameModes();
@@ -178,10 +178,10 @@ public void OnPluginStart()
 	g_ConvarNecroFastRespawnDelay.AddChangeHook(OnFastRespawnDelayChanged);
 	g_ConvarNecroSpectatorJoinTeamDelay.AddChangeHook(OnSpectatorJoinTeamDelayChanged);
 	HookConVarChange(FindConVar("host_timescale"), OnHostTimeScaleChanged);
-	AddCommandListener(Listener_Jointeam, "jointeam"); //note: it was planned to use player_team event hook, but it doesn't store team nums (always 0)
+	AddCommandListener(Listener_Jointeam, "jointeam"); //note: it was planned to use player_team event hook, but it doesn't store team nums (always 0)  
 	AddCommandListener(Listener_Say, "say");
 	
-	//HACK! Use first (unused) element in the array to store cvar delay value
+	//HACK! Use first (unused) element in the array to store cvar value
 	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay);
 	g_fClientSpectatorJoinTeamDelay[0] = GetConVarFloat(g_ConvarNecroSpectatorJoinTeamDelay);
 	
@@ -438,8 +438,16 @@ public void OnMapStart()
 	//gamerules hooks
 	DHookGamerules(hkFAllowFlashlight, false, _, Hook_FAllowFlashlight);
 	DHookGamerules(hkIsMultiplayer, false, _, Hook_IsMultiplayer);
+
+	#if defined GAMEPATCH_BLOCK_RESTOREWORLD
 	DHookGamerules(hkRestoreWorld, false, _, Hook_RestoreWorld);
 	DHookGamerules(hkRestoreWorld, true, _, Hook_RestoreWorldPost);
+	#endif
+
+	#if defined GAMEPATCH_BLOCK_RESPAWNPLAYERS
+	DHookGamerules(hkRespawnPlayers, false, _, Hook_RespawnPlayers);
+	#endif
+
 
 	MapStartCustomGameModes();
 
@@ -956,6 +964,7 @@ public void OnEntitySpawned(int iEntIndex)
 		if (strcmp(szClassname, "env_screenoverlay") == 0)
 		{
 			CBaseEntity(iEntIndex).SetUserData("m_bIsActive", false); //needed to fix not working switching overlays
+			DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_EnvScreenoverlayUpdateOnRemove);
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvScreenoverlayAcceptInput);
 			return;
 		}

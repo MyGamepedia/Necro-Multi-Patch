@@ -31,9 +31,9 @@ methodmap CWeapon_Rpg < CBlackMesaBaseCombatWeapon
 		return GetEntProp(this.entindex, Prop_Send, "m_bLaserOn") != 0;
 	}
 	
-	public void SetLaserOn(const bool bLaserOn)
+	public void SetLaser(const bool bLaser)
 	{
-		SetEntProp(this.entindex, Prop_Send, "m_bLaserOn", bLaserOn);
+		SetEntProp(this.entindex, Prop_Send, "m_bLaserOn", bLaser);
 	}
 
 	public float GetNextReload()
@@ -46,14 +46,14 @@ methodmap CWeapon_Rpg < CBlackMesaBaseCombatWeapon
 		SetEntPropFloat(this.entindex, Prop_Data, "m_flNextReload", flNextReload);
 	}
 
-	public float GetHomingGrenade()
+	public CBaseEntity GetHomingGrenade()
 	{
-		return GetEntPropEnt(this.entindex, Prop_Data, "m_hHomingGrenade");
+		return CBaseEntity(GetEntPropEnt(this.entindex, Prop_Data, "m_hHomingGrenade"));
 	}
 
-	public float SetHomingGrenade(const int iEntIndex)
+	public void SetHomingGrenade(CBaseEntity pEntity)
 	{
-		SetEntPropEnt(this.entindex, Prop_Data, "m_hHomingGrenade", iEntIndex);
+		SetEntPropEnt(this.entindex, Prop_Data, "m_hHomingGrenade", pEntity.entindex);
 	}
 
 	public bool Reload()

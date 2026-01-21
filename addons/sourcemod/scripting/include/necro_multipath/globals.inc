@@ -42,7 +42,8 @@ ConVar g_ConvarNecroAutoReloadTime_Shotgun;
 ConVar g_ConvarNecroAutoReloadTime_Crossbow;
 ConVar g_ConvarNecroCreateNewViewmodel;
 ConVar g_ConvarNecroAllowPickupObjects;
-ConVar g_ConvarNecroAllowRestoreWorld;
+ConVar g_ConvarNecroBlockRestoreWorld;
+ConVar g_ConvarNecroBlockRestoreWorldRespawnPlayers;
 	
 
 DynamicDetour hkBaseCombatWeaponPrecache;

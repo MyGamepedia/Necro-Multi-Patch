@@ -138,16 +138,6 @@ methodmap CBaseCombatWeapon < CBaseAnimating
 		SetEntPropFloat(this.entindex, Prop_Send, "m_flNextSecondaryAttack", flNextSecondaryAttack); 
 	}
 
-	public void SetHolsterTime(const float flHolsterTime)
-	{
-		SetEntPropFloat(this.entindex, Prop_Send, "m_flElasticity", flHolsterTime); //HACK! Use UNUSED field to store holster time
-	}
-
-	public float GetHolsterTime()
-	{
-		return GetEntPropFloat(this.entindex, Prop_Send, "m_flElasticity");
-	}
-
 	public void DelayNextAttack(float flDelay)
 	{
 		flDelay += GetGameTime();
