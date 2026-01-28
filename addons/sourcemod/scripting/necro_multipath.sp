@@ -426,7 +426,7 @@ public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
 	static char szMapEntities[ENTITYSTRING_LENGTH];
 	hParams.GetString(2, szMapEntities, sizeof(szMapEntities));
 
-	// save original string for dumps
+	//save original string for dumps
 	g_szEntityString = szMapEntities;
 
 	return MRES_Ignored;
@@ -498,7 +498,7 @@ public void OnClientPutInServer(int client)
 	#if defined PLAYERPATCH_HITREG
 	DHookEntity(hkPlayerWeaponShootPosition, true, client, _, Hook_PlayerWeaponShootPosition_Post);
 	#endif
-	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam); //maybe will be used later
+	DHookEntity(hkChangeTeam, false, client, _, Hook_PlayerChangeTeam); //maybe will be used later 
 	DHookEntity(hkChangeTeam, true, client, _, Hook_PlayerChangeTeamPost);
 	DHookEntity(hkShouldCollide, false, client, _, Hook_PlayerShouldCollide);
 	DHookEntity(hkAcceptInput, false, client, _, Hook_PlayerAcceptInput);
@@ -963,7 +963,7 @@ public void OnEntitySpawned(int iEntIndex)
 		#if defined ENTPATCH_ENV_SCREENOVERLAY
 		if (strcmp(szClassname, "env_screenoverlay") == 0)
 		{
-			CBaseEntity(iEntIndex).SetUserData("m_bIsActive", false); //needed to fix not working switching overlays
+			pEntity.SetUserData("m_bIsEnabled", false); //needed to fix not working switching overlays
 			DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_EnvScreenoverlayUpdateOnRemove);
 			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvScreenoverlayAcceptInput);
 			return;
@@ -1093,7 +1093,7 @@ MRESReturn Hook_EventQueueAddEvent(Address pThis, DHookParam hParams)
     DHookGetParamString(hParams, 2, szInput, sizeof(szInput));
     TrimString(szInput);
 
-    // вывод адреса this
+    // print address and action
     PrintToChatAll(
         "[EventQueue] this = 0x%X | action = %s",
         view_as<int>(pThis),

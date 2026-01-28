@@ -757,8 +757,14 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		}
 	}
 	
-	if(iWeapon != 0 && CBlackMesaPlayer(iClient).GetCarriedObject() == NULL_CBASEENTITY) //send use command if we want to use a weapon
+	if(iWeapon != 0) //send use command if we want to use a weapon
 	{
+		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
+		if(pPlayer.GetCarriedObject() != NULL_CBASEENTITY)
+		{
+			pPlayer.ForceDropOfCarriedPhysObjects(); //drop object if carrying one to avoid prediction issues
+		}
+
 		//Client don't use weapon when used custom classname to load custom script, force use with client command by checking classname
 		char classname[MAX_CLASSNAME];
 		GetEntityClassname(iWeapon, classname, sizeof(classname));
@@ -842,10 +848,17 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 	if (pPlayer.IsValid())
 	{
 		#if defined ENTPATCH_ENV_SCREENOVERLAY
-		//disable screenoverlay for this client
-		g_iActiveScreenOverlayEntity[pPlayer.entindex] = 0;
-		g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
-		g_flNextOverlayTime[pPlayer.entindex] = 0.0;
+		if(g_pActiveScreenOverlay[0].entindex != NULL_CBASEENTITY)
+		{
+			//if my active screenoverlay is global screenoverlay, reset global vars so it works properly when i join again
+			g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
+			g_flNextOverlayTime[pPlayer.entindex] = 0.0;
+		}
+		else if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
+		{
+			//if my screenoverlay isn't global but i have a local one, just stop it for me 
+			g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer, pPlayer);
+		}
 		#endif
 	}
 }
@@ -877,14 +890,6 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
 	g_bSetJumpModuleActive[iClient] = false;
 	#endif
-
-	#if defined ENTPATCH_ENV_SCREENOVERLAY
-	//if global overlay is active - start it for this client
-	if(g_iActiveScreenOverlayEntity[0] != 0)
-	{
-		AcceptEntityInput(g_iActiveScreenOverlayEntity[0], "StartOverlays", iClient);
-	}
-	#endif
 	
 //	SendClientConvars(iClient, false);
 }
@@ -894,35 +899,12 @@ public void PlayerPatch_OnClientPutInServer(const int iClient)
 //------------------------------------------------------
 public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 {
-	CBasePlayer pPlayer = CBasePlayer(iClient);
-
-	int iTeam = DHookGetParam(hParams, 1);
 	int iForceTeam = GetConVarInt(g_ConvarNecroForceTeam);
 
 	//force team if enabled
 	if (iForceTeam != TEAM_INVALID && iClient != -1)
 	{
 		hParams.Set(1, iForceTeam);
-		iTeam = iForceTeam;
-	}
-
-	bool bJoinedSpectators = (!CMultiplayRules.IsTeamplay() && iTeam == TEAM_SPECTATOR);
-	bool bJoinedSpectatorsTeamplay = (CMultiplayRules.IsTeamplay() && iTeam == TEAM_UNASSIGNED || iTeam == TEAM_SPECTATOR);
-
-	//if joined spectators, force player to drop the carried phys objects or dismount tank entity
-	if(bJoinedSpectators || bJoinedSpectatorsTeamplay)
-	{
-		CBaseEntity pCarriedObject = pPlayer.GetUseEntity();
-		if (pCarriedObject != NULL_CBASEENTITY)
-		{
-			pPlayer.ForceDropOfCarriedPhysObjects();
-		}
-
-		//POWER SALO said that sometimes orig code doesn't remove items itself
-		pPlayer.RemoveAllItems();
-
-		if(GetConVarBool(g_ConvarNecroOtherPlayersFlashlight))
-			Player_Flashlight3rdPersonOff(pPlayer.entindex);
 	}
 
 	if (iForceTeam != TEAM_INVALID && iClient != -1)
@@ -944,6 +926,18 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 
 	if(bJoinedSpectators || bJoinedSpectatorsTeamplay)
 	{
+		CBaseEntity pCarriedObject = pPlayer.GetUseEntity();
+		if (pCarriedObject != NULL_CBASEENTITY)
+		{
+			pPlayer.ForceDropOfCarriedPhysObjects();
+		}
+
+		//POWER SALO said that sometimes orig code doesn't remove items itself
+		pPlayer.RemoveAllItems();
+
+		if(GetConVarBool(g_ConvarNecroOtherPlayersFlashlight))
+			Player_Flashlight3rdPersonOff(pPlayer.entindex);
+		
 		ClearNpcMemoryForPlayer(pPlayer);
 	}
 

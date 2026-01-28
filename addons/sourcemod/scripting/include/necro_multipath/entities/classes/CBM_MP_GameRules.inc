@@ -13,7 +13,6 @@ public MRESReturn Hook_RestoreWorld(DHookReturn hReturn)
 	return MRES_Ignored;
 }
 
-//Purpose: let us play with everyone if we had team spawn delay 
 public MRESReturn Hook_RestoreWorldPost(DHookReturn hReturn)
 {
     if (GetConVarBool(g_ConvarNecroBlockRestoreWorld))
@@ -24,6 +23,9 @@ public MRESReturn Hook_RestoreWorldPost(DHookReturn hReturn)
     for (int i = 1; i <= MaxClients; i++)
     {
         g_fClientSpectatorJoinTeamDelay[i] = 0.0;
+
+        if(CBlackMesaPlayer(i).IsValid() && !CBlackMesaPlayer(i).IsBot())
+            CBlackMesaPlayer(i).SendCommand("r_cleardecals"); //clear decals on restoreworld, so the world looks clean
     }
 
 	return MRES_Ignored;

@@ -9,9 +9,10 @@ public MRESReturn Hook_WeaponShotgunItemHolsterFramePost(int _this)
 	CBaseCombatWeapon pWeapon = CBaseCombatWeapon(_this);
 	
 	if (GetConVarBool(g_ConvarNecroAllowWeaponAutoReload) && 
-        (GetTickedTime() - pWeapon.GetHolsterTime()) > GetConVarFloat(g_ConvarNecroAutoReloadTime_Shotgun))
+        (GetTickedTime() - view_as<float>(pWeapon.GetUserData("m_flHolsterTime"))) > 
+        GetConVarFloat(g_ConvarNecroAutoReloadTime_Shotgun))
 	{
-		pWeapon.SetHolsterTime(GetTickedTime());
+		pWeapon.SetUserData("m_flHolsterTime", GetTickedTime());
 
 		if (pWeapon.GetOwner() == NULL_CBASEENTITY)
             return MRES_Ignored;
