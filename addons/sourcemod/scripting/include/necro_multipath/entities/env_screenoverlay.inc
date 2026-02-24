@@ -36,7 +36,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 	if (strcmp(szInputName, "StartOverlays", false) == 0)
 	{
 		//we don't have rights to override global overlay entity, ignore this input
-		if (g_pActiveScreenOverlay[0].entindex != NULL_CBASEENTITY)
+		if (g_pActiveScreenOverlay[0].IsValid())
 		{
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;			
@@ -52,7 +52,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		CBasePlayer	pPlayer = CBasePlayer(DHookGetParam(hParams, 2));
 
 		//only real and valid players can have screen overlays
-		if(!pPlayer.IsValid() || pPlayer.IsBot())
+		if (!pPlayer.IsValid() || pPlayer.IsBot())
 		{
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
@@ -61,7 +61,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		CEnvScreenOverlay pScreenOverlay = CEnvScreenOverlay(_this);
 
 		//don't active me if i'm already active for this player
-		if (g_pActiveScreenOverlay[pPlayer.entindex].entindex == pScreenOverlay.entindex)
+		if (g_pActiveScreenOverlay[pPlayer.entindex] == pScreenOverlay)
 		{
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
@@ -89,7 +89,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		}
 
 		//if other local screenoverlay is active - stop overlay for it before we use this entity
-		if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
+		if (g_pActiveScreenOverlay[pPlayer.entindex].IsValid())
 		{
 			g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer);
 		}
@@ -107,13 +107,6 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		g_iNextScreenOverlayIndex[pPlayer.entindex] = iNextOverlay; //set next overlay we want to play
 
 		float flOverlayDuration = pScreenOverlay.GetOverlayTimes(iTextureIndex);
-
-		//don't do anything anymore if used infinite time for the first overlay
-		if (flOverlayDuration < 0)
-		{
-			DHookSetReturn(hReturn, true);
-			return MRES_Supercede;
-		}
 
 		g_flNextOverlayTime[pPlayer.entindex] = GetTickedTime() + flOverlayDuration;
 
@@ -146,7 +139,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		{
 			pPlayer = CBasePlayer(DHookGetParam(hParams, 2));
 
-			if(!pPlayer.IsValid() || pPlayer.IsBot())
+			if (!pPlayer.IsValid() || pPlayer.IsBot())
 			{
 				DHookSetReturn(hReturn, true);
 				return MRES_Supercede;
@@ -161,7 +154,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		CEnvScreenOverlay pScreenOverlay = CEnvScreenOverlay(_this);
 
 		//don't if player's active overlay isn't me
-		if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != pScreenOverlay.entindex)
+		if (g_pActiveScreenOverlay[pPlayer.entindex] != pScreenOverlay)
 		{
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
@@ -175,9 +168,9 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 
 		//check if any other players are using this overlay entity, if no - disable Think
 		bool bNeedsToBeDisabled = true;
-		for(int i = 1; i <= MaxClients; i++)
+		for (int i = 1; i <= MaxClients; i++)
 		{
-			if (g_pActiveScreenOverlay[i].entindex == pScreenOverlay.entindex)
+			if (g_pActiveScreenOverlay[i] == pScreenOverlay)
 			{
 				bNeedsToBeDisabled = false;
 				break;
@@ -223,13 +216,13 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 				continue;
 
 			// Don't activate if already active for this player
-			if (g_pActiveScreenOverlay[pPlayer.entindex].entindex == pScreenOverlay.entindex)
+			if (g_pActiveScreenOverlay[i] == pScreenOverlay)
 				continue;
 
 			// If another overlay is active, stop it first
-			if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
+			if (g_pActiveScreenOverlay[i].IsValid())
 			{
-				g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer);
+				g_pActiveScreenOverlay[i].AcceptInput("StopOverlays", pPlayer);
 			}
 
 			// Send overlay command
@@ -237,21 +230,21 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 			Format(szPlayerCommand, sizeof(szPlayerCommand), "r_screenoverlay %s", szOverlayName);
 			pPlayer.SendCommand(szPlayerCommand);
 
-			g_pActiveScreenOverlay[pPlayer.entindex] = pScreenOverlay; //store active overlay entindex for this player
+			g_pActiveScreenOverlay[i] = pScreenOverlay; //store active overlay entindex for this player
 
 			int iNextOverlay = iTextureIndex + 1;
 			iNextOverlay = Clamp(iNextOverlay, 0, 9);
 
-			g_iNextScreenOverlayIndex[pPlayer.entindex] = iNextOverlay;
+			g_iNextScreenOverlayIndex[i] = iNextOverlay;
 
 			// Only set timer if overlay is not infinite
 			if (flOverlayDuration >= 0)
 			{
-				g_flNextOverlayTime[pPlayer.entindex] = GetTickedTime() + flOverlayDuration;
+				g_flNextOverlayTime[i] = GetTickedTime() + flOverlayDuration;
 			}
 			else
 			{
-				g_flNextOverlayTime[pPlayer.entindex] = 0.0;
+				g_flNextOverlayTime[i] = 0.0;
 			}
 		}
 
@@ -274,35 +267,43 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 	//==================================================
 	if (strcmp(szInputName, "StopOverlaysAll", false) == 0)
 	{
-		//don't do anything if i'm not active the active global overlay entity
-		if (g_pActiveScreenOverlay[0].entindex != _this)
-		{
-			DHookSetReturn(hReturn, true);
-			return MRES_Supercede;
-		}
-
-		//reset global screenoverlay vars back to default
-		g_pActiveScreenOverlay[0] = NULL_CBASEENTITY;
-		g_iNextScreenOverlayIndex[0] = 0;
-		g_flNextOverlayTime[0] = 0.0;
-
 		CEnvScreenOverlay pScreenOverlay = CEnvScreenOverlay(_this);
-		for(int i = 1; i <= MaxClients; i++)
+
+		//if i'm global screenoverlay - do global screenoverlay logic, else - fire StopOverlays on player i;m active for
+		if (g_pActiveScreenOverlay[0] == pScreenOverlay)
 		{
-			CBasePlayer pPlayer = CBasePlayer(i);
-			if (pPlayer.IsValid() && !pPlayer.IsBot())
+			//reset global screenoverlay vars back to default
+			g_pActiveScreenOverlay[0] = NULL_CBASEENTITY;
+			g_iNextScreenOverlayIndex[0] = 0;
+			g_flNextOverlayTime[0] = 0.0;
+
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				if (g_pActiveScreenOverlay[pPlayer.entindex].entindex == pScreenOverlay.entindex)
+				CBasePlayer pPlayer = CBasePlayer(i);
+				if (pPlayer.IsValid() && !pPlayer.IsBot())
 				{
-					pPlayer.SendCommand("r_screenoverlay off");
-					g_pActiveScreenOverlay[pPlayer.entindex] = NULL_CBASEENTITY;
-					g_flNextOverlayTime[pPlayer.entindex] = 0.0;
-					g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
+					if (g_pActiveScreenOverlay[i] == pScreenOverlay)
+					{
+						pPlayer.SendCommand("r_screenoverlay off");
+						g_pActiveScreenOverlay[i] = NULL_CBASEENTITY;
+						g_flNextOverlayTime[i] = 0.0;
+						g_iNextScreenOverlayIndex[i] = 0;
+					}
 				}
 			}
+			pScreenOverlay.SetUserData("m_bIsEnabled", false);
 		}
-		
-		pScreenOverlay.SetUserData("m_bIsEnabled", false);
+		else
+		{
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				CBasePlayer pPlayer = CBasePlayer(i);
+				if(g_pActiveScreenOverlay[i] == pScreenOverlay && pPlayer.IsValid() && !pPlayer.IsBot())
+					pScreenOverlay.AcceptInput("StopOverlays", CBaseEntity(i), CBaseEntity(i));
+			}
+			pScreenOverlay.SetUserData("m_bIsEnabled", false);
+		}
+
 		DHookSetReturn(hReturn, true);
 		return MRES_Supercede;
 	}
@@ -352,8 +353,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 	if (strcmp(szInputName, "Think", false) == 0)
 	{
 		CEnvScreenOverlay pScreenOverlay = CEnvScreenOverlay(_this);
-
-		if (pScreenOverlay.IsValid() == false || pScreenOverlay.GetUserData("m_bIsEnabled") == false)
+		if (pScreenOverlay.GetUserData("m_bIsEnabled") == false)
 		{
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
@@ -364,12 +364,12 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		int iNextOverlay[MAX_PLAYERS + 1] = { NULL_CBASEENTITY, ... }; //store next overlays to set for certain players
 		float flNextOverlayStartTime[MAX_PLAYERS + 1] = { -1.0, ... };
 
-		for(int i = 1; i <= MaxClients; i++)
+		for (int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
 			if (pPlayer.IsValid() && !pPlayer.IsBot())
 			{
-				if (g_pActiveScreenOverlay[pPlayer.entindex].entindex == pScreenOverlay.entindex)
+				if (g_pActiveScreenOverlay[pPlayer.entindex] == pScreenOverlay)
 				{
 					iNextOverlayIndex = g_iNextScreenOverlayIndex[pPlayer.entindex];
 					if (iNextOverlayIndex <= 9 && iNextOverlayIndex >= 0)
@@ -389,7 +389,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 			flNextOverlayStartTime[i] = -1.0;
 		}
 
-		for(int i = 1; i <= MaxClients; i++)
+		for (int i = 1; i <= MaxClients; i++)
 		{
 			CBasePlayer pPlayer = CBasePlayer(i);
 			if (!pPlayer.IsValid() || pPlayer.IsBot())
@@ -426,12 +426,12 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 
 		//this code is used in case if somehow no players are using this overlay entity anymore
 		//note: global screenoverlay should always think
-		if (g_pActiveScreenOverlay[0].entindex != pScreenOverlay.entindex)
+		if (g_pActiveScreenOverlay[0] != pScreenOverlay)
 		{
 			bool bNeedsToBeDisabled = true;
-			for(int i = 1; i <= MaxClients; i++)
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				if (g_pActiveScreenOverlay[i].entindex == pScreenOverlay.entindex)
+				if (g_pActiveScreenOverlay[i] == pScreenOverlay)
 				{
 					bNeedsToBeDisabled = false;
 					break;
@@ -445,7 +445,7 @@ public MRESReturn Hook_EnvScreenoverlayAcceptInput(int _this, DHookReturn hRetur
 		}
 
 		//think only if we still have players that need to switch overlays
-		if (pScreenOverlay.GetUserData("m_bIsEnabled") == true)
+		if (pScreenOverlay.GetUserData("m_bIsEnabled"))
 		{
 			pScreenOverlay.AddOutput("OnUser4", "!self", "Think", "", 0.01, 1);
 			pScreenOverlay.FireOutput("OnUser4");
@@ -467,7 +467,7 @@ MRESReturn Hook_EnvScreenoverlayUpdateOnRemove(int _this)
 	CEnvScreenOverlay pScreenOverlay = CEnvScreenOverlay(_this);
 
 	//if i'm the active global overlay entity - stop overlays for all players
-	if (pScreenOverlay.entindex == g_pActiveScreenOverlay[0].entindex)
+	if (pScreenOverlay == g_pActiveScreenOverlay[0])
 	{
 		pScreenOverlay.AcceptInput("StopOverlaysAll");
 	}
@@ -479,7 +479,7 @@ MRESReturn Hook_EnvScreenoverlayUpdateOnRemove(int _this)
 			pPlayer = CBasePlayer(i);
 			if (pPlayer.IsValid() && !pPlayer.IsBot())
 			{
-				if (g_pActiveScreenOverlay[pPlayer.entindex].entindex == pScreenOverlay.entindex)
+				if (g_pActiveScreenOverlay[pPlayer.entindex] == pScreenOverlay)
 				{
 					pScreenOverlay.AcceptInput("StopOverlays", pPlayer, pPlayer);
 				}

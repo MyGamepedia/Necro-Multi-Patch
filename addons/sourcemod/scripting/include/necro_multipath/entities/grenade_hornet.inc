@@ -14,7 +14,7 @@ public void Hornet_PathPost(const int iEntIndex)
     pHornet.SetOriginalThrower(pPlayer); //?doesn't seem to set for hornets by the game itself?
     
     //trigger the first hornet explosion and clean from the array
-    if (g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] != 0)
+    if (g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] <= 0)
     {
         CBlackMesaBaseDetonator pOldHornet =
             CBlackMesaBaseDetonator(g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1]);
@@ -28,10 +28,10 @@ public void Hornet_PathPost(const int iEntIndex)
     //shift to right
     for (int i = MAX_HORNETS - 1; i > 0; i--)
     {
-        int oldEnt = g_hClientHornets[pPlayer.entindex][i - 1];
-        g_hClientHornets[pPlayer.entindex][i] = oldEnt;
+        CBaseEntity oldEnt = CBaseEntity(g_hClientHornets[pPlayer.entindex][i - 1]);
+        g_hClientHornets[pPlayer.entindex][i] = oldEnt.entindex;
 
-        if (oldEnt != 0)
+        if (oldEnt.entindex > 0)
         {
             CBlackMesaBaseDetonator pOld = CBlackMesaBaseDetonator(oldEnt);
             if (pOld.IsValid())
@@ -58,10 +58,10 @@ public void Hook_Hornet_OnDeleted(const CBlackMesaBaseDetonator pHornet)
 	//shift to left
 	for (int i = iHornetNum; i < MAX_HORNETS - 1; i++)
 	{
-		int nextEnt = g_hClientHornets[pPlayer.entindex][i + 1];
-		g_hClientHornets[pPlayer.entindex][i] = nextEnt;
+		CBaseEntity nextEnt = CBaseEntity(g_hClientHornets[pPlayer.entindex][i + 1]);
+		g_hClientHornets[pPlayer.entindex][i] = nextEnt.entindex;
 
-		if (nextEnt != 0)
+		if (nextEnt.entindex > 0)
 		{
 			CBlackMesaBaseDetonator pNextHornet = CBlackMesaBaseDetonator(nextEnt);
 			if (pNextHornet.IsValid())
@@ -72,5 +72,5 @@ public void Hook_Hornet_OnDeleted(const CBlackMesaBaseDetonator pHornet)
 	}
 
 	//clean the last element
-	g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] = 0;
+	g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] = NULL_CBASEENTITY;
 }

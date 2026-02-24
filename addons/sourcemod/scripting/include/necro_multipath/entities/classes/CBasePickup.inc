@@ -5,15 +5,12 @@
 public void Item_Path(int iEntIndex)
 {
 	CItem pItem = CItem(iEntIndex);
-
-	char iszResponseContext[MAX_KEY];
-	GetEntPropString(iEntIndex, Prop_Data, "m_iszResponseContext", iszResponseContext, sizeof(iszResponseContext));
-
+	
 	//check if feature is enabled
 	if (GetConVarBool(g_ConvarNecroItemSpawnOverride))
 	{
 		//set sp item version if wanted
-		if (StrEqual(iszResponseContext, "item_sp:1", false))
+		if (pItem.GetUserData("m_iItemType") == 1)
 		{
 			g_bIsMultiplayerOverride = false; //disable for sp physics
 			pItem.HookOutput("OnPlayerPickup", Hook_ItemSP_OnPlayerPickup, 1); //remove sp items
@@ -38,17 +35,47 @@ public void Item_Path(int iEntIndex)
 	}
 }
 
+public void Hook_ItemKeyValue(CBaseEntity pEntity, DHookParam hParams)
+{
+	CItem pItem = CItem(pEntity);
+
+	char szKeyName[MAX_FORMAT];
+	char szValue[MAX_VALUE];
+	DHookGetParamString(hParams, 1, szKeyName, sizeof(szKeyName));
+
+	if (StrEqual(szKeyName, "ItemType", false))
+	{
+		DHookGetParamString(hParams, 2, szValue, sizeof(szValue));
+
+		if (StrEqual(szValue, "0", false)) //def
+		{
+			return;
+		}
+
+		if(StrEqual(szValue, "1", false)) //singleplayer item type
+		{
+			pItem.SetUserData("m_iItemType", 1);
+		}
+
+		if(StrEqual(szValue, "2", false)) //coop (instancing) item type from SourceCoop
+		{
+			pItem.SetUserData("m_iItemType", 2);
+		}
+	}
+}
+
 //Purpose: adds spawn post override for certain items
 public void Item_PathPost(int iEntIndex)
 {
-	char iszResponseContext[MAX_KEY];
-	GetEntPropString(iEntIndex, Prop_Data, "m_iszResponseContext", iszResponseContext, sizeof(iszResponseContext));
-
 	if (GetConVarBool(g_ConvarNecroItemSpawnOverride))
 	{
-		if (StrEqual(iszResponseContext, "item_sp:1", false))
+		if (CBaseEntity(iEntIndex).GetUserData("m_iItemType") == 1)
 		{
-			g_bIsMultiplayerOverride = true;
+			g_bIsMultiplayerOverride = true; //re-enable multiplayer for non-sp items
+		}
+		else if (CBaseEntity(iEntIndex).GetUserData("m_iItemType") == 2)
+		{
+			//do nothing until needed
 		}
 	}
 }

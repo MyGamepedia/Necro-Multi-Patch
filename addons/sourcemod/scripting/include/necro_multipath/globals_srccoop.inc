@@ -42,6 +42,9 @@ DynamicHook hkThink;
 DynamicHook hkUpdateOnRemove;
 DynamicHook hkEvent_Killed;
 DynamicHook hkKeyValue_char;
+DynamicHook hkUpdateTransmitState;
+
+DynamicDetour hkKeyValue;
 
 #if defined SRCCOOP_BLACKMESA
 DynamicDetour hkGiveDefaultItems;
@@ -83,6 +86,11 @@ DynamicHook hkProtoSniperSelectSchedule;
 DynamicHook hkFindNamedEntity;
 DynamicHook hkFindNamedEntityClosest;
 DynamicDetour hkExpresserHostDoModifyOrAppendCriteria;
+#endif
+
+#if defined ENTPATCH_WATERBULLET
+DynamicDetour hkHandleShotImpactingWater;
+DynamicDetour hkFireBullets;
 #endif
 
 #if defined SRCCOOP_BLACKMESA

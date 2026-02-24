@@ -10,6 +10,8 @@ static Handle g_pIsNPC;
 static Handle g_pSetMinMaxSize;
 static Handle g_pApplyLocalVelocityImpulse;
 static Handle g_pApplyLocalAngularVelocityImpulse;
+static Handle g_pSetTransmitState;
+static Handle g_pUpdateTransmitState;
 
 const any NULL_CBASEENTITY = -1;
 
@@ -92,6 +94,26 @@ methodmap CBaseEntity
 		{
 			PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
 			if (!(g_pApplyLocalAngularVelocityImpulse = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szApplyLocalAngularVelocityImpulse);
+		}
+
+		char szSetTransmitState[] = "CBaseEntity::SetTransmitState";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Signature, szSetTransmitState))
+			LogMessage("Could not obtain gamedata signature %s", szSetTransmitState);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pSetTransmitState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szSetTransmitState);
+		}
+
+		char szUpdateTransmitState[] = "CBaseEntity::UpdateTransmitState";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szUpdateTransmitState))
+			LogMessage("Could not obtain gamedata offset %s", szUpdateTransmitState);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+			if (!(g_pUpdateTransmitState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szUpdateTransmitState);
 		}
 
 		g_hEntityData = new IntMap();
@@ -465,6 +487,14 @@ methodmap CBaseEntity
 	{
 		SDKCall(g_pApplyLocalAngularVelocityImpulse, this.entindex, vec3Center);
 	}
+	public int SetTransmitState(const int nFlag)
+	{
+		return SDKCall(g_pSetTransmitState, this.entindex, nFlag);
+	}
+	public int UpdateTransmitState()
+	{
+		return SDKCall(g_pUpdateTransmitState, this.entindex);
+	}
 
 	public CBaseEntity GetOwner()
 	{
@@ -639,6 +669,10 @@ methodmap CBaseEntity
 	public WaterLevel_t GetWaterLevel()
 	{
 		return view_as<WaterLevel_t>(GetEntProp(this.entindex, Prop_Data, "m_nWaterLevel"));
+	}
+	public void SetWaterLevel(const WaterLevel_t eWaterLevel)
+	{
+		SetEntProp(this.entindex, Prop_Data, "m_nWaterLevel", eWaterLevel);
 	}
 	public CBaseEntity GetGroundEntity()
 	{

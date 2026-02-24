@@ -21,6 +21,7 @@
 
 #include <necro_multipath/entities/ai_goal_lead>
 #include <necro_multipath/entities/ai_script_conditions>
+#include <necro_multipath/entities/env_cascade_light>
 #include <necro_multipath/entities/env_credits>
 #include <necro_multipath/entities/env_explosion>
 #include <necro_multipath/entities/env_introcredits>
@@ -38,6 +39,7 @@
 #include <necro_multipath/entities/item_weapon_snark>
 #include <necro_multipath/entities/misc_marionettist>
 #include <necro_multipath/entities/music_track>
+#include <necro_multipath/entities/newlight_point>
 #include <necro_multipath/entities/npc_barnacle>
 #include <necro_multipath/entities/npc_gargantua>
 #include <necro_multipath/entities/npc_human_medic>
@@ -57,6 +59,7 @@
 #include <necro_multipath/entities/prop_radiation_charger>
 #include <necro_multipath/entities/prop_ragdoll>
 #include <necro_multipath/entities/scripted_sequence>
+#include <necro_multipath/entities/waterbullet>
 #include <necro_multipath/entities/weapon_357>
 #include <necro_multipath/entities/weapon_assassin_glock>
 #include <necro_multipath/entities/weapon_crossbow>
@@ -127,6 +130,7 @@ public void OnPluginStart()
 	sk_crossbow_tracer_enabled = FindConVar("sk_crossbow_tracer_enabled");
 	sv_long_jump_manacost = FindConVar("sv_long_jump_manacost");
 	sv_jump_long_enabled = FindConVar("sv_jump_long_enabled");
+	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	sv_speed_sprint = FindConVar("sv_speed_sprint");
 	mp_forcerespawn = FindConVar("mp_forcerespawn");
 	sv_always_run = FindConVar("sv_always_run");
@@ -158,7 +162,7 @@ public void OnPluginStart()
 	//TODO: FIX necro_playerscollide
 	g_ConvarNecroPlayersCollide = CreateConVar("necro_playerscollide", "1", "Enable player collision with each other.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroForceTeam = CreateConVar("necro_forceteam", "-1", "Force players to join a specific team. -1 - disabled force team, 0 - unassigned or spectators, 1 - spectators, 2 - team one, 3 - team two.", 0, true, -1.0, true, 3.0);
-	g_ConvarNecroItemSpawnOverride = CreateConVar("necro_itemspawnoverride", "1", "Enable item spawn override for specicif specific item spawn variants via \"Response Context\" keyvalue. item_coop:1 - cooperative mode item, item_sp:1 - singleplayer mode item.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroItemSpawnOverride = CreateConVar("necro_itemspawnoverride", "1", "Enable item spawn override for specicif specific item spawn variants via \"Item Type\" keyvalue.\n0 - Default item. \n1 - Singleplayer item.\n2 - SourceCoop item.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroAllowWeaponAutoReload = CreateConVar("necro_alloeweaponautoreload", "1", "Enable automatic weapon reload in inventory if passed required amount of time.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroAutoReloadTime_357 = CreateConVar("necro_autoreloadtime_357", "3", "Amount of time in seconds before weapon_357 automatic reload is performed if the weapon is idle in inventory.");
 	g_ConvarNecroAutoReloadTime_Glock = CreateConVar("necro_autoreloadtime_glock", "3", "Amount of time in seconds before weapon_glock automatic reload is performed if the weapon is idle in inventory.");
@@ -170,7 +174,8 @@ public void OnPluginStart()
 	g_ConvarNecroAllowPickupObjects = CreateConVar("necro_allowpickupobjects", "0", "Enable the ability to pick up certain objects, such as prop_physics and prop_ragdoll.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroBlockRestoreWorld = CreateConVar("necro_blockrestoreworld", "0", "Block world restore after warmup intermission time.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroBlockRestoreWorldRespawnPlayers = CreateConVar("necro_blockrestoreworldrespawnplayers", "0", "Block all players respawn after warmup intermission time.", 0, true, 0.0, true, 1.0);
-
+	g_ConvarNecroWaterBulletEnable = CreateConVar("necro_waterbulletenable", "0", "Enable water bullet effects.", 0, true, 0.0, true, 1.0);
+	
 	//Load custom modes
 	LoadCustomGameModes();
 
@@ -222,7 +227,8 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig_Necro, hkPostChatMessage, "CBlackMesaKillStreaks::PostChatMessage", Hook_PostChatMessage);
 	//LoadDHookDetour(pGameConfig_Srccoop, hkEventQueuAddEvent, "CEventQueue::AddEvent", Hook_EventQueueAddEvent);
 	LoadDHookDetour(pGameConfig_Srccoop, hkPropBreakableRagdollInitRagdoll, "CPropBreakableRagdoll::InitRagdoll", Hook_PropBreakableRagdollInitRagdoll, Hook_PropBreakableRagdollInitRagdollPost);
-	
+	LoadDHookDetour(pGameConfig_Srccoop, hkKeyValue, "CBaseEntity::KeyValue", Hook_BaseEntityKeyValue);
+
 	//Offsets
 	LoadDHookVirtual(pGameConfig_Necro, hkAcceptInput, "CBaseEntity::AcceptInput");
 	LoadDHookVirtual(pGameConfig_Necro, hkWeaponCrossbowFireBolt, "CWeapon_Crossbow::FireBolt");
@@ -238,6 +244,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig_Necro, hkBaseCombatWeaponItemHolsterFrame, "CBaseCombatWeapon::ItemHolsterFrame");
 	LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaPlayerCreateAmmoBox, "CBlackMesaPlayer::CreateAmmoBox");
 	LoadDHookVirtual(pGameConfig_Srccoop, hkBlackMesaPlayerPickupObject, "CBlackMesaPlayer::PickupObject");
+	LoadDHookVirtual(pGameConfig_Srccoop, hkIsBaseNPCIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
 	//LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaBaseDetonatorExplodeTouch, "CBlackMesaBaseDetonator::ExplodeTouch");
 	
 	//Memory Vars
@@ -366,6 +373,13 @@ void LoadGameData_Srccoop(const GameData pGameConfig)
 	#if defined ENTPATCH_BM_DISSOLVE
 	LoadDHookDetour(pGameConfig, hkDissolve, "CBaseAnimating::Dissolve", Hook_Dissolve);
 	#endif
+
+	#if defined ENTPATCH_WATERBULLET
+	LoadDHookDetour(pGameConfig, hkHandleShotImpactingWater, "CBaseEntity::HandleShotImpactingWater", Hook_HandleShotImpactingWater, Hook_HandleShotImpactingWaterPost);
+	LoadDHookDetour(pGameConfig, hkFireBullets, "CBaseEntity::FireBullets", Hook_FireBullets, Hook_FireBulletsPost);
+	LoadDHookVirtual(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
+	LoadDHookVirtual(pGameConfig, hkUpdateTransmitState, "CBaseEntity::UpdateTransmitState");
+	#endif
 	
 	#if defined GAMEPATCH_UTIL_FINDCLIENT
 	if (g_serverOS == OS_Windows)
@@ -374,7 +388,7 @@ void LoadGameData_Srccoop(const GameData pGameConfig)
 	}
 	else if (g_serverOS == OS_Linux)
 	{
-		// `UTIL_FindClientInPVSGuts` is inlined on Linux into these functions.
+		//`UTIL_FindClientInPVSGuts` is inlined on Linux into these functions.
 		LoadDHookDetour(pGameConfig, hkUtilFindClientInPVS, "UTIL_FindClientInPVS", Hook_UTIL_FindClient);
 		LoadDHookDetour(pGameConfig, hkUtilFindClientInVisibilityPVS, "UTIL_FindClientInVisibilityPVS", Hook_UTIL_FindClient);
 	}
@@ -544,7 +558,7 @@ public void OnConfigsExecuted()
 public void OnConfigsExecutedPost()
 {
 	#if defined SRCCOOP_BLACKMESA
-	//PrecacheScriptSound("HL2Player.SprintStart");
+	PrecacheScriptSound("HL2Player.SprintStart");
 
 	#if defined ENTPATCH_BM_XENTURRET
 	AddFileToDownloadsTable("models/props_xen/xen_turret_mpfix.dx80.vtx");
@@ -617,13 +631,20 @@ public void OnEntitySpawned(int iEntIndex)
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
-	if(StrEqual(szClassname, "weapon_hivehand"))
+	/*if (StrEqual(szClassname, "newlight_point"))
+	{
+		PrintToChatAll("BUB");
+		DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_NewLightPointAcceptInput);
+		return;
+	}*/
+
+	if (StrEqual(szClassname, "weapon_hivehand"))
 	{
 		PrecacheSound(")weapons/hivehand/pickup.wav"); //fix console spam
 		return;
 	}
 
-	if(StrEqual(szClassname, "weapon_rpg"))
+	if (StrEqual(szClassname, "weapon_rpg"))
 	{
 		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_WeaponRpgHolsterPost);
 		DHookEntity(hkBaseCombatDeploy, true, iEntIndex, _, Hook_WeaponRpgDeploy);
@@ -631,74 +652,74 @@ public void OnEntitySpawned(int iEntIndex)
 		return;
 	}
 
-	if(StrEqual(szClassname, "weapon_glock"))
+	if (StrEqual(szClassname, "weapon_glock"))
 	{
 		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
 		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponGlockItemHolsterFramePost);
 		return;
 	}
 
-	if(StrEqual(szClassname, "weapon_assassin_glock"))
+	if (StrEqual(szClassname, "weapon_assassin_glock"))
 	{
 		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
 		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponAssassinGlockItemHolsterFramePost);
 		return;
 	}
 
-	if(StrEqual(szClassname, "weapon_357"))
+	if (StrEqual(szClassname, "weapon_357"))
 	{
 		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
 		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_Weapon357ItemHolsterFramePost);
 		return;		
 	}
 
-	if(StrEqual(szClassname, "weapon_mp5"))
+	if (StrEqual(szClassname, "weapon_mp5"))
 	{
 		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
 		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponMp5ItemHolsterFramePost);
 		return;
 	}
 
-	if(StrEqual(szClassname, "weapon_shotgun"))
+	if (StrEqual(szClassname, "weapon_shotgun"))
 	{
 		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
 		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponShotgunItemHolsterFramePost);
 		return;
 	}
 
-	if(StrEqual(szClassname, "grenade_bolt"))
+	if (StrEqual(szClassname, "grenade_bolt"))
 	{
 		Bolt_Path(iEntIndex); //Set proper skin, make it explosive if needed and add trail if enabled
 	//	DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput); //Disable exploading bolt if is not allowed
 		return;
 	}
 		
-	if(StrEqual(szClassname, "env_laser_dot"))
+	if (StrEqual(szClassname, "env_laser_dot"))
 	{
 		LaserDot_Path(iEntIndex); //hide laser dot before using new rendering method
 		return;
 	}
 		
-	if(StrEqual(szClassname, "grenade_frag"))
+	if (StrEqual(szClassname, "grenade_frag"))
 	{
 		Frag_Path(iEntIndex); //Use VPhysics for frag grenade if classic frags is disabled
 		return;
 	}
 		
-	if(StrEqual(szClassname, "env_sprite"))
+	if (StrEqual(szClassname, "env_sprite"))
 	{
 		RequestFrame(Sprite_PathCanister, iEntIndex); //Control canister's sprite visibility depending on pick up state
 													  //used RequestFrame because parent is not immediately set
 		return;
 	}
 		
-	if(StrEqual(szClassname, "grenade_mp5_contact"))
+	if (StrEqual(szClassname, "grenade_mp5_contact"))
 	{
 		Mp5Contact_Path(iEntIndex); //Add smoke particle effect to MP5 barrel grenade if enabled
 		return;
 	}
 		
-	if(StrEqual(szClassname, "weapon_crossbow"))
+	if (StrEqual(szClassname, "weapon_crossbow"))
 	{
 		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
 		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponCrossbowItemHolsterFramePost);
@@ -709,7 +730,7 @@ public void OnEntitySpawned(int iEntIndex)
 		return;
 	}
 		
-	if(StrEqual(szClassname, "weapon_satchel"))
+	if (StrEqual(szClassname, "weapon_satchel"))
 	{
 		//Set custom attack delays on different stages
 		DHookEntity(hkBaseCombatPrimaryAttack, true, iEntIndex, _, Hook_SatchelPrimaryAttackPost);
@@ -982,6 +1003,18 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
+	#if defined ENTPATCH_WATERBULLET
+	if(StrEqual(szClassname, "waterbullet"))
+	{
+		if (g_ConvarNecroWaterBulletEnable.BoolValue)
+		{
+			pEntity.UpdateTransmitState();
+			DHookEntity(hkUpdateTransmitState, false, iEntIndex, _, Hook_WaterBulletUpdateTransmitState);
+		}
+		return;
+	}
+	#endif
+
 	/*if(StrEqual(szClassname, "grenade_bolt"))
 	{
 		Bolt_PathPost(iEntIndex);
@@ -991,6 +1024,7 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	if(StrEqual(szClassname, "npc_snark"))
 	{
 		Snark_PathPost(iEntIndex);
+		DHookEntity(hkIsBaseNPCIsValidEnemy, false, iEntIndex, _, Hook_SnarkIsValidEnemy);
 		return;
 	}
 
@@ -1053,7 +1087,7 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	}
 
 	//the rest is SourceCoop code mainly
-	// if some explosions turn out to be damaging all players except one, this is the fix
+	// if some explosions turn out to be damaging all players except one, this is the fix 
 	// if (strcmp(szClassname, "env_explosion") == 0)
 	// {
 	// 	Hook_ExplosionSpawn(iEntIndex);
@@ -1084,6 +1118,49 @@ public void Hook_OnEntityDeleted(const CBaseEntity pEntity)
 		return;
 	}
 }
+
+public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DHookParam hParams)
+{
+	if (g_bTempDontHookEnts)
+	{
+		DHookSetReturn(hReturn, true);
+		return MRES_Ignored;
+	}
+
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+	if (pEntity == NULL_CBASEENTITY)
+	{
+		DHookSetReturn(hReturn, true);
+		return MRES_Ignored;
+	}
+
+	bool bIsNPC = pEntity.IsNPC();
+
+	char szClassname[64];
+	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
+
+	if (bIsNPC)
+	{
+	}
+	else // !isNPC 
+	{
+		if (strncmp(szClassname, "item_", 5) == 0 || strcmp(szClassname, "prop_soda", false) == 0)
+		{
+			if (pEntity.IsPickupItem())
+			{
+				Hook_ItemKeyValue(pEntity, hParams);
+			}
+
+			DHookSetReturn(hReturn, true);
+			return MRES_Ignored;
+		}
+	}
+
+	DHookSetReturn(hReturn, true);
+	return MRES_Ignored;
+}
+
+
 /*
 MRESReturn Hook_EventQueueAddEvent(Address pThis, DHookParam hParams)
 {

@@ -7,6 +7,9 @@ public void Snark_PathPost(const int iEntIndex)
     if (!pSnark.IsValid())
         return;
 
+    if (g_ConvarNecroCoopSnarks.BoolValue)
+        RequestFrame(Hook_Snark_OnCreated, iEntIndex);
+
     CBlackMesaPlayer pPlayer = CBlackMesaPlayer(pSnark.GetOwner());
     if (!pPlayer.IsValid())
         return;
@@ -14,7 +17,7 @@ public void Snark_PathPost(const int iEntIndex)
     pSnark.SetSnarkOwner(pPlayer.entindex); //store here if we lost owner, because it does somehow, right before it should be removed, idk why
     
     //trigger the first snark explosion and clean from the array
-    if (g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] != 0)
+    if (g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] <= 0)
     {
         CNpc_Snark pOldSnark = CNpc_Snark(g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1]);
         if (pOldSnark.IsValid())
@@ -22,16 +25,16 @@ public void Snark_PathPost(const int iEntIndex)
             pOldSnark.AcceptInputInt("SetHealth", 0);
         }
 
-        g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] = 0;
+        g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] = NULL_CBASEENTITY;
     }
 
     //shift to right everyone
     for (int i = MAX_SNARKS - 1; i > 0; i--)
     {
-        int iOldEnt = g_hClientSnarks[pPlayer.entindex][i - 1];
-        g_hClientSnarks[pPlayer.entindex][i] = iOldEnt;
+        CBaseEntity iOldEnt = CBaseEntity(g_hClientSnarks[pPlayer.entindex][i - 1]);
+        g_hClientSnarks[pPlayer.entindex][i] = iOldEnt.entindex;
 
-        if (iOldEnt != 0)
+        if (iOldEnt.entindex > 0)
         {
             CNpc_Snark pOldSnark = CNpc_Snark(iOldEnt);
             if (pOldSnark.IsValid())
@@ -51,6 +54,20 @@ public void Snark_PathPost(const int iEntIndex)
     pSnark.FireOutput("OnUser4");
 }
 
+public void Hook_Snark_OnCreated(const int iEntIndex)
+{
+	if (CBaseEntity(iEntIndex).GetHammerID() != 0)
+        return;
+    
+    CBasePlayer pPlayer = CBasePlayer(CNpc_Snark(iEntIndex).GetSnarkOwner());
+    if (!pPlayer.IsValid())
+        return;
+
+    int iTeam = (mp_friendlyfire.BoolValue) ? TEAM_ANY : pPlayer.GetTeam();
+	SetEntProp(iEntIndex, Prop_Data, "m_iInitialTeamNum", iTeam);
+	SetEntProp(iEntIndex, Prop_Data, "m_iTeamNum", iTeam);
+}
+
 public void Hook_Snark_OnDeleted(CNpc_Snark pSnark)
 {
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(pSnark.GetSnarkOwner());
@@ -65,10 +82,10 @@ public void Hook_Snark_OnDeleted(CNpc_Snark pSnark)
 	//shift to left
 	for (int i = iSnarkNum; i < MAX_SNARKS - 1; i++)
 	{
-		int nextEnt = g_hClientSnarks[pPlayer.entindex][i + 1];
-		g_hClientSnarks[pPlayer.entindex][i] = nextEnt;
+		CBaseEntity nextEnt = CBaseEntity(g_hClientSnarks[pPlayer.entindex][i + 1]);
+		g_hClientSnarks[pPlayer.entindex][i] = nextEnt.entindex;
 
-		if (nextEnt != 0)
+		if (nextEnt.entindex > 0)
 		{
 			CNpc_Snark pNextSnark = CNpc_Snark(nextEnt);
 			if (pNextSnark.IsValid())
@@ -79,5 +96,30 @@ public void Hook_Snark_OnDeleted(CNpc_Snark pSnark)
 	}
 
 	//clean the last element
-	g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] = 0;
+	g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] = NULL_CBASEENTITY;
+}
+
+public MRESReturn Hook_SnarkIsValidEnemy(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+    if (!g_ConvarNecroCoopSnarks.BoolValue)
+        return MRES_Ignored;
+    
+	if (DHookIsNullParam(hParams, 1) ||  mp_friendlyfire.BoolValue || !CMultiplayRules.IsTeamplay())
+        return MRES_Ignored;
+
+    CAI_BaseNPC pEnemy = CAI_BaseNPC(DHookGetParam(hParams, 1));
+    if (!pEnemy.IsValid())
+        return MRES_Ignored;
+
+    CBasePlayer pOwner = CBasePlayer(CNpc_Snark(_this).GetSnarkOwner());
+    if (!pOwner.IsValid())
+        return MRES_Ignored;
+    
+    if (pEnemy.GetTeam() == pOwner.GetTeam() || pEnemy.IsPlayerAlly(pOwner))
+    {
+        DHookSetReturn(hReturn, false);
+        return MRES_Supercede;
+    }
+
+	return MRES_Ignored;
 }

@@ -174,6 +174,20 @@
 					}
 				}
 			}
+			"CAI_BaseNPC::IsValidEnemy" //bool CAI_BaseNPC::IsValidEnemy( CBaseEntity *pEnemy )
+			{
+				"offset"	"CAI_BaseNPC::IsValidEnemy"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pEnemy"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
 			"CAI_BaseNPC::IsNavigationUrgent"
 			{
 				"offset"	"CAI_BaseNPC::IsNavigationUrgent"
@@ -1138,6 +1152,12 @@
 					}
 				}
 			}
+			"CBaseEntity::ShouldDrawUnderwaterBulletBubbles"
+			{
+				"signature"	"CBaseEntity::ShouldDrawUnderwaterBulletBubbles"
+				"callconv"	"cdecl"
+				"return"	"bool"
+			}
 			"CEventQueue::AddEvent" //void CEventQueue::AddEvent( CBaseEntity *target, const char *action, float fireDelay, CBaseEntity *pActivator, CBaseEntity *pCaller, int outputID )
 			{
 				"signature"	"CEventQueue::AddEvent"
@@ -1256,7 +1276,99 @@
 						"type"	"cbaseentity"
 					}
 				}
-				
+			}
+			"CBaseEntity::HandleShotImpactingWater" //bool CBaseEntity::HandleShotImpactingWater( const FireBulletsInfo_t &info, const Vector &vecEnd, ITraceFilter *pTraceFilter, Vector *pVecTracerDest )
+			{
+				"signature"	"CBaseEntity::HandleShotImpactingWater"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"info"
+					{
+						"type"	"objectptr"
+					}
+					"vecEnd"
+					{
+						"type"	"vectorptr"
+					}
+					"pTraceFilter"
+					{
+						"type"	"objectptr"
+					}
+					"pVecTracerDest"
+					{
+						"type"	"vectorptr"
+					}
+				}
+			}
+			"CBaseEntity::FireBullets" //void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
+			{
+				"signature"	"CBaseEntity::FireBullets"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"info"
+					{
+						"type"	"objectptr"
+					}
+				}
+			}
+			"CPropBreakableRagdoll::Use" //void CPropBreakableRagdoll::Use(CPropBreakableRagdoll *this,int *param_1)
+			{
+				"offset"	"CPropBreakableRagdoll::Use"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"pEntity"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
+			"CBaseEntity::UpdateTransmitState" //int CBaseEntity::UpdateTransmitState()
+			{
+				"offset"	"CBaseEntity::UpdateTransmitState"
+				"hooktype"	"entity"
+				"return"	"int"
+				"this"		"entity"
+			}
+			"CBaseEntity::SetTransmitState" //int	CBaseEntity::SetTransmitState( int nFlag)
+			{
+				"signature"	"CBaseEntity::SetTransmitState"
+				"callconv"	"thiscall"
+				"return"	"int"
+				"this"		"entity"
+				"arguments"
+				{
+					"nFlag"
+					{
+						"type"	"int"
+					}
+				}
+			}
+			"CBaseEntity::KeyValue" //bool CBaseEntity::KeyValue( const char *szKeyName, const char *szValue ) 
+			{
+				"signature"	"CBaseEntity::KeyValue"
+				"callconv"	"thiscall"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"szKeyName"
+					{
+						"type"	"charptr"
+					}
+					"szValue"
+					{
+						"type"	"charptr"
+					}
+				}
 			}
 		}
 	}
@@ -1525,6 +1637,27 @@
 				"windows"	"\x55\x8B\xEC\x51\x53\x56\x57\x8B\xF9\x83\xBF\xDC\x04\x00\x00\xFF\x8D\x9F\xDC\x04\x00\x00\x74\x2E\x80\xBB\x78\xFB\xFF\xFF\x00\x8D\x8B\x24\xFB\xFF\xFF\x74\x06\x80\x49\x58\x01\xEB\x13\x8B\x51\x18\x85\xD2\x74\x0C\x8B\xC3\x2B\xC1\x8B\x2A\x2A\x2A\x2A\xDB\xF4\xFF"
 				"linux"		"@_ZN17CBaseCombatWeapon8PrecacheEv"
 			}
+			"CBaseEntity::HandleShotImpactingWater" //find by string ''gunshotsplash''
+			{
+				"windows"	"\x55\x8B\xEC\x81\xEC\xF4\x00\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x2A\x2A\x2A\x2A\x2A\x2A\x53\x2A\x2A\x2A\x56\x57\x2A\x2A\x2A\x8B\xF1\x2A\x2A\x2A\x2A\x2A\x2A\x51\x50\x68\x33\x40\x00\x46\x2A\x2A\x2A\x2A\x2A\x2A\x50\xE8\xA6\x5F\xF5\xFF\xF3\x2A\x2A\x2A\x2A\x2A"
+				"linux"		"@_ZN11CBaseEntity24HandleShotImpactingWaterERK17FireBulletsInfo_tRK6VectorP12ITraceFilterPS3_"
+			}
+			"CBaseEntity::FireBullets" //find by string ''ERROR: Undefined ammo type!\n''
+			{
+				"windows"	"\x53\x8B\xDC\x83\xEC\x08\x83\xE4\xF0\x83\xC4\x04\x55\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x8B\xEC\x81\xEC\x58\x03\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x2A\x2A\x2A\x56\x8B\xF1\x57\x2A\x2A\x2A\x89\xB5\x2A\x2A\x2A\x2A\xE8\x18\xF2\x1A\x00\x2A\x2A\x2A\x8B\xC8\x89\x85\x2A"
+				"linux"		"@_ZN11CBaseEntity11FireBulletsERK17FireBulletsInfo_t"
+			}
+			"CBaseEntity::SetTransmitState" //how to find: find ''CTriggerPlayerMovement::Spawn'' by string ''trigger_playermovement using obsolete'', the last func it calls is what we want
+			{
+				"windows"	"\x55\x8B\xEC\x8B\xD1\x56\x2A\x2A\x2A\x85\xF6\x75\x07\x33\xC0\x5E\x5D\xC2\x04\x00\x8B\x0E\x83\xE1\xC7\x8B\xC1\x2A\x2A\x2A\x89\x06\x33\xC1\xA8\x10\x74\x1E\x2A\x2A\x2A\x85\xC0\x74\x06\x2A\x2A\x2A\x2A\xEB\x02\x33\xC0\x8B\x0D\x2A\x2A\x2A\x2A\x50\x8B\x11\xFF\x92"
+				"linux"		"@_ZN11CBaseEntity16SetTransmitStateEi"
+			}
+
+			"CBaseEntity::KeyValue" //find by string ''!! (%s) key not handled: ''
+			{
+				"windows"	"\x55\x8B\xEC\x83\xEC\x10\x53\x56\x8B\x75\x08\x8B\xD9\x6A\x23\x56\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x85\xC0\x74\x03\xC6\x00\x00"
+				"linux"		"@_ZN11CBaseEntity8KeyValueEPKcS1_"
+			}
 		}
 
 		//  ____  __  __  _____    __  __ ______ __  __ _____     _______ _____ _    _ ______  _____ 
@@ -1657,6 +1790,11 @@
 			{
 				"windows"	"445"
 				"linux"		"446"
+			}
+			"CAI_BaseNPC::IsValidEnemy" // CAI_BaseNPC::IsValidEnemy(CBaseEntity*)
+			{
+				"windows"	"434"
+				"linux"		"435"
 			}
 			"CAI_BaseNPC::IsNavigationUrgent"	// CAI_BaseNPC::IsNavigationUrgent()
 			{
@@ -1938,6 +2076,16 @@
 			{
 				"windows"	"243"
 				"linux"		"244"		
+			}
+			"CPropBreakableRagdoll::Use"
+			{
+				"windows"	"106"
+				"linux"		"107"					
+			}
+			"CBaseEntity::UpdateTransmitState"
+			{
+				"windows"	"21"
+				"linux"		"22"					
 			}
 		}
 	}

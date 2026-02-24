@@ -8,6 +8,8 @@ static float g_flPlayerMaxSpeed[MAX_PLAYERS + 1];
 static bool g_bSetJumpModuleActive[MAX_PLAYERS + 1];
 #endif
 
+static int g_iSpecialPlayerIndex = -1;
+
 //------------------------------------------------------
 // Local Player override
 //------------------------------------------------------
@@ -802,6 +804,12 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 //------------------------------------------------------
 public MRESReturn Hook_UTIL_GetLocalPlayer(DHookReturn hReturn)
 {
+	if(g_iSpecialPlayerIndex != -1)
+	{
+		DHookSetReturn(hReturn, g_iSpecialPlayerIndex);
+		return MRES_Supercede;
+	}
+	
 	CBaseEntity pOverrideEntity = g_pLocalPlayerEntity[g_iLocalPlayerStackPointer];
 	if (pOverrideEntity.IsValid())
 	{
@@ -848,13 +856,13 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 	if (pPlayer.IsValid())
 	{
 		#if defined ENTPATCH_ENV_SCREENOVERLAY
-		if(g_pActiveScreenOverlay[0].entindex != NULL_CBASEENTITY)
+		if (g_pActiveScreenOverlay[0].IsValid())
 		{
 			//if my active screenoverlay is global screenoverlay, reset global vars so it works properly when i join again
 			g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
 			g_flNextOverlayTime[pPlayer.entindex] = 0.0;
 		}
-		else if (g_pActiveScreenOverlay[pPlayer.entindex].entindex != NULL_CBASEENTITY)
+		else if (g_pActiveScreenOverlay[pPlayer.entindex].IsValid())
 		{
 			//if my screenoverlay isn't global but i have a local one, just stop it for me 
 			g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer, pPlayer);
@@ -926,11 +934,7 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 
 	if(bJoinedSpectators || bJoinedSpectatorsTeamplay)
 	{
-		CBaseEntity pCarriedObject = pPlayer.GetUseEntity();
-		if (pCarriedObject != NULL_CBASEENTITY)
-		{
-			pPlayer.ForceDropOfCarriedPhysObjects();
-		}
+		pPlayer.ForceDropOfCarriedPhysObjects();
 
 		//POWER SALO said that sometimes orig code doesn't remove items itself
 		pPlayer.RemoveAllItems();

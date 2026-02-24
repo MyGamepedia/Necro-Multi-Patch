@@ -27,6 +27,8 @@ public MRESReturn Hook_BaseNPCKeyValuePost(int _this, DHookReturn hReturn, DHook
 	return MRES_Ignored;
 }
 
+
+
 public MRESReturn BaseNPCSetModelBlock(int _this, DHookParam hParams)
 {
 	return MRES_Supercede;

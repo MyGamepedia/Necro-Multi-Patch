@@ -6,6 +6,7 @@ static Handle g_pGetSoundInterests;
 static Handle g_pHearingSensitivity;
 static Handle g_pUpdateEnemyMemory;
 static Handle g_pShouldPlayerAvoid;
+static Handle g_pIsPlayerAlly;
 
 enum CAI_BaseNPC_SpawnFlags
 {
@@ -83,6 +84,17 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
 			if (!(g_pShouldPlayerAvoid = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szShouldPlayerAvoid);
 		}
+
+		char szIsPlayerAlly[] = "CAI_BaseNPC::IsPlayerAlly";
+		StartPrepSDKCall(SDKCall_Entity);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szIsPlayerAlly))
+			LogMessage("Could not obtain gamedata offset %s", szIsPlayerAlly);
+		else
+		{
+			PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+			if (!(g_pIsPlayerAlly = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szIsPlayerAlly);
+		}
 	}
 	public CAI_BaseNPC(const int iEntIndex = -1)
 	{
@@ -123,6 +135,10 @@ methodmap CAI_BaseNPC < CBaseCombatCharacter
 	public bool QueryHearSound(CSound pSound)
 	{
 		return SDKCall(g_pQueryHearSound, this, pSound.GetAddress());
+	}
+	public bool IsPlayerAlly(const CBasePlayer pPlayer)
+	{
+		return SDKCall(g_pIsPlayerAlly, this, pPlayer);
 	}
 	public bool CanHearSound(CSound pSound)
 	{

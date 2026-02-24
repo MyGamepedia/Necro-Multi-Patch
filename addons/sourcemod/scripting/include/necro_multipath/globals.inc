@@ -44,7 +44,8 @@ ConVar g_ConvarNecroCreateNewViewmodel;
 ConVar g_ConvarNecroAllowPickupObjects;
 ConVar g_ConvarNecroBlockRestoreWorld;
 ConVar g_ConvarNecroBlockRestoreWorldRespawnPlayers;
-	
+ConVar g_ConvarNecroWaterBulletEnable;
+ConVar g_ConvarNecroCoopSnarks;
 
 DynamicDetour hkBaseCombatWeaponPrecache;
 //DynamicDetour hkBaseCombatDefaultReload;
@@ -81,6 +82,7 @@ DynamicHook hkBlackMesaPlayerCreateAmmoBox;
 //DynamicHook hkWeaponSnarkOperatorHandleAnimEvent;
 DynamicHook hkBlackMesaPlayerPickupObject;
 //DynamicHook hkBlackMesaBaseDetonatorExplodeTouch;
+DynamicHook hkIsBaseNPCIsValidEnemy;
 
 
 float g_fClientFastRespawnDelay[MAX_PLAYERS+1];
@@ -89,8 +91,10 @@ float g_fClientSpectatorJoinTeamDelay[MAX_PLAYERS+1];
 #define MAX_SNARKS 20
 #define MAX_HORNETS 20
 
+//TODO: replace with methodmap
 int g_hClientSnarks[MAX_PLAYERS + 1][MAX_SNARKS]; //store snark ents for each client
 int g_hClientHornets[MAX_PLAYERS + 1][MAX_HORNETS]; //store hornet ents for each client
+
 int g_iUserCmdOffset;
 
 //Handle g_pCreateWeaponTracedBoneMergeEntity;
