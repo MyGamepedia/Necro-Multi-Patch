@@ -60,7 +60,6 @@ public void Snark_PathPost(const int iEntIndex)
 
 public void Hook_Snark_OnCreated(const int iEntIndex)
 {
-    PrintToChatAll("Hook_Snark_OnCreated: %d", iEntIndex);
 	if (CBaseEntity(iEntIndex).GetHammerID() != 0)
         return;
     
