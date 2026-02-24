@@ -46,6 +46,7 @@ ConVar g_ConvarNecroBlockRestoreWorld;
 ConVar g_ConvarNecroBlockRestoreWorldRespawnPlayers;
 ConVar g_ConvarNecroWaterBulletEnable;
 ConVar g_ConvarNecroCoopSnarks;
+ConVar g_ConvarNecroForceAutoModeForCSM;
 
 DynamicDetour hkBaseCombatWeaponPrecache;
 //DynamicDetour hkBaseCombatDefaultReload;
@@ -92,8 +93,8 @@ float g_fClientSpectatorJoinTeamDelay[MAX_PLAYERS+1];
 #define MAX_HORNETS 20
 
 //TODO: replace with methodmap
-int g_hClientSnarks[MAX_PLAYERS + 1][MAX_SNARKS]; //store snark ents for each client
-int g_hClientHornets[MAX_PLAYERS + 1][MAX_HORNETS]; //store hornet ents for each client
+int g_hClientSnarks[MAX_PLAYERS + 1][20]; //store snark ents for each client
+int g_hClientHornets[MAX_PLAYERS + 1][20]; //store hornets ents for each client
 
 int g_iUserCmdOffset;
 
@@ -124,6 +125,7 @@ ConVar g_ConvarNecroGunGameTeammateKarma;
 ConVar g_ConvarNecroGunGameEnabled;
 
 #define GUNGAME_HUDTICK 1.2
+#define GUNGAME_VOTEINFO_DELAY 120.0
 
 int g_iGunGameNextVoteTime = -1;
 int g_iGunGameVoteEnable = 0;

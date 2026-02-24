@@ -702,22 +702,7 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 
 		//Fix for if player died on a ladder
 		SetEntPropEnt(iClient, Prop_Data, "m_hLadder", -1);
-
-		//TODO: Finish this code that cleans blood for spawned player
-		/*int blackmesaviewmodel = GetEntPropEnt(iClient, Prop_Data, "m_hViewModel");
-
-		if(IsValidEntity(blackmesaviewmodel))
-		{
-			int materialmodifycontrol_weapon = CreateEntityByName("material_modify_control");
-			int materialmodifycontrol_arms = CreateEntityByName("material_modify_control");
-
-			if(IsValidEntity(material_modify_control))
-			{
-				DispatchKeyValue(material_modify_control,"materialVar","$detailframe");
-			}
-		}*/
 	}
-
 	else
 	{
 		//Initialize clientside convars from skill.cfg, which may have not executed. 
@@ -731,7 +716,87 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 		ClientCommand(iClient, "cl_gargflame_pointL_col_G 165; cl_gargflame_pointL_intensity 32000; cl_garg_eyeL_light_intensity 100; cl_garg_eyeL_light_range 100");
 	}
 
+	//recreate viewmodel to reset blood
+	if(GetConVarBool(g_ConvarNecroCreateNewViewmodel))
+	{
+		CBasePlayer pPlayer = CBasePlayer(iClient);
+		for (int i = 0; i < MAX_VIEWMODELS; i++)
+		{
+			CPredictedViewModel vm = pPlayer.GetViewModel(i);
+			if (vm != NULL_CBASEENTITY)
+			{
+				vm.Kill();
+				pPlayer.SetViewModel(NULL_CBASEENTITY, i);
+				CPredictedViewModel nvm = CPredictedViewModel(pPlayer.CreateViewModel(i));
+
+				DataPack pack = new DataPack();
+				pack.WriteCell(pPlayer.entindex);
+				pack.WriteCell(nvm.entindex);
+				RequestFrame(UTIL_ResetViewModelBodyGroupForPlayer, pack);
+			}
+		}
+	}
+
 	return MRES_Ignored;
+}
+
+//Fixes issue when the player is using HEV hands while should use character's hands
+//NOTE: I tried SetBodygroup call, but it doesn't work with a hight delay
+public void UTIL_ResetViewModelBodyGroupForPlayer(DataPack pack)
+{
+    pack.Reset();
+
+    int playerEnt = pack.ReadCell();
+    int nvmEnt = pack.ReadCell();
+    delete pack;
+
+    CBlackMesaPlayer pPlayer = CBlackMesaPlayer(playerEnt);
+    CPredictedViewModel nvm = CPredictedViewModel(nvmEnt);
+
+    if (!pPlayer.IsValid() || !nvm.IsValid())
+        return;
+
+    if (nvm != NULL_CBASEENTITY)
+    {         
+        char szCharacterType[MAX_MODELNAME];
+        pPlayer.GetModelName(szCharacterType, sizeof(szCharacterType));
+
+        #if defined DEBUG
+        PrintToChatAll("Model: %s", szCharacterType);
+        #endif
+
+        //TODO: This isn't perfect, because it may switch other bodygroups, should be replaced with SetBodyGroup call
+        if((StrContains(szCharacterType, "mp_scientist") != -1)) //2
+        {
+            if(StrContains(szCharacterType, "mp_scientist_hev") == -1)
+                nvm.SetBody(2);
+        }
+
+        else if(StrContains(szCharacterType, "mp_gman") != -1) //6
+        {
+            nvm.SetBody(6);
+        }
+
+        else if(StrContains(szCharacterType, "mp_zombie_sci") != -1) //4
+        {
+            nvm.SetBody(4);
+        }
+
+        else if(StrContains(szCharacterType, "mp_zombie_guard") != -1) //5
+        {
+            nvm.SetBody(5);
+        }
+
+        else if(StrContains(szCharacterType, "mp_marine") != -1) //1
+        {
+            nvm.SetBody(1);
+        }
+
+        else if(StrContains(szCharacterType, "mp_guard") != -1) //3
+        {
+            nvm.SetBody(3);
+        }
+    }
 }
 
 //Purpose: Various fixes when player is sending commands

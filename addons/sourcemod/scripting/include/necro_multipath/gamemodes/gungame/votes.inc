@@ -107,3 +107,9 @@ public void GunGameVoteNextMap(Handle timer)
 
     ForceChangeLevel(iszCurrentMapName, "\"Gun Game\" vote.");
 }
+
+public Action Timer_GunGameServerMessage(Handle timer)
+{
+    PrintToChatAll("%t", "#GunGame_VoteInfo");
+    return Plugin_Continue;
+}

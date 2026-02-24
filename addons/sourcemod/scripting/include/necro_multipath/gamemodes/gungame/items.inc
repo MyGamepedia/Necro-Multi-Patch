@@ -134,7 +134,7 @@ public Action GunGameGiveResources(int iLevel, CBlackMesaPlayer pPlayer)
                 DataPack pack = new DataPack();
                 pack.WriteCell(pPlayer.entindex);
                 pack.WriteCell(nvm.entindex);
-                RequestFrame(GunGameResetViewModelBodyGroup, pack);
+                RequestFrame(UTIL_ResetViewModelBodyGroupForPlayer, pack);
             }
         }
     }
@@ -153,65 +153,6 @@ public Action GunGameGiveResources(int iLevel, CBlackMesaPlayer pPlayer)
     RequestFrame(GunGameForceSwitchToPrimary, pPlayer); //switch to level's weapon (in case if we are killer's active weapon is punishing weapon)
 
 	return Plugin_Continue;
-}
-
-//Fixes issue when the player is using HEV hands while should use character's hands
-//NOTE: I tried SetBodygroup call, but it doesn't work with a hight delay
-public void GunGameResetViewModelBodyGroup(DataPack pack)
-{
-    pack.Reset();
-
-    int playerEnt = pack.ReadCell();
-    int nvmEnt = pack.ReadCell();
-    delete pack;
-
-    CBlackMesaPlayer pPlayer = CBlackMesaPlayer(playerEnt);
-    CPredictedViewModel nvm = CPredictedViewModel(nvmEnt);
-
-    if (!pPlayer.IsValid() || !nvm.IsValid())
-        return;
-
-    if (nvm != NULL_CBASEENTITY)
-    {         
-        char szCharacterType[MAX_MODELNAME];
-        pPlayer.GetModelName(szCharacterType, sizeof(szCharacterType));
-
-        #if defined DEBUG
-        PrintToChatAll("Model: %s", szCharacterType);
-        #endif
-
-        //TODO: This isn't perfect, because it may switch other bodygroups, should be replaced with SetBodyGroup call
-        if((StrContains(szCharacterType, "mp_scientist") != -1)) //2
-        {
-            if(StrContains(szCharacterType, "mp_scientist_hev") == -1)
-                nvm.SetBody(2);
-        }
-
-        else if(StrContains(szCharacterType, "mp_gman") != -1) //6
-        {
-            nvm.SetBody(6);
-        }
-
-        else if(StrContains(szCharacterType, "mp_zombie_sci") != -1) //4
-        {
-            nvm.SetBody(4);
-        }
-
-        else if(StrContains(szCharacterType, "mp_zombie_guard") != -1) //5
-        {
-            nvm.SetBody(5);
-        }
-
-        else if(StrContains(szCharacterType, "mp_marine") != -1) //1
-        {
-            nvm.SetBody(1);
-        }
-
-        else if(StrContains(szCharacterType, "mp_guard") != -1) //3
-        {
-            nvm.SetBody(3);
-        }
-    }
 }
 
 //Timer to give resources

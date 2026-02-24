@@ -85,6 +85,11 @@
 		"en"		"You have to wait {1:d} seconds before you can start this vote."
 	}
 	
+	"#GunGame_VoteInfo"
+	{
+		"en"		"[SERVER] Print \"!gungame\" in the shared chat to start vote for activating or deactivating \"Gun Game\" game mode."
+	}
+	
 	"#Necro_FIRST_BLOOD"
 	{
 		"#format"	"{1:s}"

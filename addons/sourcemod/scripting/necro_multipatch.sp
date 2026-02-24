@@ -175,6 +175,8 @@ public void OnPluginStart()
 	g_ConvarNecroBlockRestoreWorld = CreateConVar("necro_blockrestoreworld", "0", "Block world restore after warmup intermission time.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroBlockRestoreWorldRespawnPlayers = CreateConVar("necro_blockrestoreworldrespawnplayers", "0", "Block all players respawn after warmup intermission time.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroWaterBulletEnable = CreateConVar("necro_waterbulletenable", "0", "Enable water bullet effects.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroCoopSnarks = CreateConVar("necro_coopsnarks", "0", "Enable SourceCoop snark AI version.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroForceAutoModeForCSM = CreateConVar("necro_forceautomodeforcsm", "1", "Fix static cascade shadows not appearing by forcing auto.", 0, true, 0.0, true, 1.0);
 	
 	//Load custom modes
 	LoadCustomGameModes();
@@ -465,12 +467,19 @@ public void OnMapStart()
 
 	MapStartCustomGameModes();
 
+	MapStartServerMessages();
+
 	g_bMapStarted = true;
 }
 
 void MapStartCustomGameModes()
 {
 	GunGameMapStart();
+}
+
+void MapStartServerMessages()
+{
+	CreateTimer(GUNGAME_VOTEINFO_DELAY, Timer_GunGameServerMessage, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void OnMapEnd()
@@ -905,6 +914,16 @@ public void OnEntitySpawned(int iEntIndex)
 			return;
 		}
 		#endif
+
+		#if defined ENTPATCH_CASCADELIGHT
+		if (strcmp(szClassname, "env_cascade_light") == 0)
+		{
+			if (GetConVarBool(g_ConvarNecroForceAutoModeForCSM))
+				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCascadeLightAcceptInput);
+			
+			return;
+		}
+		#endif
 		
 		#if defined ENTPATCH_AI_SCRIPT_CONDITIONS
 		if (strcmp(szClassname, "ai_script_conditions") == 0)
@@ -1141,6 +1160,23 @@ public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DH
 
 	if (bIsNPC)
 	{
+		static char szKey[MAX_FORMAT];
+		static char szVal[MAX_VALUE];
+		DHookGetParamString(hParams, 1, szKey, sizeof(szKey));
+
+		//note: it may not work on npcs with character manifest support due to timing issues
+		if (StrEqual(szKey, "custommodel"))
+		{
+			DHookGetParamString(hParams, 2, szVal, sizeof(szVal));
+			int iModelIndex = PrecacheModel(szVal);
+			if (iModelIndex)
+			{
+				pEntity.SetModel(szVal);
+				pEntity.SetModelIndex(iModelIndex);
+				DHookEntity(hkSetModel, false, iEntIndex, _, BaseNPCSetModelBlock);
+			}
+		}
+		return MRES_Ignored;
 	}
 	else // !isNPC 
 	{
@@ -1151,12 +1187,33 @@ public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DH
 				Hook_ItemKeyValue(pEntity, hParams);
 			}
 
-			DHookSetReturn(hReturn, true);
 			return MRES_Ignored;
 		}
+
+#if defined ENTPATCH_CASCADELIGHT
+		if (strcmp(szClassname, "env_cascade_light", false) == 0 && GetConVarBool(g_ConvarNecroForceAutoModeForCSM))
+		{
+			char szKeyName[MAX_FORMAT];
+			DHookGetParamString(hParams, 1, szKeyName, sizeof(szKeyName));
+
+			//check if it wants manual mode to prevent broken csm in mp
+			//it's important to fix here because resetting or recreating doesn't work and client will always use manual mode even if false for cascade light ent
+			if (StrEqual(szKeyName, "CSMVolumeMode", false))
+			{
+				char szValue[MAX_VALUE];
+				DHookGetParamString(hParams, 2, szValue, sizeof(szValue));
+				if (StrEqual(szValue, "1", false))
+				{
+					//this is illegal (although doesn't cause any issues), but also the only consistent way, using false/true doesn't work
+					return MRES_Supercede;
+				}
+			}
+
+			return MRES_Ignored;
+		}
+#endif
 	}
 
-	DHookSetReturn(hReturn, true);
 	return MRES_Ignored;
 }
 

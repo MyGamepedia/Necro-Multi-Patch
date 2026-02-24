@@ -34,7 +34,7 @@ public MRESReturn Hook_HumanMedicKilled(int _this, DHookParam hParams)
             pMedic.GetAbsAngles(vecMedicAngles); //NOTE: it looks like the orig code cares only about X angle
 
             pHealthKit.Teleport(vecMedicOrigin, vecMedicAngles);
-            pHealthKit.KeyValue("ResponseContext", "item_sp:1"); //filter this item as sp to spawn sp version of healthkit
+            pHealthKit.KeyValue("ItemType", "1"); //filter this item as sp to spawn sp version of healthkit
             pHealthKit.Spawn();
 
             break;
