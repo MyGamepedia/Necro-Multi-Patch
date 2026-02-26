@@ -339,6 +339,16 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, DHookReturn hReturn, DHookPa
 	return MRES_Ignored;
 }
 
+public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
+{
+	//fixes transparent ragdolls
+	CBasePlayer pPlayer = CBasePlayer(_this);
+	pPlayer.SetRenderMode(RENDER_NORMAL);
+	pPlayer.SetRenderAlpha(255);
+
+	return MRES_Ignored;
+}
+
 public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 {
 	CBasePlayer pPlayer = CBasePlayer(_this);
@@ -348,6 +358,10 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 		
 	#if defined DEBUG
 	PrintToServer("Hook_PlayerKilled: g_fClientFastRespawnDelay[%d]: %f", client, g_fClientFastRespawnDelay[client]);
+	#endif
+
+	#if defined DEBUG
+	//CEventQueue.AddEvent(pPlayer, "Ignite", 5.05, pPlayer, pPlayer);
 	#endif
 
 	return MRES_Ignored;

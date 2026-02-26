@@ -1192,6 +1192,13 @@
 					}
 				}
 			}
+			"CEventQueue::Init" //void CEventQueue::Init()
+			{
+				"signature"	"CEventQueue::Init"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"address"
+			}
 			"CBlackMesaPlayer::PickupObject"
 			{
 				"offset"	"CBlackMesaPlayer::PickupObject"
@@ -1626,6 +1633,11 @@
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x14\x2A\x2A\x2A\x2A\x2A\x2A\x8B\xD1\x2A\x2A\x2A\x33\xC0\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x83\xEC\x18\x8B\xCC\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\xC7\x01\x2A\x2A\x2A\x2A\xC7\x41\x0C\x2A\x2A\x2A"
 				"linux"		"_ZN11CEventQueue8AddEventEP11CBaseEntityPKcfS1_S1_i"
+			}
+			"CEventQueue::Init" //how to find: find ''CWorldSpawnCWorld::Spawn'' by string ''is_console'', one of the funcs it calls is the func you want)
+			{
+				"windows"	"\x8B\xC6\x85\xF6\x75\x2A\x5E\xC7\x47\x30\x00\x00\x00\x00\x5F\xC3"
+				"linux"		"@_ZN11CEventQueue4InitEv"
 			}
 			"CPropBreakableRagdoll::InitRagdoll" //how to find: find CPropBreakableRagdoll::BloodColorFromRagdoll by string ''alienflesh'', open call trees for it, the func that calls this func is the func we want 
 			{

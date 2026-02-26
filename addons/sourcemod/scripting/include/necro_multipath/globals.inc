@@ -100,9 +100,6 @@ int g_iUserCmdOffset;
 
 //Handle g_pCreateWeaponTracedBoneMergeEntity;
 
-Address g_EventQueue;
-
-
 //===========================
 //NECRO GUN GAME GLOBALS
 //===========================

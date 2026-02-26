@@ -84,6 +84,7 @@
 #include <necro_multipath/entities/classes/CBM_MP_GameRules>
 #include <necro_multipath/entities/classes/CBoneSetup>
 #include <necro_multipath/entities/classes/CMultiplayRules>
+#include <necro_multipath/entities/classes/CEventQueue>
 
 #include <necro_multipath/entities/classes/CNPC_PlayerCompanion>
 #include <necro_multipath/entities/classes/CRecipientFilter>
@@ -111,7 +112,7 @@
 
 
 public Plugin myinfo = {
-	name = "Dr.Necro's Black Mesa Servers Multipath",
+	name = "Dr.Necro's Black Mesa Servers Multipatch",
 	author = "MyGamepedia",
 	description = "This addon is used to significantly expands and improves Dr.Necro's Black Mesa multiplayer servers.",
 	version = "1.1.2",
@@ -227,7 +228,6 @@ void LoadGameData()
 	LoadDHookDetour(pGameConfig_Necro, hkStartLagCompensation, "CLagCompensationManager::StartLagCompensation", Hook_StartLagCompensation);
 	//LoadDHookDetour(pGameConfig_Necro, hkGetUserSettings, "CBaseClient::GetUserSetting", Hook_GetUserSettings);
 	LoadDHookDetour(pGameConfig_Necro, hkPostChatMessage, "CBlackMesaKillStreaks::PostChatMessage", Hook_PostChatMessage);
-	//LoadDHookDetour(pGameConfig_Srccoop, hkEventQueuAddEvent, "CEventQueue::AddEvent", Hook_EventQueueAddEvent);
 	LoadDHookDetour(pGameConfig_Srccoop, hkPropBreakableRagdollInitRagdoll, "CPropBreakableRagdoll::InitRagdoll", Hook_PropBreakableRagdollInitRagdoll, Hook_PropBreakableRagdollInitRagdollPost);
 	LoadDHookDetour(pGameConfig_Srccoop, hkKeyValue, "CBaseEntity::KeyValue", Hook_BaseEntityKeyValue);
 
@@ -382,6 +382,10 @@ void LoadGameData_Srccoop(const GameData pGameConfig)
 	LoadDHookVirtual(pGameConfig, hkFindNamedEntity, "CSceneEntity::FindNamedEntity");
 	LoadDHookVirtual(pGameConfig, hkUpdateTransmitState, "CBaseEntity::UpdateTransmitState");
 	#endif
+
+	#if defined SRCCOOP_BLACKMESA
+	LoadDHookDetour(pGameConfig, hkEventQueueAddEvent, "CEventQueue::AddEvent", Hook_EventQueueAddEvent_GetAddress);
+	#endif
 	
 	#if defined GAMEPATCH_UTIL_FINDCLIENT
 	if (g_serverOS == OS_Windows)
@@ -513,6 +517,7 @@ public void OnClientPutInServer(int client)
 	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawnPost);
 	DHookEntity(hkFlashlightOff, false, client, _, Hook_FlashlightOff);
 	DHookEntity(hkFlashlightOn, false, client, _, Hook_FlashlightOn);
+	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
 	DHookEntity(hkEvent_Killed, true, client, _, Hook_PlayerKilledPost);
 	DHookEntity(hkBlackMesaPlayerPickupObject, false, client, _, Hook_PickupObject);
 	DHookEntity(hkBlackMesaPlayerPickupObject, true, client, _, Hook_PickupObjectPost);
@@ -1022,6 +1027,18 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	char szClassname[64];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
+	//HACK! HACK! This is a pretty bad way to get an address, I tried Init hook or getting address from config, but none of my signs worked 
+	if(StrEqual(szClassname, "worldspawn"))
+	{
+		//don't if address is already loaded
+		if (g_EventQueue)
+			return;	
+
+		pEntity.AddOutput("OnUser4", "!self", "FireUser4", "", 0.01, 1);
+		pEntity.AcceptInput("FireUser4");
+		return;
+	}
+
 	#if defined ENTPATCH_WATERBULLET
 	if(StrEqual(szClassname, "waterbullet"))
 	{
@@ -1216,23 +1233,3 @@ public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DH
 
 	return MRES_Ignored;
 }
-
-
-/*
-MRESReturn Hook_EventQueueAddEvent(Address pThis, DHookParam hParams)
-{
-    char szInput[256];
-
-    // action (char*)
-    DHookGetParamString(hParams, 2, szInput, sizeof(szInput));
-    TrimString(szInput);
-
-    // print address and action
-    PrintToChatAll(
-        "[EventQueue] this = 0x%X | action = %s",
-        view_as<int>(pThis),
-        szInput
-    );
-
-    return MRES_Ignored;
-}*/

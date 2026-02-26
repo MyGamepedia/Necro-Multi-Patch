@@ -188,6 +188,18 @@ DynamicDetour hkAccumulatePose;
 DynamicDetour hkTestGroundMove;
 #endif
 
+
+#if defined SRCCOOP_BLACKMESA
+DynamicDetour hkEventQueueAddEvent;
+#endif
+
+// ----------------------------
+// Handles
+// ----------------------------
+#if defined SRCCOOP_BLACKMESA
+Address g_EventQueue = Address_Null;
+#endif
+
 // ----------------------------
 // MemPatches
 // ----------------------------
