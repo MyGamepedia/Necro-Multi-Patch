@@ -16,8 +16,7 @@ public void Hornet_PathPost(const int iEntIndex)
     //trigger the first hornet explosion and clean from the array
     if (g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] != 0)
     {
-        CBlackMesaBaseDetonator pOldHornet =
-            CBlackMesaBaseDetonator(g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1]);
+        CBlackMesaBaseDetonator pOldHornet = CBlackMesaBaseDetonator(g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1]);
 
         if (pOldHornet.IsValid())
         {
@@ -44,16 +43,18 @@ public void Hornet_PathPost(const int iEntIndex)
     pHornet.SetUserData("m_iHornetNum", 0);
 }
 
-public void Hook_Hornet_OnDeleted(const CBlackMesaBaseDetonator pHornet)
-{    
+MRESReturn Hook_HornetUpdateOnRemove(int _this)
+{
+	CBlackMesaBaseDetonator pHornet = CBlackMesaBaseDetonator(_this);
+
 	CBlackMesaPlayer pPlayer = pHornet.GetOriginalThrower();
 	if (!pPlayer.IsValid())
-		return;
+		return MRES_Ignored;
 
 	int iHornetNum = pHornet.GetUserData("m_iHornetNum");
 
 	if (iHornetNum < 0 || iHornetNum >= MAX_HORNETS)
-		return;
+		return MRES_Ignored;
 
 	//shift to left
 	for (int i = iHornetNum; i < MAX_HORNETS - 1; i++)
@@ -73,4 +74,6 @@ public void Hook_Hornet_OnDeleted(const CBlackMesaBaseDetonator pHornet)
 
 	//clean the last element
 	g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] = 0;
+
+    return MRES_Ignored;
 }

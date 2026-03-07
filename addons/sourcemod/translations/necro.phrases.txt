@@ -87,7 +87,7 @@
 	
 	"#GunGame_VoteInfo"
 	{
-		"en"		"[SERVER] Print \"!gungame\" in the shared chat to start vote for activating or deactivating \"Gun Game\" game mode."
+		"en"		"Print \"!gungame\" in the shared chat to start vote for activating or deactivating \"Gun Game\" game mode."
 	}
 	
 	"#Necro_FIRST_BLOOD"

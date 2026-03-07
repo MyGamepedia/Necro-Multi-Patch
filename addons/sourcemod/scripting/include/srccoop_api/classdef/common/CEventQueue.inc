@@ -24,7 +24,7 @@ methodmap CEventQueue
 	}
 	
 	//Calls CEventQueue::AddEvent.
-	public static void AddEvent(const CBaseEntity pEntity, const char[] szInput, const float flDelay, const CBaseEntity pActivator, const CBaseEntity pCaller, const int iOutputID = 0)
+	public static void AddEvent(const CBaseEntity pEntity, const char[] szInput, const float flDelay = 0.0, const CBaseEntity pActivator = NULL_CBASEENTITY, const CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
 	{
 		SDKCall(g_pAddEvent, g_EventQueue, pEntity.entindex, szInput, flDelay, pActivator.entindex, pCaller.entindex, iOutputID);
 	}

@@ -83,7 +83,7 @@ DynamicHook hkBlackMesaPlayerCreateAmmoBox;
 //DynamicHook hkWeaponSnarkOperatorHandleAnimEvent;
 DynamicHook hkBlackMesaPlayerPickupObject;
 //DynamicHook hkBlackMesaBaseDetonatorExplodeTouch;
-DynamicHook hkIsBaseNPCIsValidEnemy;
+DynamicHook hkIsValidEnemy;
 
 
 float g_fClientFastRespawnDelay[MAX_PLAYERS+1];

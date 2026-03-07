@@ -121,15 +121,12 @@ public Action GunGameEventDeath(Handle event, const char[] name, bool dontBroadc
     CBlackMesaPlayer pPlayerVictim = CBlackMesaPlayer(GetClientOfUserId(GetEventInt(event, "userid")));     //victim
     CBlackMesaPlayer pPlayerAttacker = CBlackMesaPlayer(GetClientOfUserId(GetEventInt(event, "attacker"))); //attacker/killer
 
+    if (!pPlayerVictim.IsValid() || !pPlayerAttacker.IsValid() || pPlayerAttacker.entindex == pPlayerVictim.entindex)
+        return Plugin_Continue;
+
     //get team for both to compare
     int iTeamVictim = GetClientTeam(pPlayerVictim.entindex);
     int iTeamAttacker = GetClientTeam(pPlayerAttacker.entindex);
-
-    //if the player killed self - ignore
-    if(pPlayerAttacker.entindex == pPlayerVictim.entindex)
-    {
-        return Plugin_Continue;
-    }
 
     //if the player killed ally in tdm - apply neg score
     if (CMultiplayRules.IsTeamplay() && iTeamVictim == iTeamAttacker)

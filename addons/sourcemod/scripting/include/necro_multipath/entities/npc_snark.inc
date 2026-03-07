@@ -72,16 +72,18 @@ public void Hook_Snark_OnCreated(const int iEntIndex)
 	SetEntProp(iEntIndex, Prop_Data, "m_iTeamNum", iTeam);
 }
 
-public void Hook_Snark_OnDeleted(CNpc_Snark pSnark)
+MRESReturn Hook_SnarkUpdateOnRemove(int _this)
 {
+	CNpc_Snark pSnark = CNpc_Snark(_this);
+
 	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(pSnark.GetSnarkOwner());
 	if (!pPlayer.IsValid())
-		return;
+		return MRES_Ignored;
 
 	int iSnarkNum = pSnark.GetUserData("m_iSnarkNum");
 
 	if (iSnarkNum < 0 || iSnarkNum >= MAX_SNARKS)
-		return;
+		return MRES_Ignored;
 
 	//shift to left
 	for (int i = iSnarkNum; i < MAX_SNARKS - 1; i++)
@@ -101,6 +103,8 @@ public void Hook_Snark_OnDeleted(CNpc_Snark pSnark)
 
 	//clean the last element
 	g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] = 0;
+
+	return MRES_Ignored;
 }
 
 public MRESReturn Hook_SnarkIsValidEnemy(int _this, DHookReturn hReturn, DHookParam hParams)
@@ -108,20 +112,96 @@ public MRESReturn Hook_SnarkIsValidEnemy(int _this, DHookReturn hReturn, DHookPa
 	if (!g_ConvarNecroCoopSnarks.BoolValue || DHookIsNullParam(hParams, 1) ||  mp_friendlyfire.BoolValue)
         return MRES_Ignored;
     
-
     CAI_BaseNPC pEnemy = CAI_BaseNPC(DHookGetParam(hParams, 1));
     if (!pEnemy.IsValid())
         return MRES_Ignored;
 
     CBasePlayer pOwner = CBasePlayer(CNpc_Snark(_this).GetSnarkOwner());
+
     if (!pOwner.IsValid())
         return MRES_Ignored;
+
+    if (HasEntProp(pEnemy.entindex, Prop_Data, "m_afMemory") && pEnemy.m_afMemory & bits_MEMORY_PROVOKED)
+        return MRES_Ignored;
+
+    if (pEnemy.IRelationType(pOwner) == D_HT)
+        return MRES_Ignored;
+
+    //Is it owner's friend player ? 
+    bool bIsAllyPlayer = (pEnemy.IsPlayer()) ? (pEnemy.GetTeam() == pOwner.GetTeam()) : false;
+
+    //Does it targets my owner ? 
+    bool bMyOwnerIsTargetEnemy = (HasEntProp(pEnemy.entindex, Prop_Data, "m_hEnemy")) ? (pEnemy.GetEnemy() == pOwner) : false;
     
-    if (pEnemy.GetTeam() == pOwner.GetTeam() || pEnemy.IsPlayerAlly(pOwner))
-    {
+    if (bIsAllyPlayer || pEnemy.IsPlayerAlly(pOwner) || !bMyOwnerIsTargetEnemy)
+    {       
         DHookSetReturn(hReturn, false);
         return MRES_Supercede;
     }
 
 	return MRES_Ignored;
 }
+
+public MRESReturn Hook_SnarkIsPlayerAlly(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (!g_ConvarNecroCoopSnarks.BoolValue || mp_friendlyfire.BoolValue || hParams.IsNull(1))
+        return MRES_Ignored;
+
+    CBlackMesaPlayer pPlayer = CBlackMesaPlayer(DHookGetParam(hParams, 1));
+
+    if (!pPlayer.IsValid())
+        return MRES_Ignored;
+
+    CBlackMesaPlayer pOwner = CBlackMesaPlayer(CNpc_Snark(_this).GetSnarkOwner());
+
+    if (!pOwner.IsValid())
+        return MRES_Ignored;
+    
+    if (pPlayer == pOwner)
+	{
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
+	}
+
+	return MRES_Ignored;
+}
+
+/*
+public MRESReturn Hook_SnarkIRelationType(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+    if(!g_ConvarNecroCoopSnarks.BoolValue || mp_friendlyfire.BoolValue || hParams.IsNull(1))
+        return MRES_Ignored;
+
+    CAI_BaseNPC pEntity = CAI_BaseNPC(DHookGetParam(hParams, 1));
+    
+    if (!pEntity.IsValid())
+        return MRES_Ignored;
+
+    CBasePlayer pOwner = CBasePlayer(CNpc_Snark(_this).GetSnarkOwner());
+
+    if (!pOwner.IsValid())
+        return MRES_Ignored;
+
+    char szClassname[MAX_CLASSNAME];
+    pEntity.GetClassname(szClassname, sizeof(szClassname));
+
+    if (pEntity.IsPlayerAlly(pOwner))
+	{
+        //ignore for provoked guards
+        if (HasEntProp(pEntity.entindex, Prop_Data, "m_afMemory") && pEntity.m_afMemory & bits_MEMORY_PROVOKED)
+            return MRES_Ignored;
+
+        //Does it targets my owner ? 
+        bool bMyOwnerIsTargetEnemy = (HasEntProp(pEntity.entindex, Prop_Data, "m_hEnemy")) ? (pEntity.GetEnemy() == pOwner) : false;
+
+        if (!bMyOwnerIsTargetEnemy)
+        {
+            PrintToChatAll("BOBA");
+		    DHookSetReturn(hReturn, D_LI);
+		    return MRES_Supercede;            
+        }
+    }
+
+    return MRES_Ignored;
+}
+*/

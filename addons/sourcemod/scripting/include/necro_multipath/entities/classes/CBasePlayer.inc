@@ -354,6 +354,9 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	CBasePlayer pPlayer = CBasePlayer(_this);
 	ClearNpcMemoryForPlayer(pPlayer);
 
+	if (pPlayer.GetEffectEntity().IsValid())
+		pPlayer.AcceptInputInt("IgniteLifeTime", 0, pPlayer, pPlayer); //dead players can't burn
+
 	g_fClientFastRespawnDelay[pPlayer.entindex] = GetGameTime() + g_fClientFastRespawnDelay[0];
 		
 	#if defined DEBUG
@@ -420,20 +423,37 @@ public MRESReturn Hook_ForcePlayerToDropThisObject(DHookParam hParams)
 static void ClearNpcMemoryForPlayer(const CBasePlayer pPlayer)
 {
 	int iEntIndex = -1;
+	#if defined SRCCOOP_BLACKMESA
+	char szClassname[MAX_CLASSNAME];
+	#endif
+
 	while ((iEntIndex = FindEntityByClassname(iEntIndex, "*")) != -1)
 	{
 		CBaseEntity pEntity = CBaseEntity(iEntIndex);
 		if (pEntity.IsNPC())
 		{
-			#if defined SRCCOOP_BLACKMESA
-			if (pEntity.IsClassname("npc_abrams"))
-			{
-				// causes a crash in CNPC_Abrams::AimMiniTurret2
-				continue;
-			}
-			#endif
-
 			CAI_BaseNPC pNPC = view_as<CAI_BaseNPC>(pEntity);
+
+			#if defined SRCCOOP_BLACKMESA
+			pEntity.GetClassname(szClassname, sizeof(szClassname));
+			if (strcmp(szClassname, "npc_abrams") == 0)
+			{
+				continue; // causes a crash in CNPC_Abrams::AimMiniTurret2
+			}
+			if (strcmp(szClassname, "npc_nihilanth") == 0)
+			{	
+				continue; // always expects to have an enemy
+			}
+			if (strcmp(szClassname, "npc_human_security") == 0)
+			{
+				if (pNPC.GetEnemy() == pPlayer)
+				{
+					// Reset provoked state - used by CAI_BaseColleague::IRelationType
+					pNPC.m_afMemory &= ~bits_MEMORY_PROVOKED;
+				}
+			}
+			#endif // SRCCOOP_BLACKMESA
+
 			pNPC.ForgetEntity(pPlayer);
 		}
 	}
@@ -964,7 +984,7 @@ public void OnClientDisconnect_Post(int client)
 		}
 		#endif
 	}
-//	g_szSteamIds[client] = "";
+	g_szSteamIds[client] = "";
 	g_bPostTeamSelect[client] = false;
 	g_iAddButtons[client] = 0;
 }
@@ -1022,6 +1042,9 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 			Player_Flashlight3rdPersonOff(pPlayer.entindex);
 		
 		ClearNpcMemoryForPlayer(pPlayer);
+
+		if (pPlayer.GetEffectEntity().IsValid())
+			pPlayer.AcceptInputInt("IgniteLifeTime", 0, pPlayer, pPlayer); //specs can't burn
 	}
 
 	//TODO: move to "jointeam"

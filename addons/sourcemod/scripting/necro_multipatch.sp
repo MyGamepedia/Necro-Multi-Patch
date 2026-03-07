@@ -246,7 +246,7 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig_Necro, hkBaseCombatWeaponItemHolsterFrame, "CBaseCombatWeapon::ItemHolsterFrame");
 	LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaPlayerCreateAmmoBox, "CBlackMesaPlayer::CreateAmmoBox");
 	LoadDHookVirtual(pGameConfig_Srccoop, hkBlackMesaPlayerPickupObject, "CBlackMesaPlayer::PickupObject");
-	LoadDHookVirtual(pGameConfig_Srccoop, hkIsBaseNPCIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
+	LoadDHookVirtual(pGameConfig_Srccoop, hkIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
 	//LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaBaseDetonatorExplodeTouch, "CBlackMesaBaseDetonator::ExplodeTouch");
 	
 	//Memory Vars
@@ -383,6 +383,10 @@ void LoadGameData_Srccoop(const GameData pGameConfig)
 	LoadDHookVirtual(pGameConfig, hkUpdateTransmitState, "CBaseEntity::UpdateTransmitState");
 	#endif
 
+	#if defined ENTPATCH_BM_SNARK
+	LoadDHookVirtual(pGameConfig, hkIRelationType, "CBaseCombatCharacter::IRelationType");
+	#endif
+
 	#if defined SRCCOOP_BLACKMESA
 	LoadDHookDetour(pGameConfig, hkEventQueueAddEvent, "CEventQueue::AddEvent", Hook_EventQueueAddEvent_GetAddress);
 	#endif
@@ -497,10 +501,15 @@ void MapEndCustomModes()
 	GunGameMapEnd();
 }
 
-/*Purpose: Fix following when player is on the server:
-	1. Fix mp_forcerespawn not working properly
-	2. Initialize fast respawn delay variable for player
-*/
+public void OnClientAuthorized(int client, const char[] auth)
+{
+	int sid = GetSteamAccountID(client, false);
+	if (sid)
+	{
+		IntToString(sid, g_szSteamIds[client], sizeof(g_szSteamIds[]));
+	}
+}
+
 public void OnClientPutInServer(int client)
 {
 	if (IsFakeClient(client))
@@ -541,8 +550,9 @@ public void OnClientPutInServer(int client)
 	g_fClientSpectatorJoinTeamDelay[client] = 0.0;
 
 	//disable "other players flashlight"
-	SendConVarValue(client, sv_cheats, "1"); //HACK! This thing needs cheats ON, enable cheats ON, disable the thing, set cheats OFF after
+	SendConVarValue(client, sv_cheats, "1"); //HACK! This thing needs cheats ON, enable cheats ON, disable the thing, set cheats OFF after 
 	ClientCommand(client, "r_flashlight_3rd_draw 0");
+	ClientCommand(client, "developer 0"); //now you will not see tau cannon debug beams
 
 	// `item_ammo_canister` has a client side dlight that will
 	// always appear even if the ammo canister is not being transmitted.
@@ -625,9 +635,14 @@ public void OnConfigsExecutedPost()
 //Purpose: Hook entity creation to setup our custom entity hooks
 public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 {
+	if (CBaseEntity(iEntIndex).IsWeapon())
+		DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
+
 	SDKHook(iEntIndex, SDKHook_Spawn, OnEntitySpawned);
 	SDKHook(iEntIndex, SDKHook_SpawnPost, OnEntitySpawnedPost); //needed for some entities
-	SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
+
+	if (g_ConvarNecroBoltHitscanDamage.FloatValue != 125.0)
+		SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
 }
 
 //Purpose: Check entity classname and apply our custom entity hooks
@@ -642,7 +657,7 @@ public void OnEntitySpawned(int iEntIndex)
 
 	bool bIsNPC = pEntity.IsNPC();
 
-	char szClassname[64];
+	char szClassname[MAX_CLASSNAME];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
 	/*if (StrEqual(szClassname, "newlight_point"))
@@ -792,8 +807,8 @@ public void OnEntitySpawned(int iEntIndex)
 		#endif
 
 		#if defined SRCCOOP_BLACKMESA
-
-		if (strncmp(szClassname, "npc_human_scientist", 19) == 0)
+		if (strncmp(szClassname, "npc_human_scientist", 19) == 0 || strcmp(szClassname, "npc_human_security") == 0 || strcmp(szClassname, "npc_human_eli") == 0 ||
+			strcmp(szClassname, "npc_human_kleiner") == 0 || strcmp(szClassname, "npc_gman") == 0)
 		{
 			#if defined ENTPATCH_PLAYER_ALLY
 			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_IsPlayerAlly);
@@ -803,24 +818,12 @@ public void OnEntitySpawned(int iEntIndex)
 			DHookEntity(hkIsNavigationUrgent, false, iEntIndex, _, Hook_IsNavigationUrgent);
 			#endif
 
-			return;
-		}
-
-		#if defined ENTPATCH_PLAYER_ALLY
-		if (strcmp(szClassname, "npc_human_security") == 0)
-		{
-			#if defined ENTPATCH_PLAYER_ALLY
-			DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_IsPlayerAlly);
-			#endif
-
-			#if defined ENTPATCH_NAVIGATION_URGENT
-			DHookEntity(hkIsNavigationUrgent, false, iEntIndex, _, Hook_IsNavigationUrgent);
+			#if defined ENTPATCH_BM_SNARK
+			DHookEntity(hkIsValidEnemy, false, iEntIndex, _, Hook_PlayerCompanionIsValidEnemy);
 			#endif
 
 			return;
 		}
-		#endif
-		
 		#endif // SRCCOOP_BLACKMESA
 
 		#if defined ENTPATCH_BM_ICHTHYOSAUR
@@ -855,6 +858,14 @@ public void OnEntitySpawned(int iEntIndex)
 			return;
 		}
 		#endif
+
+		#if defined ENTPATCH_BM_BARNACLE
+		if (strcmp(szClassname, "npc_barnacle") == 0)
+		{
+			//SDKHook(iEntIndex, SDKHook_OnTakeDamagePost, Hook_BarnacleOnTakeDamagePost);
+			return;
+		}
+		#endif
 	}
 	else // !isNPC
 	{
@@ -865,12 +876,6 @@ public void OnEntitySpawned(int iEntIndex)
 			return;
 		}
 		#endif
-
-		if (pEntity.IsWeapon())
-		{
-			DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
-			return;
-		}
 
 		#if defined ENTPATCH_POINT_TELEPORT
 		if (strcmp(szClassname, "point_teleport") == 0)
@@ -920,7 +925,7 @@ public void OnEntitySpawned(int iEntIndex)
 		}
 		#endif
 
-		#if defined ENTPATCH_CASCADELIGHT
+		#if defined ENTPATCH_BM_CASCADELIGHT
 		if (strcmp(szClassname, "env_cascade_light") == 0)
 		{
 			if (GetConVarBool(g_ConvarNecroForceAutoModeForCSM))
@@ -1024,7 +1029,7 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	if (pEntity == NULL_CBASEENTITY)
 		return;
 		
-	char szClassname[64];
+	char szClassname[MAX_CLASSNAME];
 	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
 	//HACK! HACK! This is a pretty bad way to get an address, I tried Init hook or getting address from config, but none of my signs worked 
@@ -1060,13 +1065,18 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	if(StrEqual(szClassname, "npc_snark"))
 	{
 		Snark_PathPost(iEntIndex);
-		DHookEntity(hkIsBaseNPCIsValidEnemy, false, iEntIndex, _, Hook_SnarkIsValidEnemy);
+		DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_SnarkUpdateOnRemove);
+		#if defined ENTPATCH_BM_SNARK
+		DHookEntity(hkIsValidEnemy, false, iEntIndex, _, Hook_SnarkIsValidEnemy);
+		DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_SnarkIsPlayerAlly);
+		#endif
 		return;
 	}
 
 	if(StrEqual(szClassname, "grenade_hornet"))
 	{
 		Hornet_PathPost(iEntIndex);
+		DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_HornetUpdateOnRemove);
 		return;
 	}
 
@@ -1131,30 +1141,6 @@ public void OnEntitySpawnedPost(int iEntIndex)
 	// }
 }
 
-public void Hook_OnEntityDeleted(const CBaseEntity pEntity)
-{
-	char szClassname[MAX_CLASSNAME];
-	pEntity.GetClassname(szClassname, sizeof(szClassname));
-
-	if (StrEqual(szClassname, "npc_snark"))
-	{
-		Hook_Snark_OnDeleted(CNpc_Snark(pEntity.entindex));
-		return;
-	}
-
-	if (StrEqual(szClassname, "grenade_hornet"))
-	{
-		Hook_Hornet_OnDeleted(CBlackMesaBaseDetonator(pEntity.entindex));
-		return;
-	}
-
-	if (StrEqual(szClassname, "env_screenoverlay"))
-	{
-		pEntity.AcceptInput("StopOverlaysAll");
-		return;
-	}
-}
-
 public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DHookParam hParams)
 {
 	if (g_bTempDontHookEnts)
@@ -1207,7 +1193,7 @@ public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DH
 			return MRES_Ignored;
 		}
 
-#if defined ENTPATCH_CASCADELIGHT
+#if defined ENTPATCH_BM_CASCADELIGHT
 		if (strcmp(szClassname, "env_cascade_light", false) == 0 && GetConVarBool(g_ConvarNecroForceAutoModeForCSM))
 		{
 			char szKeyName[MAX_FORMAT];

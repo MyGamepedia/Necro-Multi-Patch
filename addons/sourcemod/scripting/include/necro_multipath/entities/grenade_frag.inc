@@ -20,7 +20,9 @@ public void Frag_Path(int entity)
 //Purpose: Post spawn hook for grenade_frag to reset multiplayer override
 public void Frag_PathPost(int entity)
 {
-//	PrintToServer("Frag_Path: m_hOriginalThrower: %d", GetEntPropEnt(entity, Prop_Data, "m_hOriginalThrower")); //frag creator
+	//PrintToServer("Frag_PathPost: m_flDetonateTimer: %.5f", GetEntPropFloat(entity, Prop_Send, "m_flDetonateTimer")); //frag creator
+	//PrintToServer("Frag_PathPost: m_flCreationTime: %.5f", GetEntPropFloat(entity, Prop_Data, "m_flCreationTime")); //frag creator
+	
 //	PrintToServer("Frag_Path: m_hThrower: %d", GetEntPropEnt(entity, Prop_Data, "m_hThrower"));					//frag creator or somebody who last picked up
 	if (!GetConVarBool(g_ConvarNecroClassicFrags))
 	{

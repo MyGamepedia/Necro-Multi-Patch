@@ -117,6 +117,10 @@ DynamicHook hkStartObserverMode;
 DynamicHook hkPlayerWeaponShootPosition;
 #endif
 
+#if defined ENTPATCH_BM_SNARK
+DynamicHook hkIRelationType;
+#endif
+
 #if defined ENTPATCH_BM_SP_WEAPONS
 //DynamicHook hkBaseCombatWeaponItemPostFrame;
 //DynamicHook hkBaseCombatWeaponDeploy;
@@ -217,7 +221,7 @@ ArrayList g_pCoopModeMemPatchList;
 char g_szMapName[MAX_MAPNAME]; //NOTE: left warning here
 char g_szPrevMapName[MAX_MAPNAME];  //NOTE: left warning here
 char g_szEntityString[ENTITYSTRING_LENGTH];  //NOTE: left warning here
-//char g_szSteamIds[MAX_PLAYERS+1][32];
+char g_szSteamIds[MAX_PLAYERS+1][32];
 bool g_bTempDontHookEnts;
 public bool g_bMapStarted;
 int g_iPlayerCount;
@@ -233,6 +237,8 @@ bool g_bIsMultiplayerOverride = true;
 
 // Counts the # of overrides to `gpGlobals->maxclients`.
 int g_iMaxClientsOverrides = 0;
+
+bool g_bIsEventQueueLoaded = false;
 
 // The entity which UTIL_GetLocalPlayer hook will return the closest player to, alternatively containing the player index itself.
 // Note: Real stack size is 1 less, because first entry starts at index 1.

@@ -53,3 +53,62 @@ public void Hook_Barnacle_OnRelease(const char[] szOutput, const int iCaller, co
 		pPlayer.SetLaggedMovement(1.0);
 	}
 }
+
+//------------------------------------------------------
+// npc_barnacle
+// fix death animation not played sometimes
+//------------------------------------------------------
+public void Barnacle_Path(int iEntIndex)
+{
+	CAI_BaseNPC pBarnacle = CAI_BaseNPC(iEntIndex);
+	pBarnacle.AddOutput("OnDeath", "!self", "AddOutput", "sequence 4");
+}
+
+//------------------------------------------------------
+// npc_barnacle
+// fix damage animation not played sometimes
+//------------------------------------------------------
+public Action Hook_BarnacleOnTakeDamagePost(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
+{
+	/*
+	if (weapon != NULL_CBASEENTITY)
+	{
+		char szClassname[64];
+		GetEntityClassname(weapon, szClassname, sizeof(szClassname));
+		if (strcmp(szClassname, "weapon_357") == 0)
+		{
+			damage *= sk_barnacle_357_dmg_scale.FloatValue;
+		}
+
+		if (strcmp(szClassname, "weapon_glock") == 0 || strcmp(szClassname, "weapon_mp5") == 0)
+		{
+			damage *= sk_barnacle_bullet_dmg_scale.FloatValue;
+		}
+
+		if (strcmp(szClassname, "weapon_shotgun") == 0)
+		{
+			damage *= sk_barnacle_buckshot_dmg_scale.FloatValue;
+		}
+	}
+
+	
+	attacker = 0;
+	weapon = -1;
+	damagetype = 0;
+	inflictor = 0;
+	damage = 0.0;
+
+	for (int i = 0; i <= 2; i++)
+	{
+		damageForce[i] = 0.0;
+		damageForce[i] = 0.0;
+	}
+	*/
+
+	CAI_BaseNPC pEntity = CAI_BaseNPC(victim);
+	pEntity.SetNextThink(GetTickedTime() + 0.1);
+
+	//PrintToChatAll("victim %d, attacker %d, inflictor %d, damage %.2f, type %d, weapon %d", victim, attacker, inflictor, damage, damagetype, weapon);
+
+	return Plugin_Continue;
+}

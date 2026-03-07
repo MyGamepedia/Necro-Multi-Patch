@@ -1377,6 +1377,20 @@
 					}
 				}
 			}
+			"CBaseCombatCharacter::IRelationType" // Disposition_t CBaseCombatCharacter::IRelationType ( CBaseEntity *pTarget )
+			{
+				"offset"	"CBaseCombatCharacter::IRelationType"
+				"hooktype"	"entity"
+				"return"	"int"
+				"this"		"entity"
+				"arguments"
+				{
+					"pTarget"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
 		}
 	}
 	
@@ -2038,6 +2052,12 @@
 			{
 				"windows"	"423"
 				"linux"		"424"
+			}
+
+			"CBaseCombatCharacter::IRelationType" // CBaseCombatCharacter::IRelationType(CBaseEntity*)
+			{
+				"windows"	"318"
+				"linux"		"319"
 			}
 
 			"CPlayerResource::UpdatePlayerData"
