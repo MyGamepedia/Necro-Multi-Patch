@@ -1164,12 +1164,13 @@ public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DH
 	if (bIsNPC)
 	{
 		static char szKey[MAX_FORMAT];
-		static char szVal[MAX_VALUE];
 		DHookGetParamString(hParams, 1, szKey, sizeof(szKey));
 
+		#if defined ENTPATCH_CUSTOM_NPC_MODELS
 		//note: it may not work on npcs with character manifest support due to timing issues
 		if (StrEqual(szKey, "custommodel"))
 		{
+			static char szVal[MAX_VALUE];
 			DHookGetParamString(hParams, 2, szVal, sizeof(szVal));
 			int iModelIndex = PrecacheModel(szVal);
 			if (iModelIndex)
@@ -1179,6 +1180,8 @@ public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DH
 				DHookEntity(hkSetModel, false, iEntIndex, _, BaseNPCSetModelBlock);
 			}
 		}
+		#endif
+
 		return MRES_Ignored;
 	}
 	else // !isNPC 
@@ -1207,7 +1210,8 @@ public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DH
 				DHookGetParamString(hParams, 2, szValue, sizeof(szValue));
 				if (StrEqual(szValue, "1", false))
 				{
-					//this is illegal (although doesn't cause any issues), but also the only consistent way, using false/true doesn't work
+					//HACK!
+					//this is illegal (although doesn't cause any issues), but also the only consistent way, using false/true doesn't work consistently (tones of tests was done)
 					return MRES_Supercede;
 				}
 			}
