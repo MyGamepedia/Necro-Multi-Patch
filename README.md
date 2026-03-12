@@ -1,3 +1,4 @@
+[![Telegram](https://telegram-badge.vercel.app/api/telegram-badge?channelId=@blackmesaBMSchat)](https://t.me/blackmesaBMSchat)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/MyGamepedia/Necro-Multi-Patch)
 # Necro-Multi-Patch
 Repository for __Necro Multi-Patch__ addon, a [SourceMod](https://github.com/alliedmodders/sourcemod) plugin specially created for __[tick 100]NecroHELL!__ and 
