@@ -73,6 +73,6 @@ This plugin adds following ConVars:
 - Used a major part of code from [SourceCoop](https://github.com/ampreeT/SourceCoop).
 - Used and reworked code from [fast_spawn](https://forums.alliedmods.net/showthread.php?p=2362850) plugin by __Alienmario__ ([Steam](https://steamcommunity.com/id/4oM0/), [GitHub](https://github.com/Alienmario)).
 - Used and reworked code from [L4D2 Lag Compensation Null CUserCmd fix](https://hlmod.net/threads/krash-servera-ne-ochen-ponjatny-prichiny.35472/post-600631) plugin by __fdxx__.
-- Used and reworked code from [Gungame for HL2DM](https://forums.alliedmods.net/showthread.php?t=97564) plugin bu __Benjamin1995__ ([AlliedModders](https://forums.alliedmods.net/member.php?u=54282)).
+- Used and reworked code from [Gungame for HL2DM](https://forums.alliedmods.net/showthread.php?t=97564) plugin by __Benjamin1995__ ([AlliedModders](https://forums.alliedmods.net/member.php?u=54282)).
   
 TODO: Add more info in README.md generally.
