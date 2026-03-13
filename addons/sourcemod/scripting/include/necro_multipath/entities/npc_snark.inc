@@ -1,9 +1,6 @@
 #pragma newdecls required
 #pragma semicolon 1
 
-#pragma newdecls required
-#pragma semicolon 1
-
 public void Snark_PathPost(const int iEntIndex)
 {
     CNpc_Snark pSnark = CNpc_Snark(iEntIndex);
@@ -20,24 +17,27 @@ public void Snark_PathPost(const int iEntIndex)
     pSnark.SetSnarkOwner(pPlayer.entindex); //store here if we lost owner, because it does somehow, right before it should be removed, idk why
 
     //trigger the first snark explosion and clean from the array
-    if (g_hClientSnarks[pPlayer.entindex][19] != 0)
+    if (g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] > 0)
     {
-        CNpc_Snark pOldSnark = CNpc_Snark(g_hClientSnarks[pPlayer.entindex][19]);
-        if (pOldSnark.IsValid())
-        {
-            pOldSnark.AcceptInputInt("SetHealth", 0);
-        }
+        CNpc_Snark pOldSnark = CNpc_Snark(g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1]);
+		if (pOldSnark.IsValid())
+		{
+			// Invalidate index so UpdateOnRemove ignores it
+			pOldSnark.SetUserData("m_iSnarkNum", -1);
 
-        g_hClientSnarks[pPlayer.entindex][19] = 0;
+			pOldSnark.AcceptInputInt("SetHealth", 0);
+		}
+
+        g_hClientSnarks[pPlayer.entindex][MAX_SNARKS - 1] = 0;
     }
 
     //shift to right everyone
-    for (int i = 19; i > 0; i--)
+    for (int i = MAX_SNARKS - 1; i > 0; i--)
     {
         int iOldEnt = g_hClientSnarks[pPlayer.entindex][i - 1];
         g_hClientSnarks[pPlayer.entindex][i] = iOldEnt;
 
-        if (iOldEnt != 0)
+        if (iOldEnt > 0)
         {
             CNpc_Snark pOldSnark = CNpc_Snark(iOldEnt);
             if (pOldSnark.IsValid())

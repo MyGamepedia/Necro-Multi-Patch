@@ -14,14 +14,19 @@ public void Hornet_PathPost(const int iEntIndex)
     pHornet.SetOriginalThrower(pPlayer); //?doesn't seem to set for hornets by the game itself?
 
     //trigger the first hornet explosion and clean from the array
-    if (g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] != 0)
+    if (g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] > 0)
     {
         CBlackMesaBaseDetonator pOldHornet = CBlackMesaBaseDetonator(g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1]);
+		
+		if (pOldHornet.IsValid())
+		{
+			// Invalidate index so UpdateOnRemove ignores it
+			pOldHornet.SetUserData("m_iSnarkNum", -1);
 
-        if (pOldHornet.IsValid())
-        {
-            pOldHornet.Kill(); //NOTE: this is good enough for the goal, but but ideally it should explode, unfortunately calling methods didn't work for me
-        }
+			pOldHornet.Kill(); //todo: this is good enough for the goal, but but ideally it should explode, unfortunately calling methods didn't work for me
+		}
+		
+		g_hClientHornets[pPlayer.entindex][MAX_HORNETS - 1] = 0;
     }
 
     //shift to right
@@ -30,7 +35,7 @@ public void Hornet_PathPost(const int iEntIndex)
         int oldEnt = g_hClientHornets[pPlayer.entindex][i - 1];
         g_hClientHornets[pPlayer.entindex][i] = oldEnt;
 
-        if (oldEnt != 0)
+        if (oldEnt > 0)
         {
             CBlackMesaBaseDetonator pOld = CBlackMesaBaseDetonator(oldEnt);
             if (pOld.IsValid())
@@ -62,7 +67,7 @@ MRESReturn Hook_HornetUpdateOnRemove(int _this)
 		int nextEnt = g_hClientHornets[pPlayer.entindex][i + 1];
 		g_hClientHornets[pPlayer.entindex][i] = nextEnt;
 
-		if (nextEnt != 0)
+		if (nextEnt > 0)
 		{
 			CBlackMesaBaseDetonator pNextHornet = CBlackMesaBaseDetonator(nextEnt);
 			if (pNextHornet.IsValid())
