@@ -519,9 +519,9 @@ public MRESReturn Hook_FlashlightOn(int iClient, DHookReturn hReturn, DHookParam
         SetEntPropEnt(spotlightend_flashlight, Prop_Data, "m_hDamageFilter", beam_flashlight); //store beam in this field for quick access
         SetEntPropEnt(spotlightend_flashlight, Prop_Data, "m_hOwnerEntity", iClient); //store client
 
-        SetEntPropEnt(beam_flashlight, Prop_Data, "m_hDamageFilter", spotlightend_flashlight); //store spotlight_end in this field for quick access
-        SetEntPropEnt(spotlightend_flashlight, Prop_Data, "m_hOwnerEntity", iClient); //store client
-
+		SetEntPropEnt(beam_flashlight, Prop_Data, "m_hDamageFilter", spotlightend_flashlight); //store spotlight_end in this field for quick access
+		SetEntPropEnt(beam_flashlight, Prop_Data, "m_hOwnerEntity", iClient); //store client
+		
         //hide for owner
         if(GetConVarBool(g_ConvarNecroOtherPlayersFlashlightTransmit))
         {

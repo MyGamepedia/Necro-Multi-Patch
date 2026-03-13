@@ -4,11 +4,11 @@
 //initialization.
 public void LoadGunGame()
 {
-    g_ConvarNecroGunGameWeaponState[0] = CreateConVar("necro_gungame_state_0_weapon", "weapon_glock", "Weapon to give on level 0.");
-    g_ConvarNecroGunGameWeaponState[1] = CreateConVar("necro_gungame_state_1_weapon", "weapon_357", "Weapon to give on level 1.");
-    g_ConvarNecroGunGameWeaponState[2] = CreateConVar("necro_gungame_state_2_weapon", "weapon_crowbar", "Weapon to give on level 2.");
-    g_ConvarNecroGunGameWeaponState[3] = CreateConVar("necro_gungame_state_3_weapon", "weapon_hivehand", "Weapon to give on level 3.");
-    g_ConvarNecroGunGameWeaponState[4] = CreateConVar("necro_gungame_state_4_weapon", "weapon_satchel", "Weapon to give on level 4.");
+    g_ConvarNecroGunGameWeaponState[0] = CreateConVar("necro_gungame_state_0_weapon", "weapon_357", "Weapon to give on level 0.");
+    g_ConvarNecroGunGameWeaponState[1] = CreateConVar("necro_gungame_state_1_weapon", "weapon_glock", "Weapon to give on level 1.");
+    g_ConvarNecroGunGameWeaponState[2] = CreateConVar("necro_gungame_state_2_weapon", "weapon_satchel", "Weapon to give on level 2.");
+    g_ConvarNecroGunGameWeaponState[3] = CreateConVar("necro_gungame_state_3_weapon", "weapon_crowbar", "Weapon to give on level 3.");
+    g_ConvarNecroGunGameWeaponState[4] = CreateConVar("necro_gungame_state_4_weapon", "weapon_hivehand", "Weapon to give on level 4.");
     g_ConvarNecroGunGameWeaponState[5] = CreateConVar("necro_gungame_state_5_weapon", "weapon_frag", "Weapon to give on level 5.");
     g_ConvarNecroGunGameWeaponState[6] = CreateConVar("necro_gungame_state_6_weapon", "weapon_snark", "Weapon to give on level 6.");
     g_ConvarNecroGunGameWeaponState[7] = CreateConVar("necro_gungame_state_7_weapon", "weapon_mp5", "Weapon to give on level 7.");
