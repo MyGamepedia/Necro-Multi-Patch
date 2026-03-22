@@ -120,6 +120,8 @@ ConVar g_ConvarNecroGunGamePunishingWeaponState;
 ConVar g_ConvarNecroGunGameFinalLevelNum;
 ConVar g_ConvarNecroGunGameTeammateKarma;
 ConVar g_ConvarNecroGunGameEnabled;
+ConVar g_ConvarNecroGunGameTextPosX;
+ConVar g_ConvarNecroGunGameTextPosY;
 
 #define GUNGAME_HUDTICK 1.2
 #define GUNGAME_VOTEINFO_DELAY 120.0

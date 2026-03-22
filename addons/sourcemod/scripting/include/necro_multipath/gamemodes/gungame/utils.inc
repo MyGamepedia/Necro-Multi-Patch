@@ -63,7 +63,7 @@ public Action GunGameDisplayHud(Handle timer, any client)
         int iLevel = g_iNecroGunGameClientLevel[client]; //client level
         int iKillsForNextLevel = g_ConvarNecroGunGameStateKills[iLevel].IntValue; //amount of kills to do for next level
 
-        SetHudTextParams(0.015, 0.015, GUNGAME_HUDTICK, 255, 255, 255, 255, 0, 6.0, 0.1, 0.2);
+        SetHudTextParams(GetConVarFloat(g_ConvarNecroGunGameTextPosX), GetConVarFloat(g_ConvarNecroGunGameTextPosY), GUNGAME_HUDTICK, 255, 255, 255, 255, 0, 6.0, 0.1, 0.2);
 
         ShowHudText(client, -1, "%t", "#GunGame_HUD", iLevel, g_ConvarNecroGunGameFinalLevelNum.IntValue, g_iNecroGunGameClientKills[client], iKillsForNextLevel);     
         

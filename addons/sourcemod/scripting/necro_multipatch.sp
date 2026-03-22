@@ -115,7 +115,7 @@ public Plugin myinfo = {
 	name = "Dr.Necro's Black Mesa Servers Multipatch",
 	author = "MyGamepedia",
 	description = "This addon is used to significantly expands and improves Dr.Necro's Black Mesa multiplayer servers.",
-	version = "1.1.2",
+	version = "1.2.0",
 	url = ""
 };
 

@@ -75,6 +75,9 @@ public void LoadGunGame()
 
     g_ConvarNecroGunGameTeammateKarma = CreateConVar("necro_gungame_enable_teammete_karma", "1", "Deducts 50 points for killing your ally if used 1 for this console variable.", FCVAR_NONE, true, 0.0, true, 1.0);
 
+    g_ConvarNecroGunGameTextPosX = CreateConVar("necro_gungame_text_pos_x", "0.015", "Text position by X.", FCVAR_NONE);
+	g_ConvarNecroGunGameTextPosY = CreateConVar("necro_gungame_text_pos_y", "0.06", "Text position by Y.", FCVAR_NONE);
+
     g_ConvarNecroGunGameEnabled = CreateConVar("necro_gungame_state", "0", "Toggle game mode state between enabled and disabled.");
     HookConVarChange(g_ConvarNecroGunGameEnabled, OnGunGameStateChanged);
 }
