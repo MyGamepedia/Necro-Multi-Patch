@@ -42,6 +42,9 @@ This plugin adds several systems that control the design of various aspects of t
 
 ### Default items give
 * The default spawn items list (crowbar, 3 frags, glock, full ammo for 9mm) can be disabled using `necro_givedefaultitems`.
+
+## Game modes
+Gun Game game mode can be toggled by vote, the vote can be launched by typing in chat `!gungame`. In addition to the classic formula, in which you complete levels by killing other players with the weapons you have, and wins player with the highest level, this version also supports up to 14 levels, demotion of other players levels through special weapon, both solo and team play. It also has a very flexible customization through console variables, includes levels, kills each level takes, weapons, ammo, punishing weapon state and type, bad teammate karma, UI position.
  
 ## Console Variables
 This plugin adds following ConVars:
