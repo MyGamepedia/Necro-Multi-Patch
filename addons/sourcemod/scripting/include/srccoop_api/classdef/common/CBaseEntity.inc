@@ -339,6 +339,14 @@ methodmap CBaseEntity
 	{
 		SetEntProp(this.entindex, Prop_Data, "m_iTeamNum", iTeamNum);
 	}
+	public int GetInitialTeam()
+	{
+		return GetEntProp(this.entindex, Prop_Data, "m_iInitialTeamNum");
+	}
+	public void SetInitialTeam(const int iTeamNum)
+	{
+		SetEntProp(this.entindex, Prop_Data, "m_iInitialTeamNum", iTeamNum);
+	}
 	public void GetEyePosition(float vec3Buffer[3])
 	{
 		if (this.IsPlayer())

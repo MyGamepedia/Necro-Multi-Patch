@@ -43,3 +43,34 @@ public MRESReturn Hook_RespawnPlayers(DHookReturn hReturn)
 	return MRES_Ignored;
 }
 #endif
+
+public MRESReturn Hook_FreezeAllPlayers(DHookReturn hReturn)
+{
+    CBasePlayer pPlayer;
+
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        pPlayer = CBasePlayer(i);
+
+        //hide certain part of the hud, so players can't switch wpns because froozen
+        if (pPlayer.IsValid() && pPlayer.IsAlive())
+            pPlayer.SetHideHud(view_as<HideHudFlags_t>(32));
+    }
+
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_UnfreezeAllPlayers(DHookReturn hReturn)
+{
+    CBasePlayer pPlayer;
+
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        pPlayer = CBasePlayer(i);
+        
+        if (pPlayer.IsValid() && pPlayer.IsAlive())
+            pPlayer.SetHideHud(view_as<HideHudFlags_t>(0));
+    }
+
+	return MRES_Ignored;
+}

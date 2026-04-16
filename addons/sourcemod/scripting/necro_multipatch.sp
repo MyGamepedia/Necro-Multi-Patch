@@ -13,6 +13,7 @@
 #include <necro_multipath/macros_srccoop>
 #include <necro_multipath/typedef_srccoop>
 #include <necro_multipath/globals_srccoop>
+#include <necro_multipath/public>
 #include <srccoop_api/util>
 
 #include <necro_multipath/globals>
@@ -36,6 +37,7 @@
 #include <necro_multipath/entities/grenade_hornet>
 #include <necro_multipath/entities/grenade_mp5_contact>
 #include <necro_multipath/entities/item_ammo_canister>
+#include <necro_multipath/entities/item_battery>
 #include <necro_multipath/entities/item_weapon_snark>
 #include <necro_multipath/entities/misc_marionettist>
 #include <necro_multipath/entities/music_track>
@@ -115,29 +117,35 @@ public Plugin myinfo = {
 	name = "Dr.Necro's Black Mesa Servers Multipatch",
 	author = "MyGamepedia",
 	description = "This addon is used to significantly expands and improves Dr.Necro's Black Mesa multiplayer servers.",
-	version = "1.2.0",
+	version = "1.2.1",
 	url = ""
 };
 
 public void OnPluginStart()
 {
-	//don't load this plugin in singleplayer
+	//don't load this plugin in singleplayer 
 	if (MaxClients < 2)
 	{
 		SetFailState("Don't use this plugin in singleplayer!");
 	}
 	
 	//existing convars
+	player_respawn_protection_time = FindConVar("player_respawn_protection_time");
 	sk_crossbow_tracer_enabled = FindConVar("sk_crossbow_tracer_enabled");
 	sv_long_jump_manacost = FindConVar("sv_long_jump_manacost");
+	player_respawn_alpha = FindConVar("player_respawn_alpha");
 	sv_jump_long_enabled = FindConVar("sv_jump_long_enabled");
+	sv_ladder_useonly = FindConVar("sv_ladder_useonly");
 	mp_friendlyfire = FindConVar("mp_friendlyfire");
 	sv_speed_sprint = FindConVar("sv_speed_sprint");
 	mp_forcerespawn = FindConVar("mp_forcerespawn");
 	sv_always_run = FindConVar("sv_always_run");
 	sv_speed_walk = FindConVar("sv_speed_walk");
 	mp_flashlight = FindConVar("mp_flashlight");
+	mp_teamplay = FindConVar("mp_teamplay");
 	sv_cheats = FindConVar("sv_cheats");
+	hostname = FindConVar("hostname");
+
 	
 	//new convars
 	g_ConvarNecroGiveDefaultItems = CreateConVar("necro_givedefaultitems", "1", "Enable default give items list for on player spawn.", 0, true, 0.0, true, 1.0);
@@ -178,7 +186,13 @@ public void OnPluginStart()
 	g_ConvarNecroWaterBulletEnable = CreateConVar("necro_waterbulletenable", "0", "Enable water bullet effects.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroCoopSnarks = CreateConVar("necro_coopsnarks", "0", "Enable SourceCoop snark AI version.", 0, true, 0.0, true, 1.0);
 	g_ConvarNecroForceAutoModeForCSM = CreateConVar("necro_forceautomodeforcsm", "1", "Fix static cascade shadows not appearing by forcing auto.", 0, true, 0.0, true, 1.0);
-	
+	g_ConvarNecroHevSuitSounds = CreateConVar("necro_hevsuitsounds", "0", "Allow HEV Suit voice lines from the campaign.", 0, true, 0.0, true, 1.0);
+	g_ConvarNecroSpawnProtectionColorRed = CreateConVar("necro_spawnprotectioncolorred", "0", "Red color value for spawn protection that appears with player spawn.", 0, true, 0.0, true, 255.0);
+	g_ConvarNecroSpawnProtectionColorBlue = CreateConVar("necro_spawnprotectioncolorblue", "234", "Blue color value for spawn protection that appears with player spawn.", 0, true, 0.0, true, 255.0);
+	g_ConvarNecroSpawnProtectionColorGreen = CreateConVar("necro_spawnprotectioncolorgreen", "255", "Green color value for spawn protection that appears with player spawn.", 0, true, 0.0, true, 255.0);
+	g_ConvarNecroSpawnProtectionColorAlpha = CreateConVar("necro_spawnprotectioncoloralpha", "255", "Alpha color value for spawn protection that appears with player spawn.", 0, true, 0.0, true, 255.0);
+	g_ConvarNecroSpawnProtectionRenderFX = CreateConVar("necro_spawnprotectionrenderfx", "16", "Render effects for spawn protection that appears with player spawn.");
+
 	//Load custom modes
 	LoadCustomGameModes();
 
@@ -188,11 +202,17 @@ public void OnPluginStart()
 	HookConVarChange(FindConVar("host_timescale"), OnHostTimeScaleChanged);
 	AddCommandListener(Listener_Jointeam, "jointeam"); //note: it was planned to use player_team event hook, but it doesn't store team nums (always 0)  
 	AddCommandListener(Listener_Say, "say");
+
+	//player sounds fixes
+	AddNormalSoundHook(PlayerSoundListener);
 	
 	//HACK! Use first (unused) element in the array to store cvar value
 	g_fClientFastRespawnDelay[0] = GetConVarFloat(g_ConvarNecroFastRespawnDelay);
 	g_fClientSpectatorJoinTeamDelay[0] = GetConVarFloat(g_ConvarNecroSpectatorJoinTeamDelay);
 	
+	gGreetedAuthIds = new StringMap();
+	HookEvent("player_disconnect", OnPlayerDisconnect_CleanGreet);
+
 	//Load detours offsets + some vars from memory
 	LoadGameData();
 
@@ -221,7 +241,7 @@ void LoadGameData()
 	if (hkLevelInit.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_OnLevelInit) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CServerGameDLL::LevelInit");
 
-	//Detours
+	//Detours 
 	LoadDHookDetour(pGameConfig_Necro, hkGiveDefaultItems, "CBlackMesaPlayer::GiveDefaultItems", Hook_GiveDefaultItems);
 	LoadDHookDetour(pGameConfig_Necro, hkBaseCombatWeaponPrecache, "CBaseCombatWeapon::Precache", Hook_BaseCombatWeaponPrecache, Hook_BaseCombatWeaponPrecachePost);
 	LoadDHookDetour(pGameConfig_Necro, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);	
@@ -229,7 +249,12 @@ void LoadGameData()
 	//LoadDHookDetour(pGameConfig_Necro, hkGetUserSettings, "CBaseClient::GetUserSetting", Hook_GetUserSettings);
 	LoadDHookDetour(pGameConfig_Necro, hkPostChatMessage, "CBlackMesaKillStreaks::PostChatMessage", Hook_PostChatMessage);
 	LoadDHookDetour(pGameConfig_Srccoop, hkPropBreakableRagdollInitRagdoll, "CPropBreakableRagdoll::InitRagdoll", Hook_PropBreakableRagdollInitRagdoll, Hook_PropBreakableRagdollInitRagdollPost);
-	LoadDHookDetour(pGameConfig_Srccoop, hkKeyValue, "CBaseEntity::KeyValue", Hook_BaseEntityKeyValue);
+	//LoadDHookDetour(pGameConfig_Srccoop, hkKeyValue, "CBaseEntity::KeyValue", Hook_BaseEntityKeyValue);
+	LoadDHookDetour(pGameConfig_Necro, hkNoteWeaponFired, "CBlackMesaPlayer::NoteWeaponFired", Hook_NoteWeaponFired);
+
+	#if defined PLAYERPATCH_SUIT_SOUNDS
+	LoadDHookDetour(pGameConfig_Necro, hkCheckSuitUpdate, "CBasePlayer::CheckSuitUpdate", Hook_CheckSuitUpdate, Hook_CheckSuitUpdatePost);
+	#endif
 
 	//Offsets
 	LoadDHookVirtual(pGameConfig_Necro, hkAcceptInput, "CBaseEntity::AcceptInput");
@@ -247,7 +272,10 @@ void LoadGameData()
 	LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaPlayerCreateAmmoBox, "CBlackMesaPlayer::CreateAmmoBox");
 	LoadDHookVirtual(pGameConfig_Srccoop, hkBlackMesaPlayerPickupObject, "CBlackMesaPlayer::PickupObject");
 	LoadDHookVirtual(pGameConfig_Srccoop, hkIsValidEnemy, "CAI_BaseNPC::IsValidEnemy");
+	LoadDHookVirtual(pGameConfig_Srccoop, hkUpdateEnemyMemory, "CAI_BaseNPC::UpdateEnemyMemory");
 	//LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaBaseDetonatorExplodeTouch, "CBlackMesaBaseDetonator::ExplodeTouch");
+	LoadDHookVirtual(pGameConfig_Necro, hkUnfreezeAllPlayers, "CBM_MP_GameRules::UnfreezeAllPlayers");
+	LoadDHookVirtual(pGameConfig_Necro, hkFreezeAllPlayers, "CBM_MP_GameRules::FreezeAllPlayers");
 	
 	//Memory Vars
 	g_iUserCmdOffset = pGameConfig_Necro.GetOffset("CBasePlayer::GetCurrentUserCommand");
@@ -356,6 +384,10 @@ void LoadGameData_Srccoop(const GameData pGameConfig)
 	LoadDHookDetour(pGameConfig, hkSetPlayerAvoidState, "CAI_BaseNPC::SetPlayerAvoidState", Hook_SetPlayerAvoidState);
 	#endif
 
+	#if defined PLAYERPATCH_SUIT_SOUNDS
+	LoadDHookDetour(pGameConfig, hkSetSuitUpdate, "CBasePlayer::SetSuitUpdate", Hook_SetSuitUpdate, Hook_SetSuitUpdatePost);
+	#endif
+
 	#if defined ENTPATCH_NPC_SLEEP
 	LoadDHookDetour(pGameConfig, hkBaseNpcUpdateSleepState, "CAI_BaseNPC::UpdateSleepState", Hook_BaseNpcUpdateSleepState);
 	#endif
@@ -438,6 +470,19 @@ void LoadGameData_Srccoop(const GameData pGameConfig)
 	pGameConfig.Close();
 }
 
+public void OnPlayerDisconnect_CleanGreet(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
+
+	//player gone from server, we can greet the player again
+	if (CBlackMesaPlayer(client).IsValid())
+	{
+		char authId[MAX_AUTHID_LENGTH];
+		GetClientAuthId(client, AuthId_Engine, authId, sizeof(authId));
+		gGreetedAuthIds.Remove(authId);
+	}
+}
+
 public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
 {
 	OnMapEnd(); // this does not always get called, so call it here
@@ -453,7 +498,157 @@ public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
 	//save original string for dumps
 	g_szEntityString = szMapEntities;
 
+	SwitchGameModes();
+
 	return MRES_Ignored;
+}
+
+//this is our schedule based gamemode pool system
+public void SwitchGameModes()
+{
+	char hour[4];  
+    FormatTime(hour, sizeof(hour), "%H"); // 24-hour format: "00" to "23"  
+    int currentHour = StringToInt(hour);  
+
+	//----------------------------------------------
+	//Deathmatch
+	//----------------------------------------------
+    if (
+		(currentHour >= 0 && currentHour < 2)
+		||
+		(currentHour >= 8 && currentHour < 10)
+		||
+		(currentHour >= 16 && currentHour < 18)
+	   )
+    {  
+		GameModeToggle_Dm(true, false);
+
+		if (currentHour >= 0 && currentHour < 2)
+		{
+			g_iShedMaxTime = 2;
+			g_iShedMinTime = 0;
+		}
+		else if (currentHour >= 8 && currentHour < 10)
+		{
+			g_iShedMaxTime = 10;
+			g_iShedMinTime = 8;
+		}
+		else if (currentHour >= 16 && currentHour < 18)
+		{
+			g_iShedMaxTime = 18;
+			g_iShedMinTime = 16;
+		}
+    }  
+
+	//----------------------------------------------
+	//Team Deathmatch
+	//----------------------------------------------
+    if (
+		(currentHour >= 2 && currentHour < 4)
+		||
+		(currentHour >= 10 && currentHour < 12)
+		||
+		(currentHour >= 18 && currentHour < 20)
+	   )
+    {  
+		GameModeToggle_Dm(true, true);
+
+		if (currentHour >= 2 && currentHour < 4)
+		{
+			g_iShedMaxTime = 4;
+			g_iShedMinTime = 2;
+		}
+		else if (currentHour >= 10 && currentHour < 12)
+		{
+			g_iShedMaxTime = 12;
+			g_iShedMinTime = 10;
+		}
+		else if (currentHour >= 18 && currentHour < 20)
+		{
+			g_iShedMaxTime = 20;
+			g_iShedMinTime = 18;
+		}
+    }
+
+	//---------------------------------------------- 
+	//Gun Game 
+	//----------------------------------------------
+	if (
+		(currentHour >= 4 && currentHour < 6)
+		||
+		(currentHour >= 12 && currentHour < 14)
+		||
+		(currentHour >= 20 && currentHour < 22)
+	   )
+    {  
+		GameModeToggle_GunGame(true, false);
+
+		if (currentHour >= 4 && currentHour < 6)
+		{
+			g_iShedMaxTime = 6;
+			g_iShedMinTime = 4;
+		}
+		else if (currentHour >= 12 && currentHour < 14)
+		{
+			g_iShedMaxTime = 14;
+			g_iShedMinTime = 12;
+		}
+		else if (currentHour >= 20 && currentHour < 22)
+		{
+			g_iShedMaxTime = 22;
+			g_iShedMinTime = 20;
+		}
+    } 
+
+	//----------------------------------------------
+	//Team Gun Game 
+	//----------------------------------------------
+	if (
+		(currentHour >= 6 && currentHour < 8)
+		||
+		(currentHour >= 14 && currentHour < 16)
+		||
+		(currentHour >= 22 && currentHour < 24)
+	   )
+    {  
+		GameModeToggle_GunGame(true, true);
+
+		if (currentHour >= 6 && currentHour < 8)
+		{
+			g_iShedMaxTime = 8;
+			g_iShedMinTime = 6;
+		}
+		else if (currentHour >= 14 && currentHour < 16)
+		{
+			g_iShedMaxTime = 16;
+			g_iShedMinTime = 14;
+		}
+		else if (currentHour >= 22 && currentHour < 24)
+		{
+			g_iShedMaxTime = 24;
+			g_iShedMinTime = 22;
+		}
+    }
+}
+
+bool CheckSchedule(int schedule[][2], int size, int currentHour)
+{
+    int count = size / sizeof(schedule[0]);
+
+    for (int i = 0; i < count; i++)
+    {
+        int min = schedule[i][0];
+        int max = schedule[i][1];
+
+        if (currentHour >= min && currentHour < max)
+        {
+            g_iShedMinTime = min;
+            g_iShedMaxTime = max;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 //Purspose: Load  gamerule offsets to control various game mechanics when map is loaded
@@ -472,6 +667,8 @@ public void OnMapStart()
 	DHookGamerules(hkRespawnPlayers, false, _, Hook_RespawnPlayers);
 	#endif
 
+	DHookGamerules(hkFreezeAllPlayers, true, _, Hook_FreezeAllPlayers);
+	DHookGamerules(hkUnfreezeAllPlayers, false, _, Hook_UnfreezeAllPlayers);
 
 	MapStartCustomGameModes();
 
@@ -487,11 +684,16 @@ void MapStartCustomGameModes()
 
 void MapStartServerMessages()
 {
-	CreateTimer(GUNGAME_VOTEINFO_DELAY, Timer_GunGameServerMessage, _, TIMER_FLAG_NO_MAPCHANGE);
+	//CreateTimer(GUNGAME_VOTEINFO_DELAY, Timer_GunGameServerMessage, _, TIMER_FLAG_NO_MAPCHANGE); 
 }
 
 public void OnMapEnd()
 {
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		g_bPAFTFT[i] = true;
+	}
+
 	MapEndCustomModes();
 	g_bMapStarted = false;
 }
@@ -499,6 +701,44 @@ public void OnMapEnd()
 void MapEndCustomModes()
 {
 	GunGameMapEnd();
+}
+
+void GameModeToggle_Dm(bool bEnable, bool bTeam)
+{
+	if (bEnable)
+	{
+		SetConVarBool(g_ConvarNecroGunGameEnabled, false);
+	}
+
+	if (bTeam)
+	{
+		SetConVarBool(mp_teamplay, true);
+	}
+	else
+	{
+		SetConVarBool(mp_teamplay, false);
+	}
+}
+
+void GameModeToggle_GunGame(bool bEnable, bool bTeam)
+{
+	if (bEnable)
+	{
+		SetConVarBool(g_ConvarNecroGunGameEnabled, true);
+	}
+	else
+	{
+		SetConVarBool(g_ConvarNecroGunGameEnabled, false);
+	}
+
+	if (bTeam)
+	{
+		SetConVarBool(mp_teamplay, true);
+	}
+	else
+	{
+		SetConVarBool(mp_teamplay, false);
+	}
 }
 
 public void OnClientAuthorized(int client, const char[] auth)
@@ -523,7 +763,8 @@ public void OnClientPutInServer(int client)
 		#endif
 	}
 	
-	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawnPost);
+	DHookEntity(hkPlayerSpawn, false, client, _, Hook_PlayerSpawn);
+	DHookEntity(hkPlayerSpawn, true, client, _, Hook_PlayerSpawnPost);
 	DHookEntity(hkFlashlightOff, false, client, _, Hook_FlashlightOff);
 	DHookEntity(hkFlashlightOn, false, client, _, Hook_FlashlightOn);
 	DHookEntity(hkEvent_Killed, false, client, _, Hook_PlayerKilled);
@@ -561,17 +802,66 @@ public void OnClientPutInServer(int client)
 	#if defined SRCCOOP_BLACKMESA
 	CBasePlayer pPlayer = CBasePlayer(client);
 	pPlayer.SendCommand("cl_ammo_box_dlights 0");
+	pPlayer.SetUserData("m_flProtectionTime", -1.0);
 	#endif
 }
 
 public void OnClientPostAdminCheck(int iClient)
 {
-	if(g_iNecroGunGameCurrentState == 1)
+	GreetPlayer(iClient);
+}
+
+void GreetPlayer(int iClient)
+{
+	//delay it so it can display
+	CreateTimer(5.0, Timer_GreetPlayerWelcome, iClient, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_GreetPlayerWelcome(Handle timer, int iClient)
+{
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
+
+	//the client isn't valid anymore ? go out
+	if (!pPlayer.IsValid())
+		return Plugin_Stop;
+
+	char authId[MAX_AUTHID_LENGTH];
+	GetClientAuthId(iClient, AuthId_Engine, authId, sizeof(authId));
+
+	//check if already greet here, cuz the timer can be removed after map change, so we didn't greet the player
+	bool exists;
+	if (gGreetedAuthIds.GetValue(authId, exists))
+		return Plugin_Stop;
+
+	//add the player so we don't greet the player anymore
+	gGreetedAuthIds.SetValue(authId, true);
+
+	int col1[4] = {255, 255, 255, 255}; //main col (final)
+	int col2[4] = {0, 0, 0, 255}; //scnd col (when printed)
+
+	//pick col by team (green for marines)
+	if (pPlayer.GetTeam() != TEAM_ONE)
 	{
-		g_iNecroGunGameClientLevel[iClient] = 0;
-		CreateTimer(GUNGAME_HUDTICK, GunGameDisplayHud, iClient);
+		col1 = {255, 194, 6, 255};
+		col2 = {189, 57, 20, 255};
+	}
+	else
+	{
+		col1 = {0, 255, 0, 255};
+		col2 = {29, 160, 91, 255};
 	}
 
+	//setup text
+	SetHudTextParamsEx(-1.0, 0.05, 15.0, col1, col2, 2, 5.0, 0.2, 0.2);
+
+	//get client user name
+	char szClientName[MAX_NAME_LENGTH];
+	GetClientName(iClient, szClientName, sizeof(szClientName));
+
+	//print the welcome msg
+	ShowHudText(iClient, 5, "%t", "#Necro_WelcomeMsg", szClientName);
+
+	return Plugin_Stop;
 }
 
 public void OnConfigsExecuted()
@@ -638,34 +928,129 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	if (CBaseEntity(iEntIndex).IsWeapon())
 		DHookEntity(hkSetModel, false, iEntIndex, _, Hook_WeaponSetModel);
 
-	SDKHook(iEntIndex, SDKHook_Spawn, OnEntitySpawned);
-	SDKHook(iEntIndex, SDKHook_SpawnPost, OnEntitySpawnedPost); //needed for some entities
-
-	if (g_ConvarNecroBoltHitscanDamage.FloatValue != 125.0)
-		SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
-}
-
-//Purpose: Check entity classname and apply our custom entity hooks
-public void OnEntitySpawned(int iEntIndex)
-{
-	if (g_bTempDontHookEnts)
-		return;
-
 	CBaseEntity pEntity = CBaseEntity(iEntIndex);
 	if (pEntity == NULL_CBASEENTITY)
 		return;
 
 	bool bIsNPC = pEntity.IsNPC();
 
-	char szClassname[MAX_CLASSNAME];
-	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
+	//char szClassname[MAX_CLASSNAME];
+	//GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
 
-	/*if (StrEqual(szClassname, "newlight_point"))
+	#if defined ENTPATCH_WATERBULLET
+	if(StrEqual(szClassname, "waterbullet"))
 	{
-		PrintToChatAll("BUB");
-		DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_NewLightPointAcceptInput);
+		if (g_ConvarNecroWaterBulletEnable.BoolValue)
+		{
+			SDKHook(iEntIndex, SDKHook_Spawn, WaterBullet_Path);
+			DHookEntity(hkUpdateTransmitState, false, iEntIndex, _, Hook_WaterBulletUpdateTransmitState);
+		}
 		return;
-	}*/
+	}
+	#endif
+
+	if(StrEqual(szClassname, "npc_snark"))
+	{
+		SDKHook(iEntIndex, SDKHook_SpawnPost, Snark_PathPost);
+		DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_SnarkUpdateOnRemove);
+		#if defined ENTPATCH_BM_SNARK
+		DHookEntity(hkIsValidEnemy, false, iEntIndex, _, Hook_SnarkIsValidEnemy);
+		DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_SnarkIsPlayerAlly);
+		#endif
+		return;
+	}
+
+	if(StrEqual(szClassname, "grenade_hornet"))
+	{
+		SDKHook(iEntIndex, SDKHook_SpawnPost, Hornet_PathPost);
+		DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_HornetUpdateOnRemove);
+		return;
+	}
+
+	#if defined ENTPATCH_BM_XENTURRET
+	if (strcmp(szClassname, "npc_xenturret") == 0)
+	{
+		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_XenTurretSpawnPost);
+		return;
+	}
+	#endif
+
+	#if defined ENTPATCH_BM_LAV
+	if (strcmp(szClassname, "npc_lav") == 0)
+	{
+		SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_LAVSpawnPost);
+		return;
+	}
+	#endif
+
+	if (StrEqual(szClassname, "env_laser_dot"))
+	{
+		SDKHook(iEntIndex, SDKHook_Spawn, LaserDot_Path); //hide laser dot before using new rendering method
+		SDKHook(iEntIndex, SDKHook_SpawnPost, LaserDot_PathPost); //set new rendering way after spawn
+		return;
+	}
+		
+	if (StrEqual(szClassname, "grenade_frag"))
+	{
+		SDKHook(iEntIndex, SDKHook_Spawn, Frag_Path); //Use VPhysics for frag grenade if classic frags is disabled
+		SDKHook(iEntIndex, SDKHook_SpawnPost, Frag_PathPost); //reset multiplayer state back for this entity after setting VPhysics
+		return;
+	}
+		
+	if (StrEqual(szClassname, "grenade_mp5_contact"))
+	{
+		SDKHook(iEntIndex, SDKHook_Spawn, Mp5Contact_Path); //Add smoke particle effect to MP5 barrel grenade if enabled
+		return;
+	}
+
+	if (strncmp(szClassname, "item_", 5) == 0 || strcmp(szClassname, "prop_soda", false) == 0)
+	{
+		if (pEntity.IsPickupItem())
+		{
+			SDKHook(iEntIndex, SDKHook_Spawn, Item_Path);
+			DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_BasePickupKeyValue);
+		}
+
+		if (strcmp(szClassname, "item_battery") == 0)
+		{
+			RequestFrame(Battery_Path, view_as<CItem>(pEntity));
+		}
+
+		return;
+	}
+
+	if (StrEqual(szClassname, "grenade_bolt"))
+	{
+		SDKHook(iEntIndex, SDKHook_Spawn, Bolt_Path);
+	//	DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput); //Disable exploading bolt if is not allowed
+		return;
+	}
+
+	if (strncmp(szClassname, "item_", 5) == 0 || strcmp(szClassname, "prop_soda", false) == 0)
+	{
+		if (pEntity.IsPickupItem())
+		{
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Item_PathPost);
+		}
+	}
+
+	//remove buggy sprite in the sky
+	if (StrEqual(szClassname, "env_sun"))
+	{
+		pEntity.AcceptInput("Kill");
+	}
+
+	//HACK! HACK! This is a pretty bad way to get an address, I tried Init hook or getting address from config, but none of my signs worked 
+	if(StrEqual(szClassname, "worldspawn"))
+	{
+		//don't if address is already loaded
+		if (g_EventQueue != Address_Null)
+			return;	
+
+		pEntity.AddOutput("OnUser4", "!self", "FireUser4", "", 0.01, 1);
+		pEntity.AcceptInput("FireUser4");
+		return;
+	}
 
 	if (StrEqual(szClassname, "weapon_hivehand"))
 	{
@@ -716,38 +1101,21 @@ public void OnEntitySpawned(int iEntIndex)
 		return;
 	}
 
-	if (StrEqual(szClassname, "grenade_bolt"))
-	{
-		Bolt_Path(iEntIndex); //Set proper skin, make it explosive if needed and add trail if enabled
-	//	DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput); //Disable exploading bolt if is not allowed
-		return;
-	}
-		
-	if (StrEqual(szClassname, "env_laser_dot"))
-	{
-		LaserDot_Path(iEntIndex); //hide laser dot before using new rendering method
-		return;
-	}
-		
-	if (StrEqual(szClassname, "grenade_frag"))
-	{
-		Frag_Path(iEntIndex); //Use VPhysics for frag grenade if classic frags is disabled
-		return;
-	}
-		
 	if (StrEqual(szClassname, "env_sprite"))
 	{
+		#if defined ENTPATCH_ENV_SPRITE
+		if (strcmp(szClassname, "env_sprite") == 0)
+		{
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_EnvSpriteSpawnPost);
+			return;
+		}
+		#endif
+
 		RequestFrame(Sprite_PathCanister, iEntIndex); //Control canister's sprite visibility depending on pick up state
 													  //used RequestFrame because parent is not immediately set
 		return;
 	}
-		
-	if (StrEqual(szClassname, "grenade_mp5_contact"))
-	{
-		Mp5Contact_Path(iEntIndex); //Add smoke particle effect to MP5 barrel grenade if enabled
-		return;
-	}
-		
+
 	if (StrEqual(szClassname, "weapon_crossbow"))
 	{
 		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
@@ -758,7 +1126,7 @@ public void OnEntitySpawned(int iEntIndex)
 		PrecacheSound("npc/sniper/sniper1_close.wav"); //fix console spam for sp bolts
 		return;
 	}
-		
+
 	if (StrEqual(szClassname, "weapon_satchel"))
 	{
 		//Set custom attack delays on different stages
@@ -768,16 +1136,7 @@ public void OnEntitySpawned(int iEntIndex)
 		return;
 	}
 
-	if (strncmp(szClassname, "item_", 5) == 0 || strcmp(szClassname, "prop_soda", false) == 0)
-	{
-		if (pEntity.IsPickupItem())
-		{
-			Item_Path(iEntIndex);
-		}
-		return;
-	}
-
-	//the rest is SourceCoop code mainly
+	//the rest is SourceCoop code mainly 
 	if (bIsNPC)
 	{
 		#if defined ENTPATCH_NPC_THINK_LOCALPLAYER
@@ -790,12 +1149,12 @@ public void OnEntitySpawned(int iEntIndex)
 		DHookEntity(hkBaseNpcRunTask, true, iEntIndex, _, Hook_BaseNPCRunTaskPost);
 		#endif
 		
-		#if defined ENTPATCH_CUSTOM_NPC_MODELS
-		DHookEntity(hkKeyValue_char, true, iEntIndex, _, Hook_BaseNPCKeyValuePost);
-		#endif
-		
 		#if defined ENTPATCH_UPDATE_ENEMY_MEMORY
 		DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_BaseNPCAcceptInput);
+		#endif
+
+		#if defined ENTPATCH_CUSTOM_NPC_MODELS
+		DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_BaseNPCKeyValue);
 		#endif
 		
 		#if defined ENTPATCH_SNIPER
@@ -820,6 +1179,7 @@ public void OnEntitySpawned(int iEntIndex)
 
 			#if defined ENTPATCH_BM_SNARK
 			DHookEntity(hkIsValidEnemy, false, iEntIndex, _, Hook_PlayerCompanionIsValidEnemy);
+			DHookEntity(hkUpdateEnemyMemory, false, iEntIndex, _, Hook_UpdateEnemyMemory);
 			#endif
 
 			return;
@@ -838,6 +1198,7 @@ public void OnEntitySpawned(int iEntIndex)
 		#if defined ENTPATCH_BM_GARGANTUA
 		if (strcmp(szClassname, "npc_gargantua") == 0)
 		{
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_GargSpawnPost);
 			DHookEntity(hkAcceptInput, true, iEntIndex, _, Hook_GargAcceptInputPost);
 			return;
 		}
@@ -929,7 +1290,10 @@ public void OnEntitySpawned(int iEntIndex)
 		if (strcmp(szClassname, "env_cascade_light") == 0)
 		{
 			if (GetConVarBool(g_ConvarNecroForceAutoModeForCSM))
+			{
 				DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_EnvCascadeLightAcceptInput);
+				DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_CascadeLightKeyValueHACK);
+			}
 			
 			return;
 		}
@@ -1019,207 +1383,16 @@ public void OnEntitySpawned(int iEntIndex)
 			return;
 		}
 		#endif
-	}
-}
 
-//Purpose: Post spawn fixes for some entities
-public void OnEntitySpawnedPost(int iEntIndex)
-{
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if (pEntity == NULL_CBASEENTITY)
-		return;
 		
-	char szClassname[MAX_CLASSNAME];
-	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
-
-	//HACK! HACK! This is a pretty bad way to get an address, I tried Init hook or getting address from config, but none of my signs worked 
-	if(StrEqual(szClassname, "worldspawn"))
-	{
-		//don't if address is already loaded
-		if (g_EventQueue)
-			return;	
-
-		pEntity.AddOutput("OnUser4", "!self", "FireUser4", "", 0.01, 1);
-		pEntity.AcceptInput("FireUser4");
-		return;
+		// if some explosions turn out to be damaging all players except one, this is the fix
+		// if (strcmp(szClassname, "env_explosion") == 0)
+		// {
+		// 	SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_ExplosionSpawn);
+		// 	return;
+		// }
 	}
 
-	#if defined ENTPATCH_WATERBULLET
-	if(StrEqual(szClassname, "waterbullet"))
-	{
-		if (g_ConvarNecroWaterBulletEnable.BoolValue)
-		{
-			pEntity.UpdateTransmitState();
-			DHookEntity(hkUpdateTransmitState, false, iEntIndex, _, Hook_WaterBulletUpdateTransmitState);
-		}
-		return;
-	}
-	#endif
-
-	/*if(StrEqual(szClassname, "grenade_bolt"))
-	{
-		Bolt_PathPost(iEntIndex);
-		return;
-	}*/
-
-	if(StrEqual(szClassname, "npc_snark"))
-	{
-		Snark_PathPost(iEntIndex);
-		DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_SnarkUpdateOnRemove);
-		#if defined ENTPATCH_BM_SNARK
-		DHookEntity(hkIsValidEnemy, false, iEntIndex, _, Hook_SnarkIsValidEnemy);
-		DHookEntity(hkIsPlayerAlly, false, iEntIndex, _, Hook_SnarkIsPlayerAlly);
-		#endif
-		return;
-	}
-
-	if(StrEqual(szClassname, "grenade_hornet"))
-	{
-		Hornet_PathPost(iEntIndex);
-		DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_HornetUpdateOnRemove);
-		return;
-	}
-
-	if(StrEqual(szClassname, "env_laser_dot"))
-	{
-		LaserDot_PathPost(iEntIndex); //set new rendering way after spawn
-		return;
-	}
-
-	if(StrEqual(szClassname, "grenade_frag"))
-	{
-		Frag_PathPost(iEntIndex); //reset multiplayer state back for this entity after setting VPhysics 
-		return;
-	}
-
-	#if defined ENTPATCH_BM_XENTURRET
-	if (strcmp(szClassname, "npc_xenturret") == 0)
-	{
-		Hook_XenTurretSpawnPost(iEntIndex);
-		return;
-	}
-	#endif
-
-	#if defined ENTPATCH_BM_GARGANTUA
-	if (strcmp(szClassname, "npc_gargantua") == 0)
-	{
-		Hook_GargSpawnPost(iEntIndex);
-		return;
-	}
-	#endif
-
-	#if defined ENTPATCH_BM_LAV
-	if (strcmp(szClassname, "npc_lav") == 0)
-	{
-		Hook_LAVSpawnPost(iEntIndex);
-		return;
-	}
-	#endif
-
-	#if defined ENTPATCH_ENV_SPRITE
-	if (strcmp(szClassname, "env_sprite") == 0)
-	{
-		Hook_EnvSpriteSpawnPost(iEntIndex);
-		return;
-	}
-	#endif
-
-	if (strncmp(szClassname, "item_", 5) == 0 || strcmp(szClassname, "prop_soda", false) == 0)
-	{
-		if (pEntity.IsPickupItem())
-		{
-			Item_PathPost(iEntIndex);
-		}
-	}
-
-	//the rest is SourceCoop code mainly
-	// if some explosions turn out to be damaging all players except one, this is the fix 
-	// if (strcmp(szClassname, "env_explosion") == 0)
-	// {
-	// 	Hook_ExplosionSpawn(iEntIndex);
-	// 	return;
-	// }
-}
-
-public MRESReturn Hook_BaseEntityKeyValue(int iEntIndex, DHookReturn hReturn, DHookParam hParams)
-{
-	if (g_bTempDontHookEnts)
-	{
-		DHookSetReturn(hReturn, true);
-		return MRES_Ignored;
-	}
-
-	CBaseEntity pEntity = CBaseEntity(iEntIndex);
-	if (pEntity == NULL_CBASEENTITY)
-	{
-		DHookSetReturn(hReturn, true);
-		return MRES_Ignored;
-	}
-
-	bool bIsNPC = pEntity.IsNPC();
-
-	char szClassname[64];
-	GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
-
-	if (bIsNPC)
-	{
-		static char szKey[MAX_FORMAT];
-		DHookGetParamString(hParams, 1, szKey, sizeof(szKey));
-
-		#if defined ENTPATCH_CUSTOM_NPC_MODELS
-		//note: it may not work on npcs with character manifest support due to timing issues
-		if (StrEqual(szKey, "custommodel"))
-		{
-			static char szVal[MAX_VALUE];
-			DHookGetParamString(hParams, 2, szVal, sizeof(szVal));
-			int iModelIndex = PrecacheModel(szVal);
-			if (iModelIndex)
-			{
-				pEntity.SetModel(szVal);
-				pEntity.SetModelIndex(iModelIndex);
-				DHookEntity(hkSetModel, false, iEntIndex, _, BaseNPCSetModelBlock);
-			}
-		}
-		#endif
-
-		return MRES_Ignored;
-	}
-	else // !isNPC 
-	{
-		if (strncmp(szClassname, "item_", 5) == 0 || strcmp(szClassname, "prop_soda", false) == 0)
-		{
-			if (pEntity.IsPickupItem())
-			{
-				Hook_ItemKeyValue(pEntity, hParams);
-			}
-
-			return MRES_Ignored;
-		}
-
-#if defined ENTPATCH_BM_CASCADELIGHT
-		if (strcmp(szClassname, "env_cascade_light", false) == 0 && GetConVarBool(g_ConvarNecroForceAutoModeForCSM))
-		{
-			char szKeyName[MAX_FORMAT];
-			DHookGetParamString(hParams, 1, szKeyName, sizeof(szKeyName));
-
-			//check if it wants manual mode to prevent broken csm in mp
-			//it's important to fix here because resetting or recreating doesn't work and client will always use manual mode even if false for cascade light ent
-			if (StrEqual(szKeyName, "CSMVolumeMode", false))
-			{
-				char szValue[MAX_VALUE];
-				DHookGetParamString(hParams, 2, szValue, sizeof(szValue));
-				if (StrEqual(szValue, "1", false))
-				{
-					//HACK!
-					//this is illegal (although doesn't cause any issues), but also the only consistent way, using false/true doesn't work consistently (tones of tests was done)
-					return MRES_Supercede;
-				}
-			}
-
-			return MRES_Ignored;
-		}
-#endif
-	}
-
-	return MRES_Ignored;
+	if (g_ConvarNecroBoltHitscanDamage.FloatValue != 125.0)
+		SDKHook(iEntIndex, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
 }

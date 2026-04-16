@@ -6,13 +6,16 @@
 // Lets mappers use custom npc models
 // (Using keyvalues proves most reliable against BM overriding models with its character manifest file before Spawn())
 //------------------------------------------------------
-public MRESReturn Hook_BaseNPCKeyValuePost(int _this, DHookReturn hReturn, DHookParam hParams)
+public MRESReturn Hook_BaseNPCKeyValue(int _this, DHookReturn hReturn, DHookParam hParams)
 {
 	CBaseEntity pEntity = CBaseEntity(_this);
 	
 	static char szKey[MAX_FORMAT];
 	static char szVal[MAX_VALUE];
 	DHookGetParamString(hParams, 1, szKey, sizeof(szKey));
+
+	//note: it may note work on npcs with character manifest support due to timing issues
+	//to fix, fire addoutput on npc you want
 	if (StrEqual(szKey, "custommodel"))
 	{
 		DHookGetParamString(hParams, 2, szVal, sizeof(szVal));
@@ -23,6 +26,9 @@ public MRESReturn Hook_BaseNPCKeyValuePost(int _this, DHookReturn hReturn, DHook
 			pEntity.SetModelIndex(iModelIndex);
 			DHookEntity(hkSetModel, false, _this, _, BaseNPCSetModelBlock);
 		}
+
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
 	}
 	return MRES_Ignored;
 }

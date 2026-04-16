@@ -28,4 +28,20 @@ methodmap CBlackMesaPlayer < CBasePlayer
 	{
 		SetEntPropFloat(this.entindex, Prop_Send, "m_flLongJumpMana", flManaCost);
 	}
+	public bool IsSpectator()
+	{
+		int iTeam = this.GetTeam();
+
+		if((CMultiplayRules.IsTeamplay() && (iTeam == 1 || iTeam == 0)) || iTeam == 1)
+			return true;
+
+		return false;
+	}
+	public bool IsInProtection(ConVar pProtectionAlphaConVar)
+	{
+		if (!this.IsSpectator() && this.GetRenderMode() == RENDER_TRANSCOLOR && this.GetRenderAlpha() == pProtectionAlphaConVar.IntValue)
+			return true;
+
+		return false;
+	}
 }

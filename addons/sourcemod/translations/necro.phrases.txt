@@ -142,4 +142,201 @@
 	{
 		"en"		"[Gun game] You now have a punishing weapon! Use it to demote other players."
 	}
+	
+	"#Necro_WelcomeServer" //format info: 1 def col, 2 red col, 3 server name, 4 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"{1:s}Welcome to {2:s}{3:s}{4:s}!"
+	}
+	
+	"#Necro_WhiteLine" //format info: 1 white col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1:s}****************************************{2:s}"
+	}
+	
+	"#Necro_FeedbackInfo" //format info: 1 def col, 2 blue col, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"en"		"{1:s}Use our main plugin repository {2:s}github.com/MyGamepedia/Necro-Multi-Patch/issues{3:s} to report bugs and ideas!"
+	}
+	
+	"#Necro_TelegramInfo" //format info: 1 def col, 2 blue col, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"en"		"{1:s}Join our Telegram channel {2:s}t.me/blackmesaBMSchat{3:s} to communicate with the developers and community!"
+	}
+	
+	"#Necro_HelpInfo" //format info: 1 def col, 2 col green, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"en"		"{1:s}Type {2:s}!helpme{3:s} in the chat for info about commands you'll need!"
+	}
+
+	"#Necro_SponsorInfo" //format info: 1 def col, 2 dark blue col, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"en"		"{1:s}Our servers supported by {2:s}se7en.ws{3:s}!"
+	}
+	
+	"#Necro_WelcomeMsg" //format info: 1 player name
+	{
+		"#format"	"{1:s}"
+		"en"		"WELCOME {1:s}!"
+	}
+	
+	"#Necro_ModelsInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1:s}!models{2:s} - to change your character model."
+	}
+	
+	"#Necro_TimeInfo" //format info: 1 lightblue col, 2 CURRENT TIME, 3 def col, 4 AM OR PM, 5 UNITED STATES TIME
+	{
+		"#format"	"{1:s},{2:d},{3:s},{4:s},{5:d}"
+		"en"		"Current time: {1:s}{2:d}{3:s} ({1:s}{5:d}{3:s} {4:s})."
+	}
+
+	"#Necro_MapInfo" //format info: 1 lightblue col, 2 CURRENT MAP, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"en"		"Current map is \"{1:s}{2:s}{3:s}\"."
+	}
+	
+	"#Necro_AdminsInfo" //format info: 1 red col, 2 ADMINS ON MAP, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"en"		"Present server administrators: {1:s}{2:s}{3:s}"
+	}
+	
+	"#Necro_HelpMainInfo"
+	{
+		"en"		"You can type following commands in the chat:"
+	}
+	
+	"#Necro_NominateMapInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1:s}!nominate{2:s} - to add map for the next map vote list."
+	}
+	
+	"#Necro_StatsmeInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1:s}statsme{2:s} - to see your statics."
+	}
+	
+	"#Necro_RtvInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1:s}!rtv{2:s} - to start vote for the current map change."
+	}
+	
+	"#Necro_SessionInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1:s}session{2:s} - to see your statics in this round session."
+	}
+	
+	"#Necro_Top10Info" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1:s}top10{2:s} - to see 10 players with the highest score."
+	}
+	
+	"#Necro_TimeAM"
+	{
+		"en"		"AM"
+	}
+	
+	"#Necro_TimePM"
+	{
+		"en"		"AM"
+	}
+	
+	"#Necro_FavoritesInfo" //format info: 1 red col, 2 SERVER NAME, 3 def col, 4 blue col, 5 SERVERIP, 6 green col
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s}"
+		"en"		"{3:s}Add {1:s}{2:s}{3:s} to favorites using the old user interface (the {6:s}-oldgameui{3:s} launch option)!\n{3:s}Server IP is {4:s}{5:s}{3:s}"
+	}
+	
+	"#weapon_357"
+	{
+		"en"		"Magnum"
+	}
+	
+	"#weapon_assassin_glock"
+	{
+		"en"		"Assassin's Glock"
+	}
+	
+	"#weapon_crossbow"
+	{
+		"en"		"Crossbow"
+	}
+	
+	"#weapon_crowbar"
+	{
+		"en"		"Crowbar"
+	}
+	
+	"#weapon_frag"
+	{
+		"en"		"Grenade"
+	}
+	
+	"#weapon_glock"
+	{
+		"en"		"Glock"
+	}
+	
+	"#weapon_gluon"
+	{
+		"en"		"Gluon"
+	}
+	
+	"#weapon_headcrab"
+	{
+		"en"		"Latched Headcrab"
+	}
+	
+	"#weapon_hivehand"
+	{
+		"en"		"Hivehand"
+	}
+	
+	"#weapon_mp5"
+	{
+		"en"		"MP5"
+	}
+	
+	"#weapon_rpg"
+	{
+		"en"		"RPG"
+	}
+	
+	"#weapon_satchel"
+	{
+		"en"		"Satchel"
+	}
+	
+	"#weapon_shotgun"
+	{
+		"en"		"Shotgun"
+	}
+	
+	"#weapon_snark"
+	{
+		"en"		"Snark"
+	}
+	
+	"#weapon_tau"
+	{
+		"en"		"Tau"
+	}
+	
+	"#weapon_tripmine"
+	{
+		"en"		"Tripmine"
+	}
 }

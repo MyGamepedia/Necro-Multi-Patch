@@ -78,7 +78,10 @@ public void GunGameRemoveWeapons(CBlackMesaPlayer pPlayer)
 
         //0.22 - 0.25, for hidding anim
         pWeaponState.AddOutput("OnUser1", "!activator", "GiveGunGameResources", "", 0.22, 1); //give resources after removal
-        pWeaponState.AddOutput("OnUser1", "!self", "Kill", "", 0.22, 1); //remove weapon
+
+        if (!bHasPunishing || pWeaponState.entindex != pWeaponPunishing.entindex)  
+            pWeaponState.AddOutput("OnUser1", "!self", "Kill", "", 0.22, 1); //remove weapon
+        
         pWeaponState.FireOutput("OnUser1", pPlayer.entindex);
     }
     else 
@@ -100,7 +103,9 @@ public void GunGameRemoveWeapons(CBlackMesaPlayer pPlayer)
             if(pWeaponState.entindex != pWeaponPunishing.entindex)
                 pWeaponState.Kill(); //immediate kill to avoid issues with switching to it
         }
-        pWeaponPunishing.KillDelayed(0.22); //0.22 - 0.25, for hidding anim
+
+        if(pWeaponState.entindex != pWeaponPunishing.entindex)
+            pWeaponPunishing.KillDelayed(0.22); //0.22 - 0.25, for hidding anim
     }
 
     return;

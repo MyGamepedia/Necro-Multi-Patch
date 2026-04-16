@@ -1,6 +1,7 @@
 #pragma newdecls required
 #pragma semicolon 1
- 
+
+/*
 public Action GunGameStartVote(Handle timer, int iPlayerIndex)
 {
 	Menu gungamemenu = new Menu(GunGameVoteMenuHandler, MenuAction_DisplayItem | MenuAction_Display);
@@ -31,6 +32,7 @@ public Action GunGameStartVote(Handle timer, int iPlayerIndex)
 
     return Plugin_Stop;
 }
+
 
 public void GunGameVoteMenuHandler(Menu menu, MenuAction action, int iParam1, int iParam2)
 {
@@ -113,3 +115,4 @@ public Action Timer_GunGameServerMessage(Handle timer)
     PrintToChatAll("%t", "#GunGame_VoteInfo");
     return Plugin_Continue;
 }
+*/

@@ -58,16 +58,33 @@ public void GunGameDisableCanisterDrops()
 //Displays ui for the mode
 public Action GunGameDisplayHud(Handle timer, any client)
 {
-    if(IsClientConnected(client) && IsClientInGame(client) && g_iNecroGunGameCurrentState == 1) //don't show for not valid clients or if gungame is disabled or finished
+    for (int i = 1; i <= MaxClients; i++)  
     {
-        int iLevel = g_iNecroGunGameClientLevel[client]; //client level
-        int iKillsForNextLevel = g_ConvarNecroGunGameStateKills[iLevel].IntValue; //amount of kills to do for next level
+        //we don't display main hud in intermission, don't fir gungame as well
+        bool bNoInter = (CBM_MP_GameRules.GetCurrentState() != STATE_ROUND_INTERMISSION_INDEX && CBM_MP_GameRules.GetCurrentState() != STATE_INTERMISSION_INDEX) ? true : false;
 
-        SetHudTextParams(GetConVarFloat(g_ConvarNecroGunGameTextPosX), GetConVarFloat(g_ConvarNecroGunGameTextPosY), GUNGAME_HUDTICK, 255, 255, 255, 255, 0, 6.0, 0.1, 0.2);
+        if (IsClientConnected(i) && IsClientInGame(i) && IsPlayerAlive(i) && g_iNecroGunGameCurrentState == 1 && bNoInter)  
+        {  
+            int iLevel = g_iNecroGunGameClientLevel[i];  
+            int iKillsForNextLevel = g_ConvarNecroGunGameStateKills[iLevel].IntValue;
 
-        ShowHudText(client, -1, "%t", "#GunGame_HUD", iLevel, g_ConvarNecroGunGameFinalLevelNum.IntValue, g_iNecroGunGameClientKills[client], iKillsForNextLevel);     
-        
-        CreateTimer(GUNGAME_HUDTICK, GunGameDisplayHud, client);
+            int col1[4] = {255, 255, 255, 255}; //col
+
+            //pick col by team (green for marines)
+            if (CBasePlayer(i).GetTeam() != TEAM_ONE)
+            {
+                col1 = {255, 194, 6, 255};
+            }
+            else
+                col1 = {0, 255, 0, 255};
+
+            float flPosX = GetConVarFloat(g_ConvarNecroGunGameTextPosX);
+            float flPosY = GetConVarFloat(g_ConvarNecroGunGameTextPosY);
+  
+            SetHudTextParams(flPosX, flPosY, GUNGAME_HUDTICK + 0.1, col1[0], col1[1], col1[2], col1[3], 0, 6.0, 0.1, 0.2);  
+           
+            ShowHudText(i, 1, "%t", "#GunGame_HUD", iLevel, g_ConvarNecroGunGameFinalLevelNum.IntValue, g_iNecroGunGameClientKills[i], iKillsForNextLevel);  
+        }  
     }
 
     return Plugin_Continue;

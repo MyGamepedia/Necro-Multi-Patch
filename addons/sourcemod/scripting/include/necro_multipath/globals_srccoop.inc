@@ -14,6 +14,7 @@
 ConVar mp_friendlyfire; //NOTE: left warning here, maybe will be usefual later
 ConVar mp_flashlight;
 ConVar mp_forcerespawn;
+ConVar sv_ladder_useonly;
 
 // Existing Black Mesa ConVars.
 
@@ -24,6 +25,7 @@ ConVar sv_speed_walk; //NOTE: left warning here or it will not compile
 ConVar sv_jump_long_enabled;
 ConVar sv_long_jump_manacost;
 #endif
+
 
 // ----------------------------
 // SDK Calls
@@ -44,7 +46,7 @@ DynamicHook hkEvent_Killed;
 DynamicHook hkKeyValue_char;
 DynamicHook hkUpdateTransmitState;
 
-DynamicDetour hkKeyValue;
+//DynamicDetour hkKeyValue;
 
 #if defined SRCCOOP_BLACKMESA
 DynamicDetour hkGiveDefaultItems;
@@ -91,6 +93,10 @@ DynamicDetour hkExpresserHostDoModifyOrAppendCriteria;
 #if defined ENTPATCH_WATERBULLET
 DynamicDetour hkHandleShotImpactingWater;
 DynamicDetour hkFireBullets;
+#endif
+
+#if defined PLAYERPATCH_SUIT_SOUNDS
+DynamicDetour hkSetSuitUpdate;
 #endif
 
 #if defined SRCCOOP_BLACKMESA

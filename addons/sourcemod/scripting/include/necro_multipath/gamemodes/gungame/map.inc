@@ -11,6 +11,10 @@ public void GunGameMapStart()
 	    GunGameDisableCanisterDrops(); //disable canister drops and set no score limit
 	    GunGameRemoveItems(); //remove all entities with item_weapon_ prefix (we guess this mode will not be launched on a "special map")
 
+        //init hud timer to display the ui
+        if (g_hGunGameHudTimer == INVALID_HANDLE)  
+            g_hGunGameHudTimer = CreateTimer(GUNGAME_HUDTICK, GunGameDisplayHud, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);  
+
         HookEventEx("player_death", GunGameEventDeath, EventHookMode_Pre);
 		HookEventEx("player_spawn", GunGameEventSpawn, EventHookMode_Pre);	
 		HookEventEx("player_team", GunGamePlayerTeamChanged, EventHookMode_Post);
@@ -34,5 +38,12 @@ public void GunGameMapEnd()
         UnhookEvent("round_start", GunGameOnRoundStart, EventHookMode_Post);
         UnhookEvent("round_end", GunGameOnRoundIntermission, EventHookMode_Post);
         g_iNecroGunGameCurrentState = 2;
+
+        //no need for the ui now, remove the timer
+        if (g_hGunGameHudTimer != INVALID_HANDLE)  
+        {  
+            KillTimer(g_hGunGameHudTimer);  
+            g_hGunGameHudTimer = INVALID_HANDLE;  
+        }
     }
 }

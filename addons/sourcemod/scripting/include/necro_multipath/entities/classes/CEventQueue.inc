@@ -4,9 +4,10 @@
 #if defined SRCCOOP_BLACKMESA
 MRESReturn Hook_EventQueueAddEvent_GetAddress(Address _this, DHookParam hParams)
 {
-    if (g_EventQueue != Address_Null)
+    if (g_EventQueue != Address_Null && g_bIsEventQueueLoaded == false)
     {
         CreateTimer(0.0, Hook_EventQueueAddEvent_DisableGetAddress, _, TIMER_FLAG_NO_MAPCHANGE);
+        g_bIsEventQueueLoaded = true;
         return MRES_Ignored;
     }
     else

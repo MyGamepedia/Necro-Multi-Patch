@@ -35,22 +35,17 @@ public void Item_Path(int iEntIndex)
 	}
 }
 
-public void Hook_ItemKeyValue(CBaseEntity pEntity, DHookParam hParams)
+public MRESReturn Hook_BasePickupKeyValue(int _this, DHookReturn hReturn, DHookParam hParams)
 {
-	CItem pItem = CItem(pEntity);
-
-	char szKeyName[MAX_FORMAT];
-	char szValue[MAX_VALUE];
+	CItem pItem = CItem(_this);
+	
+	static char szKeyName[MAX_FORMAT];
+	static char szValue[MAX_VALUE];
 	DHookGetParamString(hParams, 1, szKeyName, sizeof(szKeyName));
 
 	if (StrEqual(szKeyName, "ItemType", false))
 	{
 		DHookGetParamString(hParams, 2, szValue, sizeof(szValue));
-
-		if (StrEqual(szValue, "0", false)) //def
-		{
-			return;
-		}
 
 		if(StrEqual(szValue, "1", false)) //singleplayer item type
 		{
@@ -61,8 +56,35 @@ public void Hook_ItemKeyValue(CBaseEntity pEntity, DHookParam hParams)
 		{
 			pItem.SetUserData("m_iItemType", 2);
 		}
+
+		DHookSetReturn(hReturn, true);
+		return MRES_Supercede;
 	}
+
+
+	char szClassname[MAX_CLASSNAME];
+	GetEntityClassname(_this, szClassname, sizeof(szClassname));
+
+	if (strcmp(szClassname, "item_battery") == 0)
+	{
+		//we may don't want to add dlights on spawn (on pro_crossfire for example)
+		if (StrEqual(szKeyName, "nonewlight", false))
+		{
+			DHookGetParamString(hParams, 2, szValue, sizeof(szValue));
+
+			if(StrEqual(szValue, "1", false))
+			{
+				pItem.SetUserData("m_bNoNewLight", 1);
+
+				DHookSetReturn(hReturn, true);
+				return MRES_Supercede;
+			}
+		}
+	}
+
+	return MRES_Ignored;
 }
+
 
 //Purpose: adds spawn post override for certain items
 public void Item_PathPost(int iEntIndex)

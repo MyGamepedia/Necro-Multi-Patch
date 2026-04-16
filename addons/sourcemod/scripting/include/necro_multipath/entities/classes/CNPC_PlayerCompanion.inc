@@ -50,28 +50,59 @@ public MRESReturn Hook_IsNavigationUrgent(int _this, DHookReturn hReturn, DHookP
 //------------------------------------------------------
 public MRESReturn Hook_PlayerCompanionIsValidEnemy(int _this, DHookReturn hReturn, DHookParam hParams)
 {
+	if (IsEnemyFriendlySnark(_this, hParams))
+	{
+		DHookSetReturn(hReturn, false);
+		return MRES_Supercede;		
+	}
+	else
+		return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CAI_BaseNPC
+// This hook is used by CNPC_PlayerCompanion to filter player's snarks as not enemies
+// so a security guard won't ask for help when see friendly snarks
+//------------------------------------------------------
+public MRESReturn Hook_UpdateEnemyMemory(int _this, DHookReturn hReturn, DHookParam hParams)
+{
+	if (IsEnemyFriendlySnark(_this, hParams))
+	{
+		DHookSetReturn(hReturn, false);
+		return MRES_Supercede;		
+	}
+	else
+		return MRES_Ignored;
+}
+
+//------------------------------------------------------
+// CNPC_PlayerCompanion
+// This func containы an algorithm that is used in several places to filter the friendly snark
+//------------------------------------------------------
+bool IsEnemyFriendlySnark(int _this, DHookParam hParams)
+{
 	if (!g_ConvarNecroCoopSnarks.BoolValue || DHookIsNullParam(hParams, 1) ||  mp_friendlyfire.BoolValue)
-        return MRES_Ignored;
-    
+        return false;
+
     CAI_BaseNPC pEnemy = CAI_BaseNPC(DHookGetParam(hParams, 1));
-    if (!pEnemy.IsValid())
-        return MRES_Ignored;
+    if (pEnemy == NULL_CBASEENTITY)
+        return false;
 
 	char szClassname[MAX_CLASSNAME];
 	pEnemy.GetClassname(szClassname, sizeof(szClassname));
 
 	if (strcmp(szClassname, "npc_snark") == 0)
 	{
-		CBasePlayer pOwner = CBasePlayer(CNpc_Snark(pEnemy.entindex).GetSnarkOwner());
+		CNpc_Snark pSnark = view_as<CNpc_Snark>(pEnemy);
+		CBaseEntity pOwner = pSnark.GetSnarkOwner();
 		CAI_BaseNPC pThis = CAI_BaseNPC(_this);
 
 		//not valid OR owner is not player (f. e. npc_maker) OR i don't like the player OR not player's snark
 		if (!pOwner.IsValid() || !pOwner.IsPlayer() || (pThis.m_afMemory & bits_MEMORY_PROVOKED || pThis.IRelationType(pOwner) == D_HT) || pEnemy.GetTeam() != pOwner.GetTeam())
-			return MRES_Ignored;
+			return false;
 		
-		DHookSetReturn(hReturn, false);
-		return MRES_Supercede;
+		return true;
 	}
 
-	return MRES_Ignored;
+	return false;
 }

@@ -23,7 +23,13 @@ methodmap CBM_MP_GameRules < CMultiplayRules
 
 	public static int GetCurrentState()
 	{
-		return GameRules_GetProp("m_nCurrentStateId");
+		int iCurrSt = GameRules_GetProp("m_nCurrentStateId"); 
+
+		//while in warmup intermission, it still returns 0, check intermission state to return 1
+		if (iCurrSt == 0 && GameRules_GetProp("m_bIsInIntermission"))
+			return STATE_INTERMISSION_INDEX;
+
+		return iCurrSt;
 	}
 
 	public static void SetStateNextState(const char[] szStateProp, const char[] szNextStateProp)

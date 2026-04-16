@@ -1391,6 +1391,58 @@
 					}
 				}
 			}
+			"CAI_PlayerAlly::SpeakIfAllowed" // void CAI_PlayerAlly::SpeakIfAllowed(char const*, char const*, bool, char*, unsigned int)
+			{
+				"offset"	"CAI_PlayerAlly::SpeakIfAllowed"
+				"hooktype"	"entity"
+				"return"	"void"
+				"this"		"entity"
+				"arguments"
+				{
+					"pChar1"
+					{
+						"type"	"charptr"
+					}
+					"pChar2"
+					{
+						"type"	"charptr"
+					}
+					"bRespondingToPlayer"
+					{
+						"type"	"bool"
+					}
+					"pszOutResponseChosen"
+					{
+						"type"	"charptr"
+					}
+					"bufsize"
+					{
+						"type" "int"
+					}
+				}
+			}
+			"CAI_BaseNPC::UpdateEnemyMemory" // bool CAI_BaseNPC::UpdateEnemyMemory( CBaseEntity *pEnemy, const Vector &position, CBaseEntity *pInformer )
+			{
+				"offset"	"CAI_BaseNPC::UpdateEnemyMemory"
+				"hooktype"	"entity"
+				"return"	"bool"
+				"this"		"entity"
+				"arguments"
+				{
+					"pEnemy"
+					{
+						"type"	"cbaseentity"
+					}
+					"position"
+					{
+						"type"	"vectorptr"
+					}
+					"pInformer"
+					{
+						"type"	"cbaseentity"
+					}
+				}
+			}
 		}
 	}
 	
@@ -1821,6 +1873,11 @@
 			{
 				"windows"	"434"
 				"linux"		"435"
+			}
+			"CAI_PlayerAlly::SpeakIfAllowed"
+			{
+				"windows"	"646"
+				"linux"		"680"				
 			}
 			"CAI_BaseNPC::IsNavigationUrgent"	// CAI_BaseNPC::IsNavigationUrgent()
 			{

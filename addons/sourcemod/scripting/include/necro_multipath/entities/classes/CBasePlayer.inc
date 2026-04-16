@@ -293,6 +293,112 @@ public void Hook_PlayerPreThinkPost(int iClient)
 }
 
 //------------------------------------------------------
+// Player sounds
+//------------------------------------------------------
+
+#if defined PLAYERPATCH_SUIT_SOUNDS
+char szLastSuitSound[MAXPLAYERS+1][PLATFORM_MAX_PATH];
+#endif
+
+public Action PlayerSoundListener(int iClients[MAXPLAYERS], int& iNumClients, char szSample[PLATFORM_MAX_PATH], int& iEntIndex, int& iChannel, float& flVolume, int& iLevel, int& iPitch, int& iFlags, char szSoundEntry[PLATFORM_MAX_PATH], int& iSeed)
+{
+	#if defined PLAYERPATCH_SUIT_SOUNDS
+	if (strncmp(szSample, "!HEV_", 5) == 0 && GetConVarBool(g_ConvarNecroHevSuitSounds))
+	{
+		// Here we save last played HEV sound so we can stop it on respawn
+		for (int i = 0; i < iNumClients; i++)
+		{
+			szLastSuitSound[iClients[i]] = szSample;
+		}
+	}
+	#endif
+
+	#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+	CBaseEntity pEntity = CBaseEntity(iEntIndex);
+
+	if (pEntity != NULL_CBASEENTITY && pEntity.IsPlayer())
+	{
+		CBasePlayer pPlayer = view_as<CBasePlayer>(pEntity);
+
+		if (strncmp(szSample, "physics\\footsteps\\", 18) == 0 || strncmp(szSample, "player/suit_sprint.wav", 22) == 0)
+		{
+			// Jump and land sounds are already predicted on the client so they need to be removed.
+			if (StrContains(szSample, "_jump") != -1 || StrContains(szSample, "_land") != -1)
+			{
+				return RemovePlayerFromSoundListener(iEntIndex, iClients, iNumClients) ? Plugin_Changed : Plugin_Continue;
+			}
+
+			// Footsteps are emitted on the server but not sent to client, because the client usually plays them on its own - but not when sprinting in MP mode (actually just pressing +speed!)
+			// We can resolve this by sending the footsteps, which are already generated on the server, to the client.
+			if (!pPlayer.IsDucked() && (pPlayer.GetButtons() & IN_SPEED))
+			{
+				iClients[0] = iEntIndex;
+				iNumClients = 1;
+				return Plugin_Changed;
+			}
+		}
+		
+		// The jump module sound in Black Mesa plays twice as the sound is already predicted so it needs to be removed.
+		if (strcmp(szSample, "weapons/jumpmod/jumpmod_long1.wav") == 0)
+		{
+			return RemovePlayerFromSoundListener(iEntIndex, iClients, iNumClients) ? Plugin_Changed : Plugin_Continue;
+		}
+	}
+	#endif // PLAYERPATCH_BM_CLIENT_PREDICTION
+
+	return Plugin_Continue;
+}
+
+//remove protection effects when the player attacks
+public MRESReturn Hook_NoteWeaponFired(int _this, DHookParam hParams)
+{
+	if (CBlackMesaPlayer(_this).GetUserData("m_flProtectionTime") != -1)
+	{
+		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(_this);
+		pPlayer.SetRenderColor(RGBA(255, 255, 255, 255));
+		pPlayer.SetRenderFx(RENDERFX_NONE);
+		pPlayer.SetUserData("m_flProtectionTime", -1);
+
+		SDKUnhook(_this, SDKHook_OnTakeDamage, Hook_OnTakeDamageProtection);
+	}
+
+	return MRES_Ignored;
+}
+
+//following 4 funcs let's the suit play the sounds when we want
+public MRESReturn Hook_CheckSuitUpdate(int _this, DHookParam hParams)
+{
+	if (GetConVarBool(g_ConvarNecroHevSuitSounds) && CBasePlayer(_this).IsValid() && CBasePlayer(_this).IsAlive())
+		g_bIsMultiplayerOverride = false;
+
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_CheckSuitUpdatePost(int _this, DHookParam hParams)
+{
+	if (GetConVarBool(g_ConvarNecroHevSuitSounds))
+		g_bIsMultiplayerOverride = true;
+	
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_SetSuitUpdate(int _this, DHookParam hParams)
+{
+	if (GetConVarBool(g_ConvarNecroHevSuitSounds) && CBasePlayer(_this).IsValid() && CBasePlayer(_this).IsAlive())
+		g_bIsMultiplayerOverride = false;
+
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_SetSuitUpdatePost(int _this, DHookParam hParams)
+{
+	if (GetConVarBool(g_ConvarNecroHevSuitSounds))
+		g_bIsMultiplayerOverride = true;
+	
+	return MRES_Ignored;
+}
+
+//------------------------------------------------------
 // Player AcceptInput hook
 // Prevent input of kill to player as this will put the player in a hanging state
 // This can occur in some maps where a trigger is set to kill the !activator and the player so happens to be there
@@ -326,15 +432,6 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, DHookReturn hReturn, DHookPa
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
 		}
-
-		if (strcmp(szInputType, "PreventObsModeCrash", false) == 0)
-		{
-			CBlackMesaPlayer(_this).StartObserverMode(OBS_MODE_CHASE);
-			//ClientCommand(_this, "spec_mode");
-
-			DHookSetReturn(hReturn, true);
-			return MRES_Supercede;
-		}
 	}
 	return MRES_Ignored;
 }
@@ -342,9 +439,17 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, DHookReturn hReturn, DHookPa
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
 	//fixes transparent ragdolls
-	CBasePlayer pPlayer = CBasePlayer(_this);
-	pPlayer.SetRenderMode(RENDER_NORMAL);
-	pPlayer.SetRenderAlpha(255);
+	if (CBlackMesaPlayer(_this).GetUserData("m_flProtectionTime") != -1)
+	{
+		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(_this);
+		pPlayer.SetRenderColor(RGBA(255, 255, 255, 255));
+		pPlayer.SetRenderMode(RENDER_NORMAL);
+		pPlayer.SetRenderFx(RENDERFX_NONE);
+		pPlayer.SetRenderAlpha(255);
+		pPlayer.SetUserData("m_flProtectionTime", -1);
+
+		SDKUnhook(_this, SDKHook_OnTakeDamage, Hook_OnTakeDamageProtection);
+	}
 
 	return MRES_Ignored;
 }
@@ -364,7 +469,7 @@ public MRESReturn Hook_PlayerKilledPost(int _this, DHookParam hParams)
 	#endif
 
 	#if defined DEBUG
-	//CEventQueue.AddEvent(pPlayer, "Ignite", 5.05, pPlayer, pPlayer);
+	CEventQueue.AddEvent(pPlayer, "Ignite", 5.05, pPlayer, pPlayer);
 	#endif
 
 	return MRES_Ignored;
@@ -663,15 +768,8 @@ public bool Player_Flashlight3rdPersonOff(int iClient)
 
 public MRESReturn Hook_GiveDefaultItems(int _this)
 {
-	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(_this);
-
 	//don't give items to specs
-	int team = GetEntProp(pPlayer.entindex, Prop_Data, "m_iTeamNum");
-
-	if((CMultiplayRules.IsTeamplay() && (team == 1 || team == 0)))
-		return MRES_Supercede;
-
-	if(team == 1)
+	if(CBlackMesaPlayer(_this).IsSpectator())
 		return MRES_Supercede;
 
 	//give items if allowed
@@ -719,15 +817,15 @@ public MRESReturn Hook_PlayerStartObserverMode(int iClient, DHookReturn hReturn,
 	return MRES_Ignored;
 }
 
-public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookParam hParams)
+public MRESReturn Hook_PlayerSpawn(int iClient, DHookReturn hReturn, DHookParam hParams)
 {
-	//BUG: sometimes SourceTV can slip through even though we never hook it?
 	if (IsFakeClient(iClient))
 		return MRES_Ignored;
 
-	if(IsPlayerAlive(iClient))
+	CBasePlayer pPlayer = CBasePlayer(iClient);
+
+	if(pPlayer.IsAlive())
 	{
-		CBasePlayer pPlayer = CBasePlayer(iClient);
 		ClearNpcMemoryForPlayer(pPlayer);
 		
 		//disable "other players flashlight"
@@ -735,7 +833,47 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 		ClientCommand(iClient, "r_flashlight_3rd_draw 0");
 
 		//Fix for if player died on a ladder
-		SetEntPropEnt(iClient, Prop_Data, "m_hLadder", -1);
+		pPlayer.SetLadder(NULL_CBASEENTITY);
+
+		// Correct the 'damages' from the prethink hook hack
+		#if defined SRCCOOP_BLACKMESA
+		pPlayer.SetSuit(false);
+		pPlayer.SetIsSprinting(false);
+		pPlayer.m_usSolidFlags &= ~FSOLID_NOT_SOLID;
+		#endif
+
+		#if defined PLAYERPATCH_BM_CLIENT_PREDICTION
+		// Fixes client prediction on the jump module HUD and the first initial jump with full mana.
+        pPlayer.SendConVarValueInt(sv_long_jump_manacost, 0);
+		// Fixes 'stuck on ladder' prediction issue that started to appear after we set sv_speed_walk to 0.
+		pPlayer.SendConVarValueInt(sv_ladder_useonly, 1);
+		#endif
+
+		// Stop HEV sounds
+		#if defined PLAYERPATCH_SUIT_SOUNDS
+		pPlayer.ClearSuitQueue();
+		pPlayer.StopSound(SNDCHAN_STATIC, szLastSuitSound[iClient]);
+		#endif
+
+		//recreate viewmodel to reset blood
+		if(GetConVarBool(g_ConvarNecroCreateNewViewmodel))
+		{
+			for (int i = 0; i < MAX_VIEWMODELS; i++)
+			{
+				CPredictedViewModel vm = pPlayer.GetViewModel(i);
+				if (vm != NULL_CBASEENTITY)
+				{
+					vm.Kill();
+					pPlayer.SetViewModel(NULL_CBASEENTITY, i);
+					CPredictedViewModel nvm = CPredictedViewModel(pPlayer.CreateViewModel(i));
+
+					DataPack pack = new DataPack();
+					pack.WriteCell(pPlayer.entindex);
+					pack.WriteCell(nvm.entindex);
+					RequestFrame(UTIL_ResetViewModelBodyGroupForPlayer, pack);
+				}
+			}
+		}
 	}
 	else
 	{
@@ -750,28 +888,42 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 		ClientCommand(iClient, "cl_gargflame_pointL_col_G 165; cl_gargflame_pointL_intensity 32000; cl_garg_eyeL_light_intensity 100; cl_garg_eyeL_light_range 100");
 	}
 
-	//recreate viewmodel to reset blood
-	if(GetConVarBool(g_ConvarNecroCreateNewViewmodel))
-	{
-		CBasePlayer pPlayer = CBasePlayer(iClient);
-		for (int i = 0; i < MAX_VIEWMODELS; i++)
-		{
-			CPredictedViewModel vm = pPlayer.GetViewModel(i);
-			if (vm != NULL_CBASEENTITY)
-			{
-				vm.Kill();
-				pPlayer.SetViewModel(NULL_CBASEENTITY, i);
-				CPredictedViewModel nvm = CPredictedViewModel(pPlayer.CreateViewModel(i));
+	return MRES_Ignored;
+}
 
-				DataPack pack = new DataPack();
-				pack.WriteCell(pPlayer.entindex);
-				pack.WriteCell(nvm.entindex);
-				RequestFrame(UTIL_ResetViewModelBodyGroupForPlayer, pack);
-			}
-		}
+public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookParam hParams)
+{
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
+
+	if (pPlayer.IsInProtection(player_respawn_alpha))
+	{
+		pPlayer.SetRenderColor(RGBA(
+			g_ConvarNecroSpawnProtectionColorRed.IntValue,
+			g_ConvarNecroSpawnProtectionColorBlue.IntValue, 
+			g_ConvarNecroSpawnProtectionColorGreen.IntValue,
+			g_ConvarNecroSpawnProtectionColorAlpha.IntValue));
+		pPlayer.SetRenderFx(view_as<RenderFx>(g_ConvarNecroSpawnProtectionRenderFX.IntValue));
+		pPlayer.SetUserData("m_flProtectionTime", GetGameTime() + player_respawn_protection_time.FloatValue);
+
+		SDKHook(iClient, SDKHook_OnTakeDamage, Hook_OnTakeDamageProtection);
 	}
 
+	//BUG: sometimes SourceTV can slip through even though we never hook it?
+	if (IsFakeClient(iClient))
+		return MRES_Ignored;
+
 	return MRES_Ignored;
+}
+
+//gluon gun still can harm protected players, handle it
+public Action Hook_OnTakeDamageProtection(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3])
+{
+	CBaseEntity pAttacker = CBaseEntity(attacker);
+
+	if (pAttacker.IsPlayer() && victim != attacker)
+		return Plugin_Handled;
+
+	return Plugin_Continue;
 }
 
 //Fixes issue when the player is using HEV hands while should use character's hands
@@ -857,43 +1009,57 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 			ShowVGUIPanel(iClient, "specmenu", _, false);
 		}
 	}
-	
-	if(iWeapon != 0) //send use command if we want to use a weapon
+
+	if (CBlackMesaPlayer(iClient).GetUserData("m_flProtectionTime") != -1)
 	{
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-		if(pPlayer.GetCarriedObject() != NULL_CBASEENTITY)
+		
+		if (pPlayer.GetUserData("m_flProtectionTime") <= GetGameTime())
 		{
-			pPlayer.ForceDropOfCarriedPhysObjects(); //drop object if carrying one to avoid prediction issues
-		}
+			pPlayer.SetRenderColor(RGBA(255, 255, 255, 255));
+			pPlayer.SetRenderFx(RENDERFX_NONE);
+			pPlayer.SetUserData("m_flProtectionTime", -1);
 
-		//Client don't use weapon when used custom classname to load custom script, force use with client command by checking classname
+			SDKUnhook(iClient, SDKHook_OnTakeDamage, Hook_OnTakeDamageProtection);
+		}
+	}
+	
+	//send use command if we want to use a weapon
+	if(iWeapon != 0)
+	{
 		char classname[MAX_CLASSNAME];
 		GetEntityClassname(iWeapon, classname, sizeof(classname));
 
 		char command[128];
 		Format(command, sizeof(command), "use %s", classname);
+
+
 		FakeClientCommand(iClient, command);
 		
-		#if defined DEBUG
-		PrintToServer("OnPlayerRunCmd: Client (%d) used %s", iClient, classname);
-		#endif
+		//if (CBM_MP_GameRules.GetCurrentState() == STATE_INTERMISSION_INDEX || CBM_MP_GameRules.GetCurrentState() == STATE_ROUND_INTERMISSION_INDEX)
+
+		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
+		if(pPlayer.GetCarriedObject() != NULL_CBASEENTITY)
+		{
+			pPlayer.ForceDropOfCarriedPhysObjects(); //drop object if carrying one to avoid prediction issues
+		}
 	}
 	
 	return Plugin_Continue;
 }
 
 //Purpose: Allow fast respawn when player presses the buttons
-public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2])
+public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], 
+								int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2])
 {
 	//Respawn player if: allowed by convar, player pressed any of the buttons, player is dead, player is not on spectator team and the delay time is passed
-    if(GetConVarBool(g_ConvarNecroAllowFastRespawn) && buttons & (IN_ATTACK|IN_JUMP|IN_DUCK|IN_FORWARD|IN_BACK|IN_ATTACK2) 
-	   && !IsPlayerAlive(client) && GetClientTeam(client) != 1 && GetGameTime() >= g_fClientFastRespawnDelay[client] && CBlackMesaPlayer(client).IsValid())
+    if (GetConVarBool(g_ConvarNecroAllowFastRespawn) && 
+	    buttons & (IN_ATTACK|IN_JUMP|IN_DUCK|IN_FORWARD|IN_BACK|IN_ATTACK2) && //jump button
+		!IsPlayerAlive(client) && 
+		GetClientTeam(client) != 1 && 
+		GetGameTime() >= g_fClientFastRespawnDelay[client] && 
+		CBlackMesaPlayer(client).IsValid())
 	{
-		#if defined DEBUG
-		PrintToServer("OnPlayerRunCmdPost: Client (%d) respawned without waiting.", client);
-		PrintToServer("OnPlayerRunCmdPost: GetGameTime() == %d, g_fClientFastRespawnDelay[%d] == %f", GetGameTime(), client, g_fClientFastRespawnDelay[client]);
-		#endif
-		
         SetEntPropFloat(client, Prop_Send, "m_flDeathTime", 0.0); //set 0.0 time for death time, this is a proper way to respawn dead player when we need
 	}
 }
@@ -1024,14 +1190,10 @@ public MRESReturn Hook_PlayerChangeTeam(int iClient, DHookParam hParams)
 
 public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 {
-	CBasePlayer pPlayer = CBasePlayer(iClient);
-	int iTeam = DHookGetParam(hParams, 1);
+	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
 
 	//check if joined spectators depending on teamplay state
-	bool bJoinedSpectatorsTeamplay = (CMultiplayRules.IsTeamplay() && iTeam == 1 || iTeam == 0); //teamplay enabled
-	bool bJoinedSpectators = (!CMultiplayRules.IsTeamplay() && iTeam == 1); //templay disabled
-
-	if(bJoinedSpectators || bJoinedSpectatorsTeamplay)
+	if(pPlayer.IsSpectator())
 	{
 		pPlayer.ForceDropOfCarriedPhysObjects();
 
@@ -1046,10 +1208,15 @@ public MRESReturn Hook_PlayerChangeTeamPost(int iClient, DHookParam hParams)
 		if (pPlayer.GetEffectEntity().IsValid())
 			pPlayer.AcceptInputInt("IgniteLifeTime", 0, pPlayer, pPlayer); //specs can't burn
 	}
+	else if (g_bPAFTFT[iClient])
+	{
+		pPlayer.SendCommand("say !spawnhelp");
+		g_bPAFTFT[iClient] = false;
+	}
 
 	//TODO: move to "jointeam"
 	//fix specgui showing if player tried join specs while forced to be in a team
-	if(g_ConvarNecroForceTeam && !bJoinedSpectators || !bJoinedSpectatorsTeamplay)
+	if(g_ConvarNecroForceTeam && !pPlayer.IsSpectator())
 	{
 		ShowVGUIPanel(iClient, "specgui", _, false);
 	}
@@ -1089,4 +1256,23 @@ public MRESReturn Hook_PickupObjectPost(int _this)
 		g_bIsMultiplayerOverride = true;
 	}
 	return MRES_Ignored;
+}
+
+// If removing the player index was successful, this function returns `true`, modifies the array and adjusts `iNumClients`.
+//
+stock bool RemovePlayerFromSoundListener(const int iClientIndex, int iClients[MAXPLAYERS], int& iNumClients)
+{
+	for (int i = 0; i < iNumClients; ++i)
+	{
+		if (iClients[i] == iClientIndex)
+		{
+			for (int j = i; j < (iNumClients - 1); ++j)
+			{
+				iClients[j] = iClients[j + 1];
+			}
+			iNumClients -= 1;
+			return true;
+		}
+	}
+	return false;
 }

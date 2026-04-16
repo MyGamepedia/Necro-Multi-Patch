@@ -657,7 +657,7 @@
 					}
 				}
 			}
-
+			
 			"UTIL_Remove" // void UTIL_Remove( CBaseEntity *oldObj )
 			{
 				"signature"	"UTIL_Remove"
@@ -670,6 +670,37 @@
 						"type"	"cbaseentity"
 					}
 				}
+			}
+
+			"CBasePlayer::CheckSuitUpdate"
+			{
+				"signature"	"CBasePlayer::CheckSuitUpdate"
+				"callconv"	"thiscall"
+				"return"	"void"				
+			}
+
+			"CBM_MP_GameRules::FreezeAllPlayers"
+			{
+				"offset"	"CBM_MP_GameRules::FreezeAllPlayers"
+				"hooktype"	"gamerules"
+				"return"	"int"
+				"this"		"ignore"
+			}
+
+			"CBM_MP_GameRules::UnfreezeAllPlayers"
+			{
+				"offset"	"CBM_MP_GameRules::UnfreezeAllPlayers"
+				"hooktype"	"gamerules"
+				"return"	"int"
+				"this"		"ignore"
+			}
+
+			"CBlackMesaPlayer::NoteWeaponFired"
+			{
+				"signature"	"CBlackMesaPlayer::NoteWeaponFired"
+				"callconv"	"thiscall"
+				"return"	"void"			
+				"this"		"entity"	
 			}
 		}
 		"Offsets"
@@ -823,6 +854,18 @@
 				"windows"	"159"
 				"linux"		"160"
 			}
+
+			"CBM_MP_GameRules::FreezeAllPlayers"
+			{
+				"windows"	"164"
+				"linux"		"165"
+			}
+
+			"CBM_MP_GameRules::UnfreezeAllPlayers"
+			{
+				"windows"	"165"
+				"linux"		"166"
+			}
 			
 			"CBasePlayer::AttemptToExitFreezeCam"
 			{
@@ -962,6 +1005,16 @@
 
 		"Signatures"
 		{
+			"CBlackMesaPlayer::NoteWeaponFired" //how to find: find sk_weapon_gluon_plr_dmg_tick convar object, go to function it calls (CWeapon_Gluon::FireGluonBeam_DLL), one the functions it calls directly is what you need
+			{
+				"windows"	"\x8B\x81\x2A\x2A\x2A\x2A\x85\xC0\x74\x09\x2A\x2A\x2A\x89\x81\x2A\x2A\x2A\x2A\xF3\x0F\x10\x81\x2A\x2A\x2A\x2A\x0F\x2E\x05\x2A\x2A\x2A\x2A\x56\x8D\xB1\x2A\x2A\x2A\x2A\x9F\xF6\xC4\x44\x7B\x0F\x2A\x2A\x2A\x2A\x2A\x2A\x56\xFF\x10\xC7\x06\x2A\x2A\x2A\x2A\x5E\xC3"
+				"linux"		"_ZN16CBlackMesaPlayer15NoteWeaponFiredEv"
+			}
+			"CBasePlayer::CheckSuitUpdate" //how to find: search by string ''!HEV_LOGON'', CBlackMesaPlayer::ClientCommand, the func it's used for is UTIL_EmitSoundSuit, open call trees for UTIL_EmitSoundSuit, the other func that calls it is the func you want
+			{
+				"windows"	"\x55\x8B\xEC\x81\xEC\x04\x02\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x2A\x2A\x2A\x56\x57\x8B\xF9\x80\xBF\x4D\x2A\x2A\x2A\x2A\x8B\xB7\x2A\x2A\x2A\x2A\x0F\x84\xE5\x00\x00\x00\x8B\x07\xFF\x90\x2A\x2A\x2A\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x2A\x2A\x2A\x2A"
+				"linux"		"_ZN11CBasePlayer15CheckSuitUpdateEv"
+			}
 			"CBaseAnimating::SetBodygroup"
 			{
 				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x57\x80\xBE\x31\x2A\x2A\x2A\x2A\x8B\x86\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x75\x28\x83\xBE\x80\x2A\x2A\x2A\x2A\x75\x10\xE8\x28\x27\x02\x00\x85\xC0\x74\x07\x8B\xCE\xE8\x1D\xF1\xFF\xFF\x8B\x86\x2A\x2A\x2A\x2A\x85\xC0\x74\x05\x2A\x2A\x2A"
