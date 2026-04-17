@@ -53,3 +53,83 @@ public void Mp5Contact_Path(int entity)
 
     pMp5Contact.FireOutput("OnUser4");
 }
+
+//undone "you can't use second attack while mp5 contact grenade is alive" feature
+/*
+public MRESReturn Hook_Mp5ContactThink(int _this)
+{
+	if (!g_ConvarNecroMp5ContactBlockSecondAttack.BoolValue)
+		return MRES_Ignored;
+
+	CBlackMesaPlayer pOwner = CBlackMesaBaseDetonator(_this).GetOwner();
+
+	if (pOwner == NULL_CBASEENTITY || !pOwner.IsValid() || pOwner.GetActiveWeapon() == NULL_CBASEENTITY)
+		return MRES_Ignored;
+
+	CBaseCombatWeapon pWeapon = pOwner.GetActiveWeapon();
+
+	char szWeaponClassname[MAX_CLASSNAME];
+	pWeapon.GetClassname(szWeaponClassname, sizeof(szWeaponClassname));
+	
+	//i can't fire the weapon while mp5 contact grenade is alive
+	if (StrEqual(szWeaponClassname, "weapon_mp5"))
+	{
+		float flInitialNextSecondaryAttack = pWeapon.GetUserData("InitialNextSecondaryAttack");
+
+		if (flInitialNextSecondaryAttack != flInitialNextSecondaryAttack)
+		{
+			PrintToChatAll("initial next secondary attack time stored: %.2f", pWeapon.GetNextSecondaryAttack());
+			//store the initial next secondary attack time when the grenade is thrown, so we can restore it later
+			pWeapon.SetUserData("InitialNextSecondaryAttack", pWeapon.GetNextSecondaryAttack());
+		}
+		pWeapon.SetNextSecondaryAttack(FLT_MAX);
+	}
+
+	return MRES_Ignored;
+}
+
+public MRESReturn Hook_Mp5ContactUpdateOnRemove(int _this)
+{
+	PrintToChatAll("removed");
+	if (!g_ConvarNecroMp5ContactBlockSecondAttack.BoolValue)
+		return MRES_Ignored;
+
+	CBlackMesaPlayer pOwner = CBlackMesaBaseDetonator(_this).GetOwner();
+
+	if (pOwner == NULL_CBASEENTITY || !pOwner.IsValid() || pOwner.GetActiveWeapon() == NULL_CBASEENTITY || !pOwner.GetActiveWeapon())
+		return MRES_Ignored;
+
+	CBaseCombatWeapon pWeapon = pOwner.GetActiveWeapon();
+
+	char szWeaponClassname[MAX_CLASSNAME];
+	pWeapon.GetClassname(szWeaponClassname, sizeof(szWeaponClassname));
+
+	PrintToChatAll("weapon seq: %d", pWeapon.GetSequence());
+
+	int iSeq = pWeapon.GetSequence();
+
+	//don't in case of "use" seq 
+	if (iSeq == 9 || iSeq == 10)
+		return MRES_Ignored;
+	
+	//now i can shoot
+	if (strncmp(szWeaponClassname, "weapon_mp5", 6) == 0)
+	{
+		if (pWeapon.GetNextSecondaryAttack() == FLT_MAX)
+		{
+			pWeapon.SetNextSecondaryAttack(GetGameTime());
+		}
+		else
+		{
+			float flInitialNextSecondaryAttack = pWeapon.GetUserData("InitialNextSecondaryAttack");
+
+			if (flInitialNextSecondaryAttack == flInitialNextSecondaryAttack)
+			{
+				pWeapon.SetNextSecondaryAttack(flInitialNextSecondaryAttack);
+			}
+		}
+	}
+
+	return MRES_Ignored;
+}
+*/

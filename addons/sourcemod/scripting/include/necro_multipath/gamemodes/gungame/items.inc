@@ -83,6 +83,43 @@ public void GunGameRemoveWeapons(CBlackMesaPlayer pPlayer)
             pWeaponState.AddOutput("OnUser1", "!self", "Kill", "", 0.22, 1); //remove weapon
         
         pWeaponState.FireOutput("OnUser1", pPlayer.entindex);
+
+        if (g_ConvarNecroGunGameArmorState[iLevel].IntValue != -1)
+            pPlayer.SetArmor(g_ConvarNecroGunGameArmorState[iLevel].IntValue); //set armor for the past level
+
+        if (g_ConvarNecroGunGameHealthState[iLevel].IntValue != -1)
+            pPlayer.SetHealth(g_ConvarNecroGunGameHealthState[iLevel].IntValue); //set health for the past level
+
+
+        //particle effects on new lvl
+        int particle = CreateEntityByName("info_particle_system");
+		
+        if (IsValidEntity(particle))
+        {
+            CBaseEntity pParticle = CBaseEntity(particle);
+            SetEntPropString(particle, Prop_Data, "m_iszEffectName", "xen_spores"); 
+            SetEntProp(particle, Prop_Data, "m_bStartActive", 0);
+
+            char szTargetname[MAX_FORMAT];
+            Format(szTargetname, sizeof(szTargetname), "xenspores_particles_%d", pPlayer.entindex);
+            DispatchKeyValue(particle, "targetname", szTargetname);
+            
+            float pos[3];
+            GetEntPropVector(pPlayer.entindex, Prop_Send, "m_vecOrigin", pos); 
+            TeleportEntity(particle, pos, NULL_VECTOR, NULL_VECTOR);
+            
+            DispatchSpawn(particle);
+            ActivateEntity(particle);	//needed to start particle effect
+
+            pParticle.AddOutput("OnUser1", "!self", "Start", "", 0.0, 1); //start particle effect immediately
+            pParticle.AddOutput("OnUser1", "!self", "Kill", "", 7.0, 1); //remove particle after a while
+            pParticle.FireOutput("OnUser1");
+        }
+
+        int iPitch = GetRandomInt(80, 100);
+
+        PrecacheSound("npc/roller/mine/rmine_chirp_answer1.wav");
+        EmitSoundToAll("npc/roller/mine/rmine_chirp_answer1.wav", pPlayer.entindex, SNDCHAN_VOICE, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.8, iPitch);
     }
     else 
     {

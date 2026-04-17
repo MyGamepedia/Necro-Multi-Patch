@@ -695,6 +695,14 @@
 				"this"		"ignore"
 			}
 
+			"CMultiplayRules::UseSuicidePenalty"
+			{
+				"offset"	"CMultiplayRules::UseSuicidePenalty"
+				"hooktype"	"gamerules"
+				"return"	"bool"
+				"this"		"ignore"
+			}
+
 			"CBlackMesaPlayer::NoteWeaponFired"
 			{
 				"signature"	"CBlackMesaPlayer::NoteWeaponFired"
@@ -702,9 +710,64 @@
 				"return"	"void"			
 				"this"		"entity"	
 			}
+
+			"CBasePlayer::IncrementFragCount"
+			{
+				"signature"	"CBasePlayer::IncrementFragCount"
+				"callconv"	"thiscall"
+				"return"	"void"			
+				"this"		"entity"
+				"arguments"
+				{
+					"nCount"
+					{
+						"type"	"int"
+					}
+				}	
+			}
+
+			"CBasePlayer::IncrementFragCount"
+			{
+				"signature"	"CBasePlayer::IncrementFragCount"
+				"callconv"	"thiscall"
+				"return"	"void"			
+				"this"		"entity"
+				"arguments"
+				{
+					"nCount"
+					{
+						"type"	"int"
+					}
+				}	
+			}
+
+			"CBasePlayer::AddPoints"
+			{
+				"signature"	"CBasePlayer::AddPoints"
+				"callconv"	"thiscall"
+				"return"	"void"			
+				"this"		"entity"
+				"arguments"
+				{
+					"score"
+					{
+						"type"	"int"
+					}
+					"bAllowNegativeScore"
+					{
+						"type"	"bool"
+					}
+				}				
+			}
 		}
 		"Offsets"
 		{
+			"CMultiplayRules::UseSuicidePenalty"
+			{
+				"windows"	"149"
+				"linux"		"150"
+			}
+
 			"CWeapon_Snark::Operator_HandleAnimEvent"
 			{
 				"windows"	"387"
@@ -1005,15 +1068,25 @@
 
 		"Signatures"
 		{
+			"CBasePlayer::AddPoints" //how to find: find ''UTIL_IsMasterTriggered'' by string ''Master was null or not a master!\n'', one of funcs in calls tree that calls it is ''CGameScore::InputApplyScore'', one of the funcs ''CGameScore::InputApplyScore'' calls is ''CBaseEntity::AddPoints'' (the only with 3 params), the only func that calls ''CBaseEntity::AddPoints'' is what you need
+			{
+				"windows"	"\x55\x8B\xEC\x2A\x2A\x2A\x56\x85\xD2\x79\x1C\x2A\x2A\x2A\x2A\x75\x16\x8B\xB1\x2A\x2A\x2A\x2A\x85\xF6\x78\x1E\x8B\xC2\xF7\xD8\x3B\xC6\x7E\x04\x8B\xD6\xF7\xDA\x01\x91\x2A\x2A\x2A\x2A\x8B\x81\x2A\x2A\x2A\x2A\x89\x81\x2A\x2A\x2A\x2A\x5E\x5D\xC2\x08\x00"
+				"linux"		"@_ZN11CBasePlayer9AddPointsEib"
+			}
+			"CBasePlayer::IncrementFragCount" //how to find: find ''CMultiplayRules::PlayerKilled'' by string ''game_playerdie'', the func it calls by putting param_1 and -1 is what you need 
+			{
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x01\x81\x2A\x2A\x2A\x2A\x8B\x81\x2A\x2A\x2A\x2A\x89\x81\x2A\x2A\x2A\x2A\x5D\xC2\x04\x00"
+				"linux"		"@_ZN11CBasePlayer18IncrementFragCountEi"
+			}
 			"CBlackMesaPlayer::NoteWeaponFired" //how to find: find sk_weapon_gluon_plr_dmg_tick convar object, go to function it calls (CWeapon_Gluon::FireGluonBeam_DLL), one the functions it calls directly is what you need
 			{
 				"windows"	"\x8B\x81\x2A\x2A\x2A\x2A\x85\xC0\x74\x09\x2A\x2A\x2A\x89\x81\x2A\x2A\x2A\x2A\xF3\x0F\x10\x81\x2A\x2A\x2A\x2A\x0F\x2E\x05\x2A\x2A\x2A\x2A\x56\x8D\xB1\x2A\x2A\x2A\x2A\x9F\xF6\xC4\x44\x7B\x0F\x2A\x2A\x2A\x2A\x2A\x2A\x56\xFF\x10\xC7\x06\x2A\x2A\x2A\x2A\x5E\xC3"
-				"linux"		"_ZN16CBlackMesaPlayer15NoteWeaponFiredEv"
+				"linux"		"@_ZN16CBlackMesaPlayer15NoteWeaponFiredEv"
 			}
 			"CBasePlayer::CheckSuitUpdate" //how to find: search by string ''!HEV_LOGON'', CBlackMesaPlayer::ClientCommand, the func it's used for is UTIL_EmitSoundSuit, open call trees for UTIL_EmitSoundSuit, the other func that calls it is the func you want
 			{
 				"windows"	"\x55\x8B\xEC\x81\xEC\x04\x02\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x2A\x2A\x2A\x56\x57\x8B\xF9\x80\xBF\x4D\x2A\x2A\x2A\x2A\x8B\xB7\x2A\x2A\x2A\x2A\x0F\x84\xE5\x00\x00\x00\x8B\x07\xFF\x90\x2A\x2A\x2A\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x80\x2A\x2A\x2A\x2A"
-				"linux"		"_ZN11CBasePlayer15CheckSuitUpdateEv"
+				"linux"		"@_ZN11CBasePlayer15CheckSuitUpdateEv"
 			}
 			"CBaseAnimating::SetBodygroup"
 			{

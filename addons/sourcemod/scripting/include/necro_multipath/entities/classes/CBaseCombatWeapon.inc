@@ -1,6 +1,6 @@
 #define BASECOMBATWEAPONPRECACHE_RETURN_CLASSNAME
 
-#define WEAPON_357_SERVER 				"weapon_357_necro"
+#define WEAPON_357_SERVER 				"weapon_357_necro_121"
 #define WEAPON_ASSASSIN_GLOCK_SERVER 	"weapon_assassin_glock_necro"
 #define WEAPON_CROSSBOW_SERVER 			"weapon_crossbow_necro"
 #define WEAPON_CROWBAR_SERVER 			"weapon_crowbar_necro"
@@ -9,7 +9,7 @@
 #define WEAPON_GLUON_SERVER 			"weapon_gluon_necro"
 #define WEAPON_HEADCRAB_SERVER 			"weapon_headcrab_necro"
 #define WEAPON_HIVEHAND_SERVER 			"weapon_hivehand_necro"
-#define WEAPON_MP5_SERVER 				"weapon_mp5_necro"
+#define WEAPON_MP5_SERVER 				"weapon_mp5_necro_121"
 #define WEAPON_RPG_SERVER 				"weapon_rpg_necro"
 #define WEAPON_SATCHEL_SERVER 			"weapon_satchel_necro"
 #define WEAPON_SHOTGUN_SERVER 			"weapon_shotgun_necro"

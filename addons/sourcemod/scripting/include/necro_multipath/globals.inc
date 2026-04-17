@@ -14,6 +14,7 @@
 #define COL_LIGHTBLUE	"\x0700FFFF"
 #define COL_SEMIRED	    "\x07f24522"
 #define COL_LIGHTGREEN	"\x0739f75f"
+#define COL_YELLOWGREEN	"\x07bbff00"
 
 ConVar sk_crossbow_tracer_enabled;
 ConVar sv_cheats;
@@ -71,6 +72,9 @@ ConVar g_ConvarNecroSpawnProtectionColorBlue;
 ConVar g_ConvarNecroSpawnProtectionColorGreen;
 ConVar g_ConvarNecroSpawnProtectionColorAlpha;
 ConVar g_ConvarNecroSpawnProtectionRenderFX;
+//ConVar g_ConvarNecroForceShotgunFireInReload;
+//ConVar g_ConvarNecroMp5ContactBlockSecondAttack;
+ConVar g_ConvarNecroUseSuicidePenalty;
 
 DynamicDetour hkBaseCombatWeaponPrecache;
 //DynamicDetour hkBaseCombatDefaultReload;
@@ -83,6 +87,8 @@ DynamicDetour hkPostChatMessage;
 //DynamicDetour hkEventQueuAddEvent;
 DynamicDetour hkPropBreakableRagdollInitRagdoll;
 DynamicDetour hkNoteWeaponFired;
+//DynamicDetour hkIncrementFragCount;
+//DynamicDetour hkAddPoints;
 
 #if defined PLAYERPATCH_SUIT_SOUNDS
 DynamicDetour hkCheckSuitUpdate;
@@ -116,7 +122,7 @@ DynamicHook hkIsValidEnemy;
 DynamicHook hkUpdateEnemyMemory;
 DynamicHook hkFreezeAllPlayers;
 DynamicHook hkUnfreezeAllPlayers;
-
+DynamicHook hkUseSuicidePenalty;
 
 float g_fClientFastRespawnDelay[MAX_PLAYERS+1];
 float g_fClientSpectatorJoinTeamDelay[MAX_PLAYERS+1];
@@ -134,6 +140,17 @@ bool g_bPAFTFT[MAX_PLAYERS + 1]  = { true, ... }; //Player Appeared For The Firs
 StringMap gGreetedAuthIds;
 
 int g_iUserCmdOffset;
+
+enum NecroGameMode
+{
+    MODE_NONE,
+    MODE_DEATHMATCH,
+    MODE_TEAMDEATHMATCH,
+    MODE_GUNGAME,
+    MODE_TEAMGUNGAME
+};
+
+NecroGameMode g_ngmCurrentGameMode = MODE_NONE;
 
 int g_iShedMinTime;
 int g_iShedMaxTime;
@@ -182,6 +199,8 @@ ConVar g_ConvarNecroGunGameWeaponState[15];
 ConVar g_ConvarNecroGunGameAmmoPrimary[15];
 ConVar g_ConvarNecroGunGameAmmoSecondary[15];
 ConVar g_ConvarNecroGunGameStateKills[15];
+ConVar g_ConvarNecroGunGameHealthState[15];
+ConVar g_ConvarNecroGunGameArmorState[15];
 
 ConVar g_ConvarNecroGunGamePunishingWeaponName;
 ConVar g_ConvarNecroGunGamePunishingWeaponState;

@@ -19,7 +19,39 @@ public void LoadGunGame()
     g_ConvarNecroGunGameWeaponState[12] = CreateConVar("necro_gungame_state_12_weapon", "weapon_gluon", "Weapon to give on level 12.");
     g_ConvarNecroGunGameWeaponState[13] = CreateConVar("necro_gungame_state_13_weapon", "weapon_tripmine", "Weapon to give on level 13.");
     g_ConvarNecroGunGameWeaponState[14] = CreateConVar("necro_gungame_state_14_weapon", "weapon_assassin_glock", "Weapon to give on level 14.");
-    
+
+    g_ConvarNecroGunGameHealthState[0] = CreateConVar("necro_gungame_state_0_health", "100", "Health to set on level 0.");
+    g_ConvarNecroGunGameHealthState[1] = CreateConVar("necro_gungame_state_1_health", "100", "Health to set on level 1.");
+    g_ConvarNecroGunGameHealthState[2] = CreateConVar("necro_gungame_state_2_health", "100", "Health to set on level 2.");
+    g_ConvarNecroGunGameHealthState[3] = CreateConVar("necro_gungame_state_3_health", "100", "Health to set on level 3.");
+    g_ConvarNecroGunGameHealthState[4] = CreateConVar("necro_gungame_state_4_health", "100", "Health to set on level 4.");
+    g_ConvarNecroGunGameHealthState[5] = CreateConVar("necro_gungame_state_5_health", "100", "Health to set on level 5.");
+    g_ConvarNecroGunGameHealthState[6] = CreateConVar("necro_gungame_state_6_health", "100", "Health to set on level 6.");
+    g_ConvarNecroGunGameHealthState[7] = CreateConVar("necro_gungame_state_7_health", "100", "Health to set on level 7.");
+    g_ConvarNecroGunGameHealthState[8] = CreateConVar("necro_gungame_state_8_health", "100", "Health to set on level 8.");
+    g_ConvarNecroGunGameHealthState[9] = CreateConVar("necro_gungame_state_9_health", "100", "Health to set on level 9.");
+    g_ConvarNecroGunGameHealthState[10] = CreateConVar("necro_gungame_state_10_health", "100", "Health to set on level 10.");
+    g_ConvarNecroGunGameHealthState[11] = CreateConVar("necro_gungame_state_11_health", "100", "Health to set on level 11.");
+    g_ConvarNecroGunGameHealthState[12] = CreateConVar("necro_gungame_state_12_health", "100", "Health to set on level 12.");
+    g_ConvarNecroGunGameHealthState[13] = CreateConVar("necro_gungame_state_13_health", "100", "Health to set on level 13.");
+    g_ConvarNecroGunGameHealthState[14] = CreateConVar("necro_gungame_state_14_health", "100", "Health to set on level 14.");
+
+    g_ConvarNecroGunGameArmorState[0] = CreateConVar("necro_gungame_state_0_armor", "30", "Armor to set on level 0.");
+    g_ConvarNecroGunGameArmorState[1] = CreateConVar("necro_gungame_state_1_armor", "30", "Armor to set on level 1.");
+    g_ConvarNecroGunGameArmorState[2] = CreateConVar("necro_gungame_state_2_armor", "30", "Armor to set on level 2.");
+    g_ConvarNecroGunGameArmorState[3] = CreateConVar("necro_gungame_state_3_armor", "30", "Armor to set on level 3.");
+    g_ConvarNecroGunGameArmorState[4] = CreateConVar("necro_gungame_state_4_armor", "30", "Armor to set on level 4.");
+    g_ConvarNecroGunGameArmorState[5] = CreateConVar("necro_gungame_state_5_armor", "30", "Armor to set on level 5.");
+    g_ConvarNecroGunGameArmorState[6] = CreateConVar("necro_gungame_state_6_armor", "30", "Armor to set on level 6.");
+    g_ConvarNecroGunGameArmorState[7] = CreateConVar("necro_gungame_state_7_armor", "30", "Armor to set on level 7.");
+    g_ConvarNecroGunGameArmorState[8] = CreateConVar("necro_gungame_state_8_armor", "30", "Armor to set on level 8.");
+    g_ConvarNecroGunGameArmorState[9] = CreateConVar("necro_gungame_state_9_armor", "30", "Armor to set on level 9.");
+    g_ConvarNecroGunGameArmorState[10] = CreateConVar("necro_gungame_state_10_armor", "30", "Armor to set on level 10.");
+    g_ConvarNecroGunGameArmorState[11] = CreateConVar("necro_gungame_state_11_armor", "30", "Armor to set on level 11.");
+    g_ConvarNecroGunGameArmorState[12] = CreateConVar("necro_gungame_state_12_armor", "30", "Armor to set on level 12.");
+    g_ConvarNecroGunGameArmorState[13] = CreateConVar("necro_gungame_state_13_armor", "30", "Armor to set on level 13.");
+    g_ConvarNecroGunGameArmorState[14] = CreateConVar("necro_gungame_state_14_armor", "30", "Armor to set on level 14.");
+
     g_ConvarNecroGunGameAmmoPrimary[0] = CreateConVar("necro_gungame_state_0_primary", "9999", "Number of primary items/clips/grenades to give on level 0.", FCVAR_NONE, true, 0.0, true, 9999.0);
     g_ConvarNecroGunGameAmmoPrimary[1] = CreateConVar("necro_gungame_state_1_primary", "9999", "Number of primary items/clips/grenades to give on level 1.", FCVAR_NONE, true, 0.0, true, 9999.0);
     g_ConvarNecroGunGameAmmoPrimary[2] = CreateConVar("necro_gungame_state_2_primary", "9999", "Number of primary items/clips/grenades to give on level 2.", FCVAR_NONE, true, 0.0, true, 9999.0);

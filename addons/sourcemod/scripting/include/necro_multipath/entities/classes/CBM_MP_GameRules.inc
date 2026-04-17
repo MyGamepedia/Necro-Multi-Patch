@@ -74,3 +74,13 @@ public MRESReturn Hook_UnfreezeAllPlayers(DHookReturn hReturn)
 
 	return MRES_Ignored;
 }
+
+//disable penalty if we want, we keep it always disabled so our players feels good, unless teamplay is enabled (because of valve hacks in the code)
+public MRESReturn Hook_UseSuicidePenalty(DHookReturn hReturn)
+{
+    if (CBM_MP_GameRules.IsTeamplay())
+        return MRES_Ignored;
+
+    DHookSetReturn(hReturn, GetConVarBool(g_ConvarNecroUseSuicidePenalty));
+    return MRES_Supercede;
+}

@@ -1044,6 +1044,41 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 			pPlayer.ForceDropOfCarriedPhysObjects(); //drop object if carrying one to avoid prediction issues
 		}
 	}
+
+	//this let us to fire shotgun even if in reload
+	//credit to npc_pigeon (aka kyuugryphon) for solution in "[SOURCEMOD] Shotgun Reload Interrupt Fix"
+	//if (g_ConvarNecroForceShotgunFireInReload.BoolValue && ((iButtons & IN_ATTACK) || (iButtons & IN_ATTACK2)))
+	//{
+	//	CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
+
+	//	CBaseCombatWeapon pActiveWeapon = pPlayer.GetActiveWeapon();
+
+	//	//m_iClipType 2 means it's a pump type wpn, so it's a shotgun
+	//	if (pActiveWeapon != NULL_CBASEENTITY && pActiveWeapon.GetUserData("m_iClipType") == 2)
+	//	{
+	//		int iSeq = pActiveWeapon.GetSequence();
+	//		bool bPreventsShot = false;
+	//		//PrintToChatAll("Seq: %d", iSeq);
+	//		switch (iSeq)
+	//		{
+	//			//these sequences will prevent player from shooting
+	//			//don't on seq 14 cuz it causes a prediction bug
+	//			case 11, 12, 13/*, 14*/:
+	//				bPreventsShot = true;
+	//			default:
+	//				bPreventsShot = false;
+	//		}
+
+	//		//reset delays if we want to shoot but prevented by one of the sequences
+	//		if (bPreventsShot)
+	//		{
+	//			pPlayer.SetNextAttack(GetGameTime());
+	//			pActiveWeapon.SetNextPrimaryAttack(GetGameTime());
+	//			pActiveWeapon.SetNextSecondaryAttack(GetGameTime());
+	//		}
+	//	}
+	//}
+	//
 	
 	return Plugin_Continue;
 }

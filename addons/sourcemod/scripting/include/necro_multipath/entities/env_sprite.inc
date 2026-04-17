@@ -4,6 +4,11 @@
 //Purpose: Add item_ammo_canister's sprite on/off state control depending on canister's state
 public void Sprite_PathCanister(int entity)
 {
+	if (!IsValidEntity(entity))
+	{
+		return;
+	}
+	
 	int parent = GetEntPropEnt(entity, Prop_Data, "m_hMoveParent"); //get parent entity
 	
 	if (!IsValidEntity(parent)) //rerurn if no valid parent

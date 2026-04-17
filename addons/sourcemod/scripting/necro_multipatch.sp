@@ -192,6 +192,9 @@ public void OnPluginStart()
 	g_ConvarNecroSpawnProtectionColorGreen = CreateConVar("necro_spawnprotectioncolorgreen", "255", "Green color value for spawn protection that appears with player spawn.", 0, true, 0.0, true, 255.0);
 	g_ConvarNecroSpawnProtectionColorAlpha = CreateConVar("necro_spawnprotectioncoloralpha", "255", "Alpha color value for spawn protection that appears with player spawn.", 0, true, 0.0, true, 255.0);
 	g_ConvarNecroSpawnProtectionRenderFX = CreateConVar("necro_spawnprotectionrenderfx", "16", "Render effects for spawn protection that appears with player spawn.");
+	g_ConvarNecroUseSuicidePenalty = CreateConVar("necro_usesuicidepenalty", "0", "Enable suicide penalty.", 0, true, 0.0, true, 1.0);
+	//g_ConvarNecroForceShotgunFireInReload = CreateConVar("necro_forceshotgunfireinreload", "1", "Force shotgun to fire even if in reload.", 0, true, 0.0, true, 1.0);
+	//g_ConvarNecroMp5ContactBlockSecondAttack = CreateConVar("necro_mp5contactblocksecondattack", "1", "Block secondary attack for MP5 contact grenade's owner if holding MP5 while the grenade is alive.", 0, true, 0.0, true, 1.0);
 
 	//Load custom modes
 	LoadCustomGameModes();
@@ -241,7 +244,7 @@ void LoadGameData()
 	if (hkLevelInit.HookRaw(Hook_Pre, IServerGameDLL.Get().GetAddress(), Hook_OnLevelInit) == INVALID_HOOK_ID)
 		SetFailState("Could not hook CServerGameDLL::LevelInit");
 
-	//Detours 
+	//Detours
 	LoadDHookDetour(pGameConfig_Necro, hkGiveDefaultItems, "CBlackMesaPlayer::GiveDefaultItems", Hook_GiveDefaultItems);
 	LoadDHookDetour(pGameConfig_Necro, hkBaseCombatWeaponPrecache, "CBaseCombatWeapon::Precache", Hook_BaseCombatWeaponPrecache, Hook_BaseCombatWeaponPrecachePost);
 	LoadDHookDetour(pGameConfig_Necro, hkToggleIronsights, "CBlackMesaBaseWeaponIronSights::ToggleIronSights", Hook_ToggleIronsights);	
@@ -276,6 +279,7 @@ void LoadGameData()
 	//LoadDHookVirtual(pGameConfig_Necro, hkBlackMesaBaseDetonatorExplodeTouch, "CBlackMesaBaseDetonator::ExplodeTouch");
 	LoadDHookVirtual(pGameConfig_Necro, hkUnfreezeAllPlayers, "CBM_MP_GameRules::UnfreezeAllPlayers");
 	LoadDHookVirtual(pGameConfig_Necro, hkFreezeAllPlayers, "CBM_MP_GameRules::FreezeAllPlayers");
+	LoadDHookVirtual(pGameConfig_Necro, hkUseSuicidePenalty, "CMultiplayRules::UseSuicidePenalty");
 	
 	//Memory Vars
 	g_iUserCmdOffset = pGameConfig_Necro.GetOffset("CBasePlayer::GetCurrentUserCommand");
@@ -474,7 +478,7 @@ public void OnPlayerDisconnect_CleanGreet(Event event, const char[] name, bool d
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 
-	//player gone from server, we can greet the player again
+	//player gone from server, we can greet the player again 
 	if (CBlackMesaPlayer(client).IsValid())
 	{
 		char authId[MAX_AUTHID_LENGTH];
@@ -506,152 +510,51 @@ public MRESReturn Hook_OnLevelInit(DHookReturn hReturn, DHookParam hParams)
 //this is our schedule based gamemode pool system
 public void SwitchGameModes()
 {
-	char hour[4];  
-    FormatTime(hour, sizeof(hour), "%H"); // 24-hour format: "00" to "23"  
-    int currentHour = StringToInt(hour);  
+    char hour[4];  
+    FormatTime(hour, sizeof(hour), "%H"); //24 hour format
+    int currentHour = StringToInt(hour);
 
-	//----------------------------------------------
-	//Deathmatch
-	//----------------------------------------------
-    if (
-		(currentHour >= 0 && currentHour < 2)
-		||
-		(currentHour >= 8 && currentHour < 10)
-		||
-		(currentHour >= 16 && currentHour < 18)
-	   )
-    {  
-		GameModeToggle_Dm(true, false);
-
-		if (currentHour >= 0 && currentHour < 2)
-		{
-			g_iShedMaxTime = 2;
-			g_iShedMinTime = 0;
-		}
-		else if (currentHour >= 8 && currentHour < 10)
-		{
-			g_iShedMaxTime = 10;
-			g_iShedMinTime = 8;
-		}
-		else if (currentHour >= 16 && currentHour < 18)
-		{
-			g_iShedMaxTime = 18;
-			g_iShedMinTime = 16;
-		}
-    }  
-
-	//----------------------------------------------
-	//Team Deathmatch
-	//----------------------------------------------
-    if (
-		(currentHour >= 2 && currentHour < 4)
-		||
-		(currentHour >= 10 && currentHour < 12)
-		||
-		(currentHour >= 18 && currentHour < 20)
-	   )
-    {  
-		GameModeToggle_Dm(true, true);
-
-		if (currentHour >= 2 && currentHour < 4)
-		{
-			g_iShedMaxTime = 4;
-			g_iShedMinTime = 2;
-		}
-		else if (currentHour >= 10 && currentHour < 12)
-		{
-			g_iShedMaxTime = 12;
-			g_iShedMinTime = 10;
-		}
-		else if (currentHour >= 18 && currentHour < 20)
-		{
-			g_iShedMaxTime = 20;
-			g_iShedMinTime = 18;
-		}
+	//pick one of the valid gamemodes based on the current hour
+    if (IsInSchedule(g_iShedTimeDeathmatch, currentHour))
+    {
+        GameModeToggle_Dm(true, false);
+		g_ngmCurrentGameMode = MODE_DEATHMATCH;
     }
-
-	//---------------------------------------------- 
-	//Gun Game 
-	//----------------------------------------------
-	if (
-		(currentHour >= 4 && currentHour < 6)
-		||
-		(currentHour >= 12 && currentHour < 14)
-		||
-		(currentHour >= 20 && currentHour < 22)
-	   )
-    {  
-		GameModeToggle_GunGame(true, false);
-
-		if (currentHour >= 4 && currentHour < 6)
-		{
-			g_iShedMaxTime = 6;
-			g_iShedMinTime = 4;
-		}
-		else if (currentHour >= 12 && currentHour < 14)
-		{
-			g_iShedMaxTime = 14;
-			g_iShedMinTime = 12;
-		}
-		else if (currentHour >= 20 && currentHour < 22)
-		{
-			g_iShedMaxTime = 22;
-			g_iShedMinTime = 20;
-		}
-    } 
-
-	//----------------------------------------------
-	//Team Gun Game 
-	//----------------------------------------------
-	if (
-		(currentHour >= 6 && currentHour < 8)
-		||
-		(currentHour >= 14 && currentHour < 16)
-		||
-		(currentHour >= 22 && currentHour < 24)
-	   )
-    {  
-		GameModeToggle_GunGame(true, true);
-
-		if (currentHour >= 6 && currentHour < 8)
-		{
-			g_iShedMaxTime = 8;
-			g_iShedMinTime = 6;
-		}
-		else if (currentHour >= 14 && currentHour < 16)
-		{
-			g_iShedMaxTime = 16;
-			g_iShedMinTime = 14;
-		}
-		else if (currentHour >= 22 && currentHour < 24)
-		{
-			g_iShedMaxTime = 24;
-			g_iShedMinTime = 22;
-		}
+    else if (IsInSchedule(g_iShedTimeTeamDeathmatch, currentHour))
+    {
+        GameModeToggle_Dm(true, true);
+		g_ngmCurrentGameMode = MODE_TEAMDEATHMATCH;
+    }
+    else if (IsInSchedule(g_iShedTimeGunGame, currentHour))
+    {
+        GameModeToggle_GunGame(true, false);
+		g_ngmCurrentGameMode = MODE_GUNGAME;
+    }
+    else if (IsInSchedule(g_iShedTimeTeamGunGame, currentHour))
+    {
+        GameModeToggle_GunGame(true, true);
+		g_ngmCurrentGameMode = MODE_TEAMGUNGAME;
     }
 }
 
-bool CheckSchedule(int schedule[][2], int size, int currentHour)
+//Purpose: easy way to define by shed arrays what gamemode we should load, сode by Gemini (AI)
+bool IsInSchedule(int schedule[3][2], int currentHour)
 {
-    int count = size / sizeof(schedule[0]);
-
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < 3; i++)
     {
-        int min = schedule[i][0];
-        int max = schedule[i][1];
-
-        if (currentHour >= min && currentHour < max)
+        // check: hour >= start AND hour < end
+        if (currentHour >= schedule[i][0] && currentHour < schedule[i][1])
         {
-            g_iShedMinTime = min;
-            g_iShedMaxTime = max;
+            // save boundaries to global variables
+            g_iShedMinTime = schedule[i][0];
+            g_iShedMaxTime = schedule[i][1];
             return true;
         }
     }
-
     return false;
 }
 
-//Purspose: Load  gamerule offsets to control various game mechanics when map is loaded
+//Purpose: Load  gamerule offsets to control various game mechanics when map is loaded 
 public void OnMapStart()
 {
 	//gamerules hooks
@@ -669,6 +572,8 @@ public void OnMapStart()
 
 	DHookGamerules(hkFreezeAllPlayers, true, _, Hook_FreezeAllPlayers);
 	DHookGamerules(hkUnfreezeAllPlayers, false, _, Hook_UnfreezeAllPlayers);
+
+	DHookGamerules(hkUseSuicidePenalty, false, _, Hook_UseSuicidePenalty);
 
 	MapStartCustomGameModes();
 
@@ -1000,6 +905,8 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	if (StrEqual(szClassname, "grenade_mp5_contact"))
 	{
 		SDKHook(iEntIndex, SDKHook_Spawn, Mp5Contact_Path); //Add smoke particle effect to MP5 barrel grenade if enabled
+		//DHookEntity(hkThink, false, iEntIndex, _, Hook_Mp5ContactThink);
+		//DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_Mp5ContactUpdateOnRemove);
 		return;
 	}
 
@@ -1008,6 +915,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		if (pEntity.IsPickupItem())
 		{
 			SDKHook(iEntIndex, SDKHook_Spawn, Item_Path);
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Item_PathPost);
 			DHookEntity(hkKeyValue_char, false, iEntIndex, _, Hook_BasePickupKeyValue);
 		}
 
@@ -1024,14 +932,6 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		SDKHook(iEntIndex, SDKHook_Spawn, Bolt_Path);
 	//	DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_GrenadeBoltAcceptInput); //Disable exploading bolt if is not allowed
 		return;
-	}
-
-	if (strncmp(szClassname, "item_", 5) == 0 || strcmp(szClassname, "prop_soda", false) == 0)
-	{
-		if (pEntity.IsPickupItem())
-		{
-			SDKHook(iEntIndex, SDKHook_SpawnPost, Item_PathPost);
-		}
 	}
 
 	//remove buggy sprite in the sky
@@ -1096,6 +996,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 	if (StrEqual(szClassname, "weapon_shotgun"))
 	{
+		pEntity.SetUserData("m_iClipType", 2);
 		DHookEntity(hkBaseCombatWeaponHolster, true, iEntIndex, _, Hook_BaseCombatWeaponHolsterPost);
 		DHookEntity(hkBaseCombatWeaponItemHolsterFrame, true, iEntIndex, _, Hook_WeaponShotgunItemHolsterFramePost);
 		return;

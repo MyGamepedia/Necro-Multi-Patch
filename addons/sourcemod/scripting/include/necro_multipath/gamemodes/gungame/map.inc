@@ -38,12 +38,12 @@ public void GunGameMapEnd()
         UnhookEvent("round_start", GunGameOnRoundStart, EventHookMode_Post);
         UnhookEvent("round_end", GunGameOnRoundIntermission, EventHookMode_Post);
         g_iNecroGunGameCurrentState = 2;
+    }
 
-        //no need for the ui now, remove the timer
-        if (g_hGunGameHudTimer != INVALID_HANDLE)  
-        {  
-            KillTimer(g_hGunGameHudTimer);  
-            g_hGunGameHudTimer = INVALID_HANDLE;  
-        }
+    //no need for the ui now, remove the timer
+    if (g_hGunGameHudTimer != INVALID_HANDLE)  
+    {  
+        KillTimer(g_hGunGameHudTimer);  
+        g_hGunGameHudTimer = INVALID_HANDLE;  
     }
 }

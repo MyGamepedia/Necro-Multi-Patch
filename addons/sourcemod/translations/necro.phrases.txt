@@ -30,7 +30,7 @@
 	"#GunGame_HUD"
 	{
 		"#format"	"{1:d},{2:d},{3:d},{4:d}"
-		"en"		"|Gun game|\n|Your Level {1}/{2}|\n|Kills Done {3}/{4}|"
+		"en"		"|Gun Game|\n|Your Level {1}/{2}|\n|Kills Done {3}/{4}|"
 	}
 	
 	"#GunGame_Skip"
@@ -164,7 +164,7 @@
 	"#Necro_TelegramInfo" //format info: 1 def col, 2 blue col, 3 def col
 	{
 		"#format"	"{1:s},{2:s},{3:s}"
-		"en"		"{1:s}Join our Telegram channel {2:s}t.me/blackmesaBMSchat{3:s} to communicate with the developers and community!"
+		"en"		"{1:s}Join our Telegram channel {2:s}t.me/blackmesaBMSchat{3:s}!"
 	}
 	
 	"#Necro_HelpInfo" //format info: 1 def col, 2 col green, 3 def col
@@ -189,6 +189,22 @@
 	{
 		"#format"	"{1:s},{2:s}"
 		"en"		"{1:s}!models{2:s} - to change your character model."
+	}
+	
+	"#Necro_ShedInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1:s}!shed{2:s} - to see schedule times for each game mode."
+	}
+	
+	"#Necro_ShedGamemodeForm"
+	{
+		"en"		"| Mode                    |         AM          |         PM          |"
+	}
+	
+	"#Necro_ShedGamemodeMain"
+	{
+		"en"		"| Deathmatch          | 00-02, 08-10  | 04-06, ------   |\n| Team Deathmatch | 02-04, 10-00  | 06-08, ------   |\n| Gun Game             | 04-06, ------   | 00-02, 08-10  |\n| Team Gun Game    | 06-08, ------   | 02-04, 10-00  |"
 	}
 	
 	"#Necro_TimeInfo" //format info: 1 lightblue col, 2 CURRENT TIME, 3 def col, 4 AM OR PM, 5 UNITED STATES TIME
@@ -251,7 +267,7 @@
 	
 	"#Necro_TimePM"
 	{
-		"en"		"AM"
+		"en"		"PM"
 	}
 	
 	"#Necro_FavoritesInfo" //format info: 1 red col, 2 SERVER NAME, 3 def col, 4 blue col, 5 SERVERIP, 6 green col
@@ -338,5 +354,36 @@
 	"#weapon_tripmine"
 	{
 		"en"		"Tripmine"
+	}
+	
+	"#Necro_NoGamemode"
+	{
+		"en"		"Void-995" //thanks dude
+	}
+	
+	"#Necro_Deathmatch"
+	{
+		"en"		"Deathmatch"
+	}
+	
+	"#Necro_Team_Deathmatch"
+	{
+		"en"		"Team Deathmatch"
+	}
+	
+	"#Necro_GunGame"
+	{
+		"en"		"Gun Game"
+	}
+	
+	"#Necro_Team_GunGame"
+	{
+		"en"		"Team Gun Game"
+	}
+	
+	"#Necro_GameModeInfo" //format: 1 def col, 2 blue col, 3 gamemode, 4 def col, 5 min time, 6 am or pm, 7 max time, 8 am or pm
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:d},{6:s},{7:d}{8:s}"
+		"en"		"{1:s}Current mode: {2:s}{3:s}{4:s} (from {5:d} {6:s} to {7:d} {8:s})!"
 	}
 }
