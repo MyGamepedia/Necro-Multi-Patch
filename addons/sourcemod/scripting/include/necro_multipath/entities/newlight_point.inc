@@ -20,7 +20,7 @@ public MRESReturn Hook_NewLightPointAcceptInput(int _this, DHookReturn hReturn, 
     if (strcmp(szInputName, "Test", false) == 0)
     {
         PrintToChatAll("TEST INPUT RECEIVED");
-        CNewLightPoint pNewLightPoint = CNewLightPoint(_this);
+        //CNewLightPoint pNewLightPoint = CNewLightPoint(_this);
 
         SDKHook(_this, SDKHook_SetTransmit, NewLightPoint_Hook_Transmit);
         

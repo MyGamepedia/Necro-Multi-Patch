@@ -154,8 +154,8 @@ enum NecroGameMode
 
 NecroGameMode g_ngmCurrentGameMode = MODE_NONE;
 
-int g_iShedMinTime;
-int g_iShedMaxTime;
+//int g_iShedMinTime;
+//int g_iShedMaxTime;
 
 int g_iShedTimeDeathmatch[3][2] = 
 {
@@ -188,7 +188,7 @@ int g_iShedTimeTeamGunGame[3][2] =
 #define MODE_COUNT 4
 #define MODE_DURATION 7200 // 2 hours in seconds
 
-int g_iServerStartTime;
+//int g_iServerStartTime;
 
 //Handle g_pCreateWeaponTracedBoneMergeEntity;
 

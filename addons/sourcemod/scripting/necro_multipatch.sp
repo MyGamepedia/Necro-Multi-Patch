@@ -547,8 +547,8 @@ bool IsInSchedule(int schedule[3][2], int currentHour)
         if (currentHour >= schedule[i][0] && currentHour < schedule[i][1])
         {
             // save boundaries to global variables
-            g_iShedMinTime = schedule[i][0];
-            g_iShedMaxTime = schedule[i][1];
+            //g_iShedMinTime = schedule[i][0];
+           // g_iShedMaxTime = schedule[i][1];
             return true;
         }
     }
