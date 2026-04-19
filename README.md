@@ -46,28 +46,7 @@ This plugin adds several systems that control the design of various aspects of t
 Gun Game game mode can be toggled by vote, the vote can be launched by typing in chat `!gungame`. In addition to the classic formula, in which you complete levels by killing other players with the weapons you have, and wins player with the highest level, this version also supports up to 14 levels, demotion of other players levels through special weapon, both solo and team play. It also has a very flexible customization through console variables, includes levels, kills each level takes, weapons, ammo, punishing weapon state and type, bad teammate karma, UI position.
  
 ## Console Variables
-This plugin adds following ConVars:
-
-
-* **`necro_allowfastrespawn`**: `1` - Allow player respawn by pressing the buttons before `spec_freeze_time` and `spec_freeze_traveltime` is finished.
-* **`necro_bolthitscandamage`**: `65.0` - Sets specified amount of damage for the crossbow bolt hitscan.
-* **`necro_boltparticles`**: `1` - Enables trail for explosive crossbow bolts, the trail makes it easier to determine where the bolt was fired from.
-* **`necro_classicfrags`**: `0` - By default, this plugin implements frag grenade physics from the singleplayer campaign, allowing players to pick up it. If this console variable is enabled, the game will use the legacy physics.
-* **`necro_classiclaserdot`**: `0` - By default, this plugin implements new rendering for laser dot to prevent glowing through walls. If this console variable is enabled, the new rendering will be disabled.
-* **`necro_explodingbolt`**: `1` - Enables exploding crossbow bolts.
-* **`necro_fastrespawndelay`**: `0.5` - Amount of time in seconds before player can respawn by pressing the buttons with enabled fast respawn.
-* **`necro_givedefaultitems`**: `1` - If enabled, gives default weapon pack for the player when spawned.
-* **`necro_mp5contactparticles`**: `1` - Enables smoke for MP5 barrel grenade.
-* **`necro_otherplayersflashlight`**: `1` - Allow creation of flashlight effects, used as flashlight from other players perspective.
-* **`necro_overridedefaultweaponparams`**: `1` - Enables parameters override for all weapons by loading custom weapon script with __necro_ postfix.
-* **`necro_satcheldelay_attack1_primary`**: `1.0` - Sets delay for satchel weapon primary attack when the satchel thrown.  Recommended 0.84 at least to avoid bugs with the satchel rendering.
-* **`necro_satcheldelay_attack1_secondary`**: `1.2` - Sets delay for satchel weapon primary secondary when the satchel thrown. Recommended 1.2 at least to avoid bugs with the radio rendering.
-* **`necro_satcheldelay_attack2_primary`**: `0.3` - Sets delay for satchel weapon primary attack when the radio is used.
-* **`necro_satcheldelay_attack2_secondary`**: `0.2` - Sets delay for satchel weapon secondary attack when the radio is used.
-* **`necro_satcheldelay_reload_primary`**: `1.0` - Sets delay for satchel weapon primary attack when the owner take out a new satchel.
-* **`necro_satcheldelay_reload_secondary`**: `1.0` - Sets delay for satchel weapon secondary attack when the owner take out a new satchel.
-* **`necro_satcheldelayoverride`**: `1` - Enables primary and secondary attack delay override for satchel weapon.
-* **`necro_spectatorjointeamdelay`**: `15.0` - Amount of time in seconds before spectator can join a team or play deathmatch again after the player joined spectators.
+Most functions can be flexibly configured and toggled, some are used for specific modes. Most of these are different toggles for singleplayer mode functions, custom features, settings, and more.
 
 ## Required Third-Party Plugins
 
