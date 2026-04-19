@@ -43,7 +43,7 @@ This plugin adds several systems that control the design of various aspects of t
 * The default spawn items list (crowbar, 3 frags, glock, full ammo for 9mm) can be disabled using `necro_givedefaultitems`.
 
 ## Game modes
-Gun Game and it's teamplay version in game modes daily pool (with classic deathmatch and team deathmatch), In addition to the classic formula, in which you complete levels by killing other players with the weapons you have, and wins player with the highest level, this version also supports up to 14 levels, demotion of other players levels through special weapon, both solo and team play. It also has a very flexible customization through console variables, includes levels, kills each level takes, weapons, ammo, punishing weapon state and type, bad teammate karma, UI position, armor and health setting.
+Gun Game and it's teamplay version are in game modes daily pool (with classic deathmatch and team deathmatch), all game modes switch every two hours. In addition to the classic formula, in which you complete levels by killing other players with the weapons you have, and wins player with the highest level, this version also supports up to 14 levels, demotion of other players levels through special weapon, both solo and team play. It also has a very flexible customization through console variables, includes levels, kills each level takes, weapons, ammo, punishing weapon state and type, bad teammate karma, UI position, armor and health setting.
  
 ## Console Variables
 Most functions can be flexibly configured and toggled, some are used for specific modes. Most of these are different toggles for singleplayer mode functions, custom features, settings, and more.
