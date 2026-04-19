@@ -12,6 +12,7 @@ static Handle g_pApplyLocalVelocityImpulse;
 static Handle g_pApplyLocalAngularVelocityImpulse;
 static Handle g_pSetTransmitState;
 static Handle g_pUpdateTransmitState;
+static Handle g_pTouch;
 
 const any NULL_CBASEENTITY = -1;
 
@@ -114,6 +115,16 @@ methodmap CBaseEntity
 		{
 			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
 			if (!(g_pUpdateTransmitState = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szUpdateTransmitState);
+		}
+
+		char szTouch[] = "CBaseEntity::Touch";
+		StartPrepSDKCall(SDKCall_Player);
+		if (!PrepSDKCall_SetFromConf(hGameConfig, SDKConf_Virtual, szTouch))
+			LogMessage("Could not obtain gamedata offset %s", szTouch);
+		else
+		{
+			PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+			if (!(g_pTouch = EndPrepSDKCall())) SetFailState("Could not prep SDK call %s", szTouch);
 		}
 
 		g_hEntityData = new IntMap();
@@ -894,6 +905,10 @@ methodmap CBaseEntity
 			g_hEntityData.SetValue(this.entref, hEntityData);
 		}
 		hEntityData.SetArray(szKey, arrData, iNumItems);
+	}
+	public void Touch(const CBaseEntity pEntity)
+	{
+		SDKCall(g_pTouch, this.entindex, pEntity.entindex);
 	}
 }
 

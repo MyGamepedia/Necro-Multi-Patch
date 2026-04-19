@@ -7,6 +7,7 @@
 #include <sdkhooks>
 #include <dhooks>
 #include <entity>
+#include <geoip>
 
 #include <sourcescramble>
 

@@ -8,29 +8,38 @@
 	
 	"#GunGame_Draw"
 	{
-		"ua"		"[Гонка озброєнь] ЦЕЙ РАУНД ЗАВЕРШИВСЯ ВНІЧИЮ!"
+		"#format"	"{1:s},{2:s}"
+		"ua"		"{1:s}[Гонка Озброєнь]{2:s} НІЧИЯ!"
 	}
 	
 	"#GunGame_Win"
 	{
-		"#format"	"{1:s},{2:d}"
-		"ua"		"[Гонка озброєнь] ГРАВЕЦЬ {1} ПЕРЕМАГАЄ У ЦЬОМУ РАУНДІ\nДОСЯГНУВШИ РІВНЯ {2}!!!"
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:d},{8:s}"
+		"ua"		"{1:s}[Гонка Озброєнь]{2:s} ГРАВЕЦЬ {3:s}{4:s}{5:s} ВИГРАВ З РІВНЕМ {6:s}{7:d}{8:s}!!!"
 	}
 	
 	"#GunGame_Marines"
 	{
-		"ua"		"[Гонка озброєнь] КОМАНДА МОРСЬКОЇ ПОХІТИ ПЕРЕМАГАЄ У ЦЬОМУ РАУНДІ!!!"
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ua"		"{1:s}[Гонка Озброєнь] {2:s}ПІХОТИНЦІ{3:s} ВИГРАЛИ ЦЕЙ РАУНД!!!"
 	}
 	
 	"#GunGame_Scientists"
 	{
-		"ua"		"[Гонка озброєнь] КОМАНДА ВЧЕНИХ ПОХІТИ ПЕРЕМАГАЄ У ЦЬОМУ РАУНДІ!!!"
+		"#format"	"{1:s},{2:s}"
+		"ua"		"{1:s}[Гонка Озброєнь]{2:s} ВЧЕНІ ВИГРАЛИ ЦЕЙ РАУНД!!!"
 	}
+	
 	
 	"#GunGame_HUD"
 	{
-		"#format"	"{1:d},{2:d},{3:d},{4:d}"
-		"ua"		"|Гонка озброєнь|\n|Твій Рівень {1}/{2}|\n|Переможено Гравців {3}/{4}|"
+		"#format"	"{1:s},{2:d},{3:d},{4:s},{5:d},{6:d}"
+		"ua"		"|Гонка Озброєнь|\n|Вбивай щоб піднімати рівень!|\n|Зброя: {1:s}|\n|Вбито: {2:d}/{3:d}|\n|Наступна: {4:s}|\n|Рівень: {5:d}/{6:d}|"
+	}
+
+	"#GunGame_FinalLevelWeaponNote"
+	{
+		"ua"		"ОСТАННЯ!"
 	}
 	
 	"#GunGame_Skip"
@@ -134,12 +143,257 @@
 	
 	"#GunGame_Humiliation"
 	{
-		"#format"	"{1:s},{2:s}"
-		"ua"		"[Гонка вооружений] {1:s} відібрав рівень гравця {2:s}!"
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:s},{8:s}"
+		"ua"		"{1:s}[Гонка Озброєнь]{2:s} Гравець {3:s}{4:s}{5:s} відібрав рівень гравця {6:s}{7:s}{8:s}!"
 	}
 	
 	"#GunGame_GotPunishingWeapon"
 	{
-		"ua"		"[Гонка озброєнь] Ви отримали караючу зброю! Воно відбирає рівні інших гравців."
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ua"		"{1:s}[Гонка Озброєнь]{2:s} Ти отримав караючу зброю - {3:s}! Використовуй цю зброю, щоб зменшувати рівень ворога."
+	}
+	
+	"#Necro_WelcomeServer" //format info: 1 def col, 2 red col, 3 server name, 4 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"ua"		"{1:s}Ласкаво просимо до {2:s}{3:s}{4:s}!"
+	}
+	
+	"#Necro_WhiteLine" //format info: 1 white col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ua"		"{1:s}****************************************{2:s}"
+	}
+	
+	"#Necro_FeedbackInfo" //format info: 1 def col, 2 blue col, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ua"		"{1:s}Використовуй репозиторій нашого плагіну {2:s}github.com/MyGamepedia/Necro-Multi-Patch/issues{3:s} щоб відправляти помилки та ідеї!"
+	}
+	
+	"#Necro_TelegramInfo" //format info: 1 def col, 2 blue col, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ua"		"{1:s}Долучайтесь до Telegram каналу {2:s}t.me/blackmesaBMSchat{3:s}!"
+	}
+	
+	"#Necro_HelpInfo" //format info: 1 def col, 2 col green, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ua"		"{1:s}Напишіть {2:s}!helpme{3:s} у цьому чаті для інфи про необхідні команди чата!"
+	}
+
+	"#Necro_SponsorInfo" //format info: 1 def col, 2 dark blue col, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ua"		"{1:s}Наші сервера підтримує {2:s}se7en.ws{3:s}!"
+	}
+	
+	"#Necro_WelcomeMsg" //format info: 1 player name
+	{
+		"#format"	"{1:s}"
+		"ua"		"ЛАСКАВО ПРОСИМО {1:s}!"
+	}
+	
+	"#Necro_ModelsInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ua"		"{1:s}!models{2:s} - щоб змінити персонажа."
+	}
+	
+	"#Necro_ShedInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ua"		"{1:s}!shed{2:s} - щоб побачити розклад для ігрових режимів."
+	}
+	
+	"#Necro_ShedGamemodeForm"
+	{
+		"ua"		"| Реж.                    |         Р.          |         В.          |"
+	}
+	
+	"#Necro_ShedGamemodeMain"
+	{
+		"ua"		"| Deathmatch          | 00-02, 08-10  | 04-06, ------   |\n| Team Deathmatch | 02-04, 10-00  | 06-08, ------   |\n| Gun Game             | 04-06, ------   | 00-02, 08-10  |\n| Team Gun Game    | 06-08, ------   | 02-04, 10-00  |"
+	}
+	
+	"#Necro_TimeInfo" //format info: 1 lightblue col, 2 CURRENT TIME, 3 def col, 4 AM OR PM, 5 UNITED STATES TIME
+	{
+		"#format"	"{1:s},{2:d},{3:s},{4:s},{5:d}"
+		"ua"		"Поточний час: {1:s}{2:d}{3:s} ({1:s}{5:d}{3:s} {4:s})."
+	}
+
+	"#Necro_MapInfo" //format info: 1 lightblue col, 2 CURRENT MAP, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ua"		"Поточна мапа \"{1:s}{2:s}{3:s}\"."
+	}
+	
+	"#Necro_AdminsInfo" //format info: 1 red col, 2 ADMINS ON MAP, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ua"		"Присутні адміністратори: {1:s}{2:s}{3:s}"
+	}
+	
+	"#Necro_HelpMainInfo"
+	{
+		"ua"		"Ти можеш набрати наступні команду у чат:"
+	}
+	
+	"#Necro_NominateMapInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ua"		"{1:s}!nominate{2:s} - щоб додати мапу до наступного голосування за мапу."
+	}
+	
+	"#Necro_StatsmeInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ua"		"{1:s}statsme{2:s} - щоб побачити свою статистику."
+	}
+	
+	"#Necro_RtvInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ua"		"{1:s}!rtv{2:s} - щоб розпочати голосування за зміну поточної мапи."
+	}
+	
+	"#Necro_SessionInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ua"		"{1:s}session{2:s} - щоб побачити свою статистику за цю сесію у раунді."
+	}
+	
+	"#Necro_Top10Info" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ua"		"{1:s}top10{2:s} - щоб побачити 10 гравців з найвищими балами."
+	}
+	
+	"#Necro_TimeAM"
+	{
+		"ua"		"Р."
+	}
+	
+	"#Necro_TimePM"
+	{
+		"ua"		"В."
+	}
+	
+	"#Necro_FavoritesInfo" //format info: 1 red col, 2 SERVER NAME, 3 def col, 4 blue col, 5 SERVERIP, 6 green col
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s}"
+		"ua"		"{3:s}Додай {1:s}{2:s}{3:s} до улюблених використовуючи старий інтерфейс(параметр запуску {6:s}-oldgameui{3:s})!\n{3:s}Сервер IP це {4:s}{5:s}{3:s}"
+	}
+	
+	"#weapon_357"
+	{
+		"ua"		"Магнум"
+	}
+	
+	"#weapon_assassin_glock"
+	{
+		"ua"		"Глок Вбивці"
+	}
+	
+	"#weapon_crossbow"
+	{
+		"ua"		"Арбалет"
+	}
+	
+	"#weapon_crowbar"
+	{
+		"ua"		"Лом"
+	}
+	
+	"#weapon_frag"
+	{
+		"ua"		"Граната"
+	}
+	
+	"#weapon_glock"
+	{
+		"ua"		"Глок"
+	}
+	
+	"#weapon_gluon"
+	{
+		"ua"		"Глюон"
+	}
+	
+	"#weapon_headcrab"
+	{
+		"ua"		"Закріпленний Хедкраб"
+	}
+	
+	"#weapon_hivehand"
+	{
+		"ua"		"Руковулик"
+	}
+	
+	"#weapon_mp5"
+	{
+		"ua"		"МП5"
+	}
+	
+	"#weapon_rpg"
+	{
+		"ua"		"РПГ"
+	}
+	
+	"#weapon_satchel"
+	{
+		"ua"		"C4"
+	}
+	
+	"#weapon_shotgun"
+	{
+		"ua"		"Дробовик"
+	}
+	
+	"#weapon_snark"
+	{
+		"ua"		"Снарк"
+	}
+	
+	"#weapon_tau"
+	{
+		"ua"		"Тау"
+	}
+	
+	"#weapon_tripmine"
+	{
+		"ua"		"Міна"
+	}
+	
+	"#Necro_NoGamemode"
+	{
+		"ua"		"Void-995" //thanks dude
+	}
+	
+	"#Necro_Deathmatch"
+	{
+		"ua"		"Смертельний Mатч"
+	}
+	
+	"#Necro_Team_Deathmatch"
+	{
+		"ua"		"Командний Смертельний Mатч"
+	}
+	
+	"#Necro_GunGame"
+	{
+		"ua"		"Гонка Озброєнь"
+	}
+	
+	"#Necro_Team_GunGame"
+	{
+		"ua"		"Командна Гонка Озброєнь"
+	}
+	
+	"#Necro_GameModeInfo"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s}"
+		"ua"		"{1:s}Поточний режим: {2:s}{3:s}{4:s} (наступний через {5:s})!"
 	}
 }

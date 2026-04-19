@@ -8,23 +8,26 @@
 
 	"#GunGame_Draw"
 	{
-		"ru"		"[Гонка вооружений] НИЧЬЯ!"
+		"#format"	"{1:s},{2:s}"
+		"ru"		"{1:s}[Гонка Вооружений]{2:s} НИЧЬЯ!"
 	}
 	
 	"#GunGame_Win"
 	{
-		"#format"	"{1:s},{2:d}"
-		"ru"		"[Гонка вооружений] ИГРОК {1} ПОБЕЖДАЕТ В ЭТОМ РАУНДЕ\nДОСТИГНУВ УРОВНЯ {2}!!!"
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:d},{8:s}"
+		"ru"		"{1:s}[Гонка Вооружений]{2:s} ИГРОК {3:s}{4:s}{5:s} ВЫИГРАЛ С УРОВНЕМ {6:s}{7:d}{8:s}!!!"
 	}
 	
 	"#GunGame_Marines"
 	{
-		"ru"		"[Гонка вооружений] КОМАНДА МОРПЕХОВ ПОБЕЖДАЕТ В ЭТОМ РАУНДЕ!!!"
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ru"		"{1:s}[Гонка Вооружений] {2:s}ПЕХОТИНЦЫ{3:s} ВЫИГРАЛИ ЭТОТ РАУНД!!!"
 	}
 	
 	"#GunGame_Scientists"
 	{
-		"ru"		"[Гонка вооружений] КОМАНДА УЧЕНЫХ ПОБЕЖДАЕТ В ЭТОМ РАУНДЕ!!!"
+		"#format"	"{1:s},{2:s}"
+		"ru"		"{1:s}[Гонка Вооружений]{2:s} УЧЕНЫЕ ВЫИГРАЛИ ЭТОТ РАУНД!!!"
 	}
 	
 	"#GunGame_HUD"
@@ -32,6 +35,17 @@
 		"#format"	"{1:d},{2:d},{3:d},{4:d}"
 		"ru"		"|Гонка вооружений|\n|Твой Уровень {1}/{2}|\n|Проделано Убийств {3}/{4}|"
 	}	
+	
+	"#GunGame_HUD"
+	{
+		"#format"	"{1:s},{2:d},{3:d},{4:s},{5:d},{6:d}"
+		"ru"		"|Гонка Вооружений|\n|Убивай ради поднятия уровня!|\n|Оружие: {1:s}|\n|Убито: {2:d}/{3:d}|\n|Следующие: {4:s}|\n|Уровень: {5:d}/{6:d}|"
+	}
+
+	"#GunGame_FinalLevelWeaponNote"
+	{
+		"ru"		"ПОСЛЕДНЕЕ!"
+	}
 	
 	"#GunGame_Skip"
 	{
@@ -138,8 +152,260 @@
 		"ru"		"[Гонка вооружений] {1:s} понизил уровень игрока {2:s}!"
 	}
 	
+	"#GunGame_Humiliation"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:s},{8:s}"
+		"ru"		"{1:s}[Гонка Вооружений]{2:s} Игрок {3:s}{4:s}{5:s} отобрал уровень игрока {6:s}{7:s}{8:s}!"
+	}
+	
 	"#GunGame_GotPunishingWeapon"
 	{
-		"ru"		"[Гонка вооружений] Теперь у вас есть наказывающие оружие! Используйте это для понижения других игроков."
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ru"		"{1:s}[Гонка вооружений]{2:s} Ты получил понижающие оружие - {3:s}! Используй это оружие, чтобы понижать уровень противника."
+	}
+	
+		
+	"#Necro_WelcomeServer" //format info: 1 def col, 2 red col, 3 server name, 4 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"ru"		"{1:s}Добро пожаловать в {2:s}{3:s}{4:s}!"
+	}
+	
+	"#Necro_WhiteLine" //format info: 1 white col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ru"		"{1:s}****************************************{2:s}"
+	}
+	
+	"#Necro_FeedbackInfo" //format info: 1 def col, 2 blue col, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ru"		"{1:s}Используй репозиторий нашего плагина {2:s}github.com/MyGamepedia/Necro-Multi-Patch/issues{3:s} чтобы сообщать об ошибках и идеях!"
+	}
+	
+	"#Necro_TelegramInfo" //format info: 1 def col, 2 blue col, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ru"		"{1:s}Присоединяйтесь к Telegram каналу {2:s}t.me/blackmesaBMSchat{3:s}!"
+	}
+	
+	"#Necro_HelpInfo" //format info: 1 def col, 2 col green, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ru"		"{1:s}Напиши {2:s}!helpme{3:s} в этом чате для инфи о необходимых командах!"
+	}
+
+	"#Necro_SponsorInfo" //format info: 1 def col, 2 dark blue col, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ru"		"{1:s}Наши сервера поддерживает {2:s}se7en.ws{3:s}!"
+	}
+	
+	"#Necro_WelcomeMsg" //format info: 1 player name
+	{
+		"#format"	"{1:s}"
+		"ru"		"ДОБРО ПОЖАЛОВАТЬ {1:s}!"
+	}
+	
+	"#Necro_ModelsInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ru"		"{1:s}!models{2:s} - чтобы поменять персонажа."
+	}
+	
+	"#Necro_ShedInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ru"		"{1:s}!shed{2:s} - чтобы увидеть расписание игровых режимов."
+	}
+	
+	"#Necro_ShedGamemodeForm"
+	{
+		"ru"		"| Реж.                    |         У.          |         В.          |"
+	}
+	
+	"#Necro_ShedGamemodeMain"
+	{
+		"ru"		"| Deathmatch          | 00-02, 08-10  | 04-06, ------   |\n| Team Deathmatch | 02-04, 10-00  | 06-08, ------   |\n| Gun Game             | 04-06, ------   | 00-02, 08-10  |\n| Team Gun Game    | 06-08, ------   | 02-04, 10-00  |"
+	}
+	
+	"#Necro_TimeInfo" //format info: 1 lightblue col, 2 CURRENT TIME, 3 def col, 4 AM OR PM, 5 UNITED STATES TIME
+	{
+		"#format"	"{1:s},{2:d},{3:s},{4:s},{5:d}"
+		"ru"		"Текущее время: {1:s}{2:d}{3:s} ({1:s}{5:d}{3:s} {4:s})."
+	}
+
+	"#Necro_MapInfo" //format info: 1 lightblue col, 2 CURRENT MAP, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ru"		"Текущая карта \"{1:s}{2:s}{3:s}\"."
+	}
+	
+	"#Necro_AdminsInfo" //format info: 1 red col, 2 ADMINS ON MAP, 3 def col
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"ru"		"Присутствующие админы: {1:s}{2:s}{3:s}"
+	}
+	
+	"#Necro_HelpMainInfo"
+	{
+		"ru"		"Ты можешь набрать следующие команды в чате:"
+	}
+	
+	"#Necro_NominateMapInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ru"		"{1:s}!nominate{2:s} - чтобы добавить карту в след. голосование за карту."
+	}
+	
+	"#Necro_StatsmeInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ru"		"{1:s}statsme{2:s} - чтобы увидеть свою статистику."
+	}
+	
+	"#Necro_RtvInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ru"		"{1:s}!rtv{2:s} - чтобы начать голосование за смену текущей карты."
+	}
+	
+	"#Necro_SessionInfo" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ru"		"{1:s}session{2:s} - чтобы увидеть свою статистику за эту сессию в раунде."
+	}
+	
+	"#Necro_Top10Info" //format info: 1 green col, 2 def col
+	{
+		"#format"	"{1:s},{2:s}"
+		"ru"		"{1:s}top10{2:s} - чтобы увидеть 10 игроков с наивысшим кол. очков."
+	}
+	
+	"#Necro_TimeAM"
+	{
+		"ru"		"У."
+	}
+	
+	"#Necro_TimePM"
+	{
+		"ru"		"В."
+	}
+	
+	"#Necro_FavoritesInfo" //format info: 1 red col, 2 SERVER NAME, 3 def col, 4 blue col, 5 SERVERIP, 6 green col
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s}"
+		"ru"		"{3:s}Добавь {1:s}{2:s}{3:s} в избранные используя старый интерфейс(параметр запуска {6:s}-oldgameui{3:s})!\n{3:s}Сервер IP это {4:s}{5:s}{3:s}"
+	}
+	
+	"#weapon_357"
+	{
+		"ru"		"Магнум"
+	}
+	
+	"#weapon_assassin_glock"
+	{
+		"ru"		"Глок Убийцы"
+	}
+	
+	"#weapon_crossbow"
+	{
+		"ru"		"Арбалет"
+	}
+	
+	"#weapon_crowbar"
+	{
+		"ru"		"Монтировка"
+	}
+	
+	"#weapon_frag"
+	{
+		"ru"		"Граната"
+	}
+	
+	"#weapon_glock"
+	{
+		"ru"		"Глок"
+	}
+	
+	"#weapon_gluon"
+	{
+		"ru"		"Глюон"
+	}
+	
+	"#weapon_headcrab"
+	{
+		"ru"		"Закрепленный Хедкраб"
+	}
+	
+	"#weapon_hivehand"
+	{
+		"ru"		"Рукоулей"
+	}
+	
+	"#weapon_mp5"
+	{
+		"ru"		"МП5"
+	}
+	
+	"#weapon_rpg"
+	{
+		"ru"		"РПГ"
+	}
+	
+	"#weapon_satchel"
+	{
+		"ru"		"C4"
+	}
+	
+	"#weapon_shotgun"
+	{
+		"ru"		"Дробовик"
+	}
+	
+	"#weapon_snark"
+	{
+		"ru"		"Снарк"
+	}
+	
+	"#weapon_tau"
+	{
+		"ru"		"Тау"
+	}
+	
+	"#weapon_tripmine"
+	{
+		"ru"		"Мина"
+	}
+	
+	"#Necro_NoGamemode"
+	{
+		"ru"		"Void-995" //thanks dude
+	}
+	
+	"#Necro_Deathmatch"
+	{
+		"ru"		"Смертельный Mатч"
+	}
+	
+	"#Necro_Team_Deathmatch"
+	{
+		"ru"		"Командный Смертельный Mатч"
+	}
+	
+	"#Necro_GunGame"
+	{
+		"ru"		"Гонка Вооружений"
+	}
+	
+	"#Necro_Team_GunGame"
+	{
+		"ru"		"Командная Гонка Вооружений"
+	}
+	
+	"#Necro_GameModeInfo"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s}"
+		"ru"		"{1:s}Текущий режим: {2:s}{3:s}{4:s} (след. через {5:s})!"
 	}
 }

@@ -8,29 +8,37 @@
 
 	"#GunGame_Draw"
 	{
-		"en"		"[Gun game] DRAW!"
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1:s}[Gun Game]{2:s} DRAW!"
 	}
 	
 	"#GunGame_Win"
 	{
-		"#format"	"{1:s},{2:d}"
-		"en"		"[Gun game] PLAYER {1} WINS THIS ROUND\nWITH LEVEL {2}!!!"
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:d},{8:s}"
+		"en"		"{1:s}[Gun Game]{2:s} PLAYER {3:s}{4:s}{5:s} WINS WITH LEVEL {6:s}{7:d}{8:s}!!!"
 	}
 	
 	"#GunGame_Marines"
 	{
-		"en"		"[Gun game] MARINES TEAM TEAM WINS THIS ROUND!!!"
+		"#format"	"{1:s},{2:s},{3:s}"
+		"en"		"{1:s}[Gun Game] {2:s}MARINES{3:s} TEAM WINS THIS ROUND!!!"
 	}
 	
 	"#GunGame_Scientists"
 	{
-		"en"		"[Gun game] SCIENTISTS TEAM TEAM WINS THIS ROUND!!!"
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1:s}[Gun Game]{2:s} SCIENTISTS TEAM WINS THIS ROUND!!!"
 	}
 	
 	"#GunGame_HUD"
 	{
-		"#format"	"{1:d},{2:d},{3:d},{4:d}"
-		"en"		"|Gun Game|\n|Your Level {1}/{2}|\n|Kills Done {3}/{4}|"
+		"#format"	"{1:s},{2:d},{3:d},{4:s},{5:d},{6:d}"
+		"en"		"|Gun Game|\n|Kill to level up!|\n|Weapon: {1:s}|\n|Kills: {2:d}/{3:d}|\n|Next: {4:s}|\n|Level: {5:d}/{6:d}|"
+	}
+
+	"#GunGame_FinalLevelWeaponNote"
+	{
+		"en"		"LAST!"
 	}
 	
 	"#GunGame_Skip"
@@ -134,13 +142,14 @@
 	
 	"#GunGame_Humiliation"
 	{
-		"#format"	"{1:s},{2:s}"
-		"en"		"[Gun game] {1:s} demoted level of {2:s}!"
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s},{6:s},{7:s},{8:s}"
+		"en"		"{1:s}[Gun Game]{2:s} Player {3:s}{4:s}{5:s} demoted level of player {6:s}{7:s}{8:s}!"
 	}
 	
 	"#GunGame_GotPunishingWeapon"
 	{
-		"en"		"[Gun game] You now have a punishing weapon! Use it to demote other players."
+		"#format"	"{1:s},{2:s},{3:s}"
+		"en"		"{1:s}[Gun Game]{2:s} You now have a punishing weapon - {3:s}! Use it to demote enemy level."
 	}
 	
 	"#Necro_WelcomeServer" //format info: 1 def col, 2 red col, 3 server name, 4 def col
@@ -381,9 +390,9 @@
 		"en"		"Team Gun Game"
 	}
 	
-	"#Necro_GameModeInfo" //format: 1 def col, 2 blue col, 3 gamemode, 4 def col, 5 min time, 6 am or pm, 7 max time, 8 am or pm
+	"#Necro_GameModeInfo"
 	{
-		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:d},{6:s},{7:d}{8:s}"
-		"en"		"{1:s}Current mode: {2:s}{3:s}{4:s} (from {5:d} {6:s} to {7:d} {8:s})!"
+		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s}"
+		"en"		"{1:s}Current mode: {2:s}{3:s}{4:s} (next mode in {5:s})!"
 	}
 }

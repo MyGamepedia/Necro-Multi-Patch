@@ -418,15 +418,19 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, DHookReturn hReturn, DHookPa
 
 		if (strcmp(szInputType, "GiveGunGameResources", false) == 0)
 		{
-			if(g_iNecroGunGameCurrentState != -1)
+			if(g_iNecroGunGameCurrentState != -1 && CBlackMesaPlayer(_this).IsValid())
 			{
+				//note about getting punishing weapon
 				if(GetConVarInt(g_ConvarNecroGunGamePunishingWeaponState) == g_iNecroGunGameClientLevel[_this])
     			{
-        			PrintToChat(_this, "%t", "#GunGame_GotPunishingWeapon");
+					char szPunishingWeapon[MAX_CLASSNAME];
+					g_ConvarNecroGunGamePunishingWeaponName.GetString(szPunishingWeapon, sizeof(szPunishingWeapon));
+					Format(szPunishingWeapon, sizeof(szPunishingWeapon), "#%s", szPunishingWeapon);
+					Format(szPunishingWeapon, sizeof(szPunishingWeapon), "%t", szPunishingWeapon);
+        			PrintToChat(_this, "%t", "#GunGame_GotPunishingWeapon", COL_YELLOWGREEN, COL_NORMAL, szPunishingWeapon);
     			}
 
-				if(CBlackMesaPlayer(_this).IsValid())
-					GunGameGiveResources(g_iNecroGunGameClientLevel[_this], CBlackMesaPlayer(_this));
+				GunGameGiveResources(g_iNecroGunGameClientLevel[_this], CBlackMesaPlayer(_this));
 			}
 
 			DHookSetReturn(hReturn, true);
@@ -1168,6 +1172,11 @@ public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 			g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer, pPlayer);
 		}
 		#endif
+
+		//reset gungame stats
+		g_iNecroGunGameClientKills[pPlayer.entindex] = 0;
+		g_iNecroGunGameClientLevel[pPlayer.entindex] = 0;
+		g_iNecroGunGameLastTeam[pPlayer.entindex] = 0;
 	}
 }
 

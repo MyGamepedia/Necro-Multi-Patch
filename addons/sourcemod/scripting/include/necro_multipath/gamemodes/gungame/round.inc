@@ -22,17 +22,20 @@ public Action WonRound(Handle timer, CBlackMesaPlayer pPlayer)
 
     if(!CMultiplayRules.IsTeamplay()) //print name and level for solo version
     {
-        PrintToChatAll("%t", "#GunGame_Win", iszWinnerName, g_iNecroGunGameClientLevel[pPlayer.entindex] -1);
+        //the level is bigger on end than it should be, just do -1 
+        int iWinnerLevel = g_iNecroGunGameClientLevel[pPlayer.entindex] -1;
+
+        PrintToChatAll("%t", "#GunGame_Win", COL_YELLOWGREEN, COL_NORMAL, COL_LIGHTBLUE, iszWinnerName, COL_NORMAL,  COL_GREEN, iWinnerLevel, COL_NORMAL);
     }
     else //print team name for team versin
     {
         if(iWinnerTeam == TEAM_ONE) //mar
         {
-            PrintToChatAll("%t", "#GunGame_Marines");
+            PrintToChatAll("%t", "#GunGame_Marines", COL_YELLOWGREEN, COL_GREEN, COL_NORMAL);
         }
         else //sci
         {
-            PrintToChatAll("%t", "#GunGame_Scientists");
+            PrintToChatAll("%t", "#GunGame_Scientists", COL_YELLOWGREEN, COL_NORMAL);
         }
     }
 

@@ -39,7 +39,7 @@ public void GunGameOnRoundIntermission(Event event, const char[] theGoatName, bo
 		(iClienTopTeam == TEAM_ONE || iClienTopTeam == TEAM_TWO) &&
 		(iClientSecondTeam == TEAM_ONE || iClientSecondTeam == TEAM_TWO))
 	{
-		PrintToChatAll("%t", "#GunGame_Draw");
+		PrintToChatAll("%t", "#GunGame_Draw", COL_YELLOWGREEN, COL_NORMAL);
 		return;
 	}
     else //else trigger victory for one of the clients
@@ -101,6 +101,7 @@ public void GunGamePlayerTeamChanged(Event event, const char[] name, bool dontBr
 
 		SetEntProp(client, Prop_Data, "m_iFrags", 0);
 		SetEntProp(client, Prop_Data, "m_iDeaths", 0);
+        CBasePlayer(client).SetUserData("m_bWasPunished", false);
     }
 }
 
@@ -172,6 +173,7 @@ public Action GunGameEventDeath(Handle event, const char[] name, bool dontBroadc
         int iVictimKills = g_iNecroGunGameClientKills[pPlayerVictim.entindex];
 
         //if victim has more than 50% of needed kills - set kills to 50% of current kills
+        //this also saves from punishing for the first time (if lacky)
         if (iVictimKills > GetConVarInt(g_ConvarNecroGunGameStateKills[iVictimLevel]) / 2)
         {
             g_iNecroGunGameClientKills[pPlayerVictim.entindex] = iVictimKills / 2;

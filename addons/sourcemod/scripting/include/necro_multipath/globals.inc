@@ -143,11 +143,13 @@ int g_iUserCmdOffset;
 
 enum NecroGameMode
 {
-    MODE_NONE,
+    MODE_NONE = 0,
     MODE_DEATHMATCH,
     MODE_TEAMDEATHMATCH,
     MODE_GUNGAME,
-    MODE_TEAMGUNGAME
+    MODE_TEAMGUNGAME,
+
+    MODE_MAX
 };
 
 NecroGameMode g_ngmCurrentGameMode = MODE_NONE;
@@ -182,6 +184,11 @@ int g_iShedTimeTeamGunGame[3][2] =
     {14, 16},
     {22, 24}
 };
+
+#define MODE_COUNT 4
+#define MODE_DURATION 7200 // 2 hours in seconds
+
+int g_iServerStartTime;
 
 //Handle g_pCreateWeaponTracedBoneMergeEntity;
 
