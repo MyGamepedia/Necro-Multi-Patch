@@ -69,6 +69,10 @@ This plugin adds following ConVars:
 * **`necro_satcheldelayoverride`**: `1` - Enables primary and secondary attack delay override for satchel weapon.
 * **`necro_spectatorjointeamdelay`**: `15.0` - Amount of time in seconds before spectator can join a team or play deathmatch again after the player joined spectators.
 
+## Required Third-Party Plugins
+
+- [Source Scramble](https://github.com/nosoop/SMExt-SourceScramble) for memory patches.
+
 
 ## Credits
 
