@@ -10,9 +10,14 @@ public MRESReturn Hook_CascadeLightKeyValueHACK(int _this, DHookReturn hReturn, 
 	//it's important to fix here because resetting or recreating doesn't work and client will always use manual mode even if false for cascade light ent
 	if (StrEqual(szKeyName, "CSMVolumeMode", false))
 	{
-		//HACK! This is illegal (although doesn't cause any issues), but also the only consistent way,
-		//returning false/true doesn't work consistently (tones of tests was done)
-		return MRES_Supercede;
+		char szValue[MAX_VALUE];
+		DHookGetParamString(hParams, 2, szValue, sizeof(szValue));
+		if (StrEqual(szValue, "1", false))
+		{
+			//HACK! This is illegal (although doesn't cause any issues), but also the only consistent way,
+			//returning false/true doesn't work consistently (tones of tests was done)
+			return MRES_Supercede;
+		}
 	}
 
 	return MRES_Ignored;

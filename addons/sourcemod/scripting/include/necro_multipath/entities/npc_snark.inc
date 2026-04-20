@@ -64,11 +64,11 @@ public void Snark_PathPost(const int iEntIndex)
 public void Hook_Snark_OnCreated(const int iEntIndex)
 {
     CNpc_Snark pSnark = CNpc_Snark(iEntIndex);
-    if (pSnark.GetHammerID() != 0) //don't for map-placed
+    if (!pSnark.IsValid() || pSnark.GetHammerID() != 0) //don't for map-placed
         return;
     
     CBaseEntity pOwner = pSnark.GetSnarkOwner();
-    if (pOwner == NULL_CBASEENTITY || !pOwner.IsPlayer())
+    if (!pOwner.IsValid() || !pOwner.IsPlayer())
         return;
 
     CBasePlayer pPlayer = view_as<CBasePlayer>(pOwner);
@@ -131,7 +131,7 @@ public MRESReturn Hook_SnarkIsValidEnemy(int _this, DHookReturn hReturn, DHookPa
     CAI_BaseNPC pEnemy = CAI_BaseNPC(DHookGetParam(hParams, 1));
 
     //not valid enemy
-    if (pEnemy == NULL_CBASEENTITY)
+    if (!pEnemy.IsValid())
         return MRES_Ignored;
 
     CNpc_Snark pSnark = CNpc_Snark(_this);
@@ -145,22 +145,34 @@ public MRESReturn Hook_SnarkIsValidEnemy(int _this, DHookReturn hReturn, DHookPa
     if (!pPlayer.IsValid())
         return MRES_Ignored;
 
-    //before we check if potential guard is PROVOKED, we also should if the enemy has the field, or it cause errors
-    //caused by players not having it
-    if (HasEntProp(pEnemy.entindex, Prop_Data, "m_afMemory") && pEnemy.m_afMemory & bits_MEMORY_PROVOKED)
+    //filter players only by their team, nothing else needed, in srccoop, we using forced teams anyway
+	if (pEnemy.IsPlayer())
+	{
+		if (pEnemy.GetTeam() == pOwner.GetTeam())
+		{
+			DHookSetReturn(hReturn, false);
+			return MRES_Supercede;
+		}
+		return MRES_Ignored;
+	}
+
+    //i'm not sure if this can happen, but this method takes cbasecombatcharacter as param
+	//the class doesn't have m_afMemory, unlike npcs, so this prevents possible issues
+	if (!pEnemy.IsNPC())
+		return MRES_Ignored;
+
+    //is this npc PROVOKED (security) ? 
+    if (pEnemy.m_afMemory & bits_MEMORY_PROVOKED)
         return MRES_Ignored;
 
     //target hates my owner
     if (pEnemy.IRelationType(pOwner) == D_HT)
         return MRES_Ignored;
 
-    //Is it owner's friend player ? 
-    bool bIsAllyPlayer = (pEnemy.IsPlayer()) ? (pEnemy.GetTeam() == pOwner.GetTeam()) : false;
-
     //Does it targets my owner ? 
     bool bMyOwnerIsTargetEnemy = (HasEntProp(pEnemy.entindex, Prop_Data, "m_hEnemy")) ? (pEnemy.GetEnemy() == pOwner) : false;
     
-    if (bIsAllyPlayer || pEnemy.IsPlayerAlly(pPlayer) || !bMyOwnerIsTargetEnemy)
+    if (pEnemy.IsPlayerAlly(pPlayer) && !bMyOwnerIsTargetEnemy)
     {       
         DHookSetReturn(hReturn, false);
         return MRES_Supercede;
@@ -181,19 +193,10 @@ public MRESReturn Hook_SnarkIsPlayerAlly(int _this, DHookReturn hReturn, DHookPa
         return MRES_Ignored;
 
     CBlackMesaPlayer pPlayer = CBlackMesaPlayer(DHookGetParam(hParams, 1));
-
-    if (!pPlayer.IsValid())
-        return MRES_Ignored;
-
-    CBaseEntity pOwner = CNpc_Snark(_this).GetSnarkOwner();
-
-    if (!pOwner.IsValid())
-        return MRES_Ignored;
-		
-	CBlackMesaPlayer pPlayerOwner = CBlackMesaPlayer(pOwner.entindex);
+    CNpc_Snark pSnark = CNpc_Snark(_this);
     
-    //i'm ally if this player is my owner
-    if (pPlayerOwner.IsValid() && pOwner.IsPlayer() && pPlayer == pOwner)
+    //ally if we are in the same team
+    if (pPlayer.IsValid() && pPlayer.GetTeam() == pSnark.GetTeam())
 	{
 		DHookSetReturn(hReturn, true);
 		return MRES_Supercede;
