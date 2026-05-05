@@ -14,33 +14,8 @@ __[tick 100]!!crossfire 4Ever!!__, both are public Black Mesa servers created by
 ## Includes SourceCoop Improvements
 Used a major part of code from [SourceCoop](https://github.com/ampreeT/SourceCoop) project to implement lots of improvements and bug fixes. This includes many changes for the NPCs AI, singleplayer entities reimplementation to make them working under multiplayer, etc.
 
-## New Systems
-This plugin adds several systems that control the design of various aspects of the game, their behavior can be customized depending on the current needs of the server or game mode.
-
-### Respawn
-* There is optional "fast respawn" that allows a client to respawn before the auto respawn by clicking action buttons. The amount of time before the client can do "fast respawn" after death controlled by `necro_fastrespawndelay` convar, the entire ability of "fast respawn" can be disabled with `necro_allowfastrespawn` convar.
-* The auto respawn can be disabled with `mp_forcerespawn` convar. Keep in mind that dead client will not be able to respawn after death, this is why it is recommended to use it with "fast respawn" enabled.
-* The amount of time before respawn can be changed using `spec_freeze_traveltime` (the amount of time to zoom in to killer for the freeze camera (default is 0.4)) and `spec_freeze_time` (the amount of time before auto respawn after `spec_freeze_traveltime` (default is 4.0).
-* There is optional delay before spectator can team a join or play deathmatch. Every time a player goes to spectator mode, the player will receive a time delay that doesn't allow the player to play in a team or deathmatch again, until the time runs out. This prevents some sort of griefering when a player constantly goes to spectators for advantage in a match, the system also completely prevents instant respawn when used "Auto Assign" button via the team menu. The delay can be changed using `necro_spectatorjointeamdelay` console variable.
-
-### Crossbow bolts
-* Restored functionality of `sk_crossbow_tracer_enabled`, which means you can use the `tracerbullet` entity for the bolts.
-* The explosive bolts can be disabled, using `necro_explodingbolt` convar, this allows to use default bouncing bolts.
-
-### Satchel delay
-* Due to various bugs with the weapon models and gameplay issues caused by spamming this weapon, was added this system that allows to control satchel attack delay (both primary and secondary) in 3 different cases, primary attack, secondary attack and reload (when the owner take out a new satchel).
-* For primary attack, it is controlled using `necro_satcheldelay_attack1_primary` and `necro_satcheldelay_attack1_secondary`.
-* For secondary attack, it is controlled using `necro_satcheldelay_attack2_primary` and `necro_satcheldelay_attack2_secondary`.
-* For reload, it is controlled using  `necro_satcheldelay_reload_primary` and `necro_satcheldelay_reload_secondary`.
-* This system can be disabled using `necro_satcheldelayoverride` (not recommended).
-
-### Projectile trails
-* Added particle trails for some projectiles to make it a little easier to figure out their flight path, this helps to determine the location of the attacker.
-* For MP5 contact grenade, it is controlled using `necro_mp5contactparticles`.
-* For crossbow bolts, it is controlled using `necro_boltparticles`.
-
-### Default items give
-* The default spawn items list (crowbar, 3 frags, glock, full ammo for 9mm) can be disabled using `necro_givedefaultitems`.
+## Features
+Tons of the stock game bugs and issues fixes, flexible balancing system, new effects, new chat commands, hints for players, many new options for the game mechanics behavior, singleplayer content support, new keyvalues and inputs for stock entities.
 
 ## Game modes
 Gun Game and it's teamplay version are in game modes daily pool (with classic deathmatch and team deathmatch), all game modes switch every two hours. In addition to the classic formula, in which you complete levels by killing other players with the weapons you have, and wins player with the highest level, this version also supports up to 14 levels, demotion of other players levels through special weapon, both solo and team play. It also has a very flexible customization through console variables, includes levels, kills each level takes, weapons, ammo, punishing weapon state and type, bad teammate karma, UI position, armor and health setting.
