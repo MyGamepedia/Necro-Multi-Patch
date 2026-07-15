@@ -224,6 +224,14 @@ public void OnPluginStart()
 	LoadGameData();
 
 	LoadTranslations("necro.phrases");
+	
+	for (int i = 0; i <= MAX_PLAYERS; i++)  
+		for (int j = 0; j < MAX_SNARKS; j++)  
+			g_hClientSnarks[i][j] = NULL_CBASEENTITY;  
+  
+	for (int i = 0; i <= MAX_PLAYERS; i++)  
+		for (int j = 0; j < MAX_HORNETS; j++)  
+			g_hClientHornets[i][j] = NULL_CBASEENTITY;
 }
 
 void LoadCustomGameModes()
@@ -712,6 +720,7 @@ public void OnClientPutInServer(int client)
 	g_fClientSpectatorJoinTeamDelay[client] = 0.0;
 	g_bClientSpecJoinPending[client] = false;  
 	g_iClientTeamAtSpecRequest[client] = 0;
+	g_fProtectionTime[client] = -1.0;
 
 	//disable "other players flashlight"
 	SendConVarValue(client, sv_cheats, "1"); //HACK! This thing needs cheats ON, enable cheats ON, disable the thing, set cheats OFF after 

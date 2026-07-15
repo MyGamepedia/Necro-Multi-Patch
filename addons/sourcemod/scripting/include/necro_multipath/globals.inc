@@ -134,9 +134,8 @@ int g_iClientTeamAtSpecRequest[MAX_PLAYERS+1];
 #define MAX_SNARKS 20
 #define MAX_HORNETS 20
 
-//TODO: replace with methodmap
-int g_hClientSnarks[MAX_PLAYERS + 1][20]; //store snark ents for each client
-int g_hClientHornets[MAX_PLAYERS + 1][20]; //store hornets ents for each client
+CNpc_Snark g_hClientSnarks[MAX_PLAYERS + 1][MAX_SNARKS]; //store snark ents for each client
+CBlackMesaBaseDetonator g_hClientHornets[MAX_PLAYERS + 1][MAX_HORNETS]; //store hornets ents for each client
 
 bool g_bPAFTFT[MAX_PLAYERS + 1]  = { true, ... }; //Player Appeared For The First Time on one of the valid teams
 
