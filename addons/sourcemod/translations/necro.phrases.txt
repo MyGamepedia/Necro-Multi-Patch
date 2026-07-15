@@ -395,4 +395,20 @@
 		"#format"	"{1:s},{2:s},{3:s},{4:s},{5:s}"
 		"en"		"{1:s}Current mode: {2:s}{3:s}{4:s} (next mode in {5:s})!"
 	}
+	
+	"#Necro_SpecJoinDelayAlreadyWaiting"  
+	{  
+		"en" "You are already in the queue, wait to join spectators."  
+	}
+	
+	"#Necro_SpecJoinDelayPending"  
+	{  
+		"#format" "{1:.1f}"  
+		"en" "You will join spectators in {1} seconds."  
+	}
+	
+	"#Necro_SpecJoinDelayTeamChanged"  
+	{  
+		"en" "Spectator join cancelled: you changed team during the queue."  
+	}
 }

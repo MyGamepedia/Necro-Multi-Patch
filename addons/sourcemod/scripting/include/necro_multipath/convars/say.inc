@@ -18,6 +18,12 @@ public Action Listener_Say(int iClient, const char[] iszCommand, int iArgs)
 		PrintToChat(iClient, "%t", "#Necro_SessionInfo", COL_GREEN, COL_NORMAL);
 		return Plugin_Handled;
 	}
+	
+	if (StrEqual(iszArgument, "!showmagic"))
+	{
+		ShowVGUIPanel(iClient, "commentary_modelviewer", _, true);
+		return Plugin_Handled;
+	}
 
 	//we need time zone setup
 	/*

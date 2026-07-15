@@ -1,10 +1,11 @@
-public Action Listener_Chooseteam(int client, const char[] command, int args)
+/*public Action Listener_Chooseteam(int client, const char[] command, int args)
 {
-    if(!g_iTeamplay)
+	PrintToChatAll("client %d", client);
+    if(!CBM_MP_GameRules.IsTeamplay())
     {
-        FakeClientCommandEx(GetClientUserId(client), "spawnchooseteam");
+        FakeClientCommandEx(client, "spawnchooseteam");
         return Plugin_Handled;
     }
 
     return Plugin_Continue;
-}
+}*/

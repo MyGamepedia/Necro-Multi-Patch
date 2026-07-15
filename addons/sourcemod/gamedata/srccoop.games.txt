@@ -1192,6 +1192,46 @@
 					}
 				}
 			}
+			
+			"CEventQueue::AddEvent_Param" //void CEventQueue::AddEvent( const char *target, const char *targetInput, variant_t Value, float fireDelay, CBaseEntity *pActivator, CBaseEntity *pCaller, int outputID )
+			{
+				"signature"	"CEventQueue::AddEvent_Param"
+				"callconv"	"thiscall"
+				"return"	"void"
+				"this"		"address"
+				"arguments"
+				{
+					"target"
+					{
+						"type"	"cbaseentity"
+					}
+					"targetInput"
+					{
+						"type"	"charptr"
+					}
+					"Value"
+					{
+						"type"	"charptr"
+					}
+					"fireDelay"
+					{
+						"type"	"float"
+					}
+					"pActivator"
+					{
+						"type"	"cbaseentity"
+					}
+					"pCaller"
+					{
+						"type"	"cbaseentity"
+					}
+					"outputID"
+					{
+						"type"	"int"
+					}
+				}
+			}
+			
 			"CEventQueue::Init" //void CEventQueue::Init()
 			{
 				"signature"	"CEventQueue::Init"
@@ -1699,6 +1739,16 @@
 			{
 				"windows"	"\x55\x8B\xEC\x83\xEC\x14\x2A\x2A\x2A\x2A\x2A\x2A\x8B\xD1\x2A\x2A\x2A\x33\xC0\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x83\xEC\x18\x8B\xCC\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\xC7\x01\x2A\x2A\x2A\x2A\xC7\x41\x0C\x2A\x2A\x2A"
 				"linux"		"@_ZN11CEventQueue8AddEventEP11CBaseEntityPKcfS1_S1_i"
+			}
+			"CEventQueue::AddEvent_Param" //how to find: find ''CBaseEntityOutput::FireOutput'' find by string ''(%0.2f) output: (%s,%s) -> (%s,%s)(%s)\n'', the first (?and the only?) func it calls puts global object for call, this is what you want 
+			{
+				"windows"	"\x55\x8B\xEC\x56\x57\x8B\xF9\xB9\x2A\x2A\x2A\x2A\x6A\x38\xE8\x8D\xDE\x3E\x00\x8B\xF0\x85\xF6\x74\x2C\xC7\x46\x0C\xFF\xFF\xFF\x2A\x2A\x2A\x2A\xFF\xFF\xFF\xFF\xC7\x46\x18\xFF\xFF\xFF\xFF\xC7\x46\x1C\x00\x00\x00\x00\xC7\x46\x28\xFF\xFF\xFF\xFF\xC7\x46\x2C\x00"
+				"linux"		"@__ZN11CEventQueue8AddEventEPKcS1_9variant_tfP11CBaseEntityS4_i"
+			}
+			"CEventQueue::AddEvent_Char" //how to find: find ''CBasePlayer::UpdateClientData'' find by string ''OnPlayerJoin'', the func this string used for is what you want
+			{
+				"windows"	"\x55\x8B\xEC\x56\x57\x8B\xF9\xB9\x58\xC9\x83\x10\x6A\x38\xE8\x8D\xDE\x3E\x00\x8B\xF0\x85\xF6\x74\x2C\xC7\x46\x0C\x2A\x2A\x2A\x2A\xC7\x46\x10\x2A\x2A\x2A\x2A\xC7\x46\x18\x2A\x2A\x2A\x2A\xC7\x46\x1C\x2A\x2A\x2A\x2A\xC7\x46\x28\x2A\x2A\x2A\x2A\xC7\x46\x2C\x2A"
+				"linux"		"@_ZN11CEventQueue8AddEventEPKcS1_9variant_tfP11CBaseEntityS4_i"
 			}
 			"CEventQueue::Init" //how to find: find ''CWorldSpawnCWorld::Spawn'' by string ''is_console'', one of the funcs it calls is the func you want)
 			{

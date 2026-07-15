@@ -69,6 +69,7 @@
 #include <srccoop_api/classdef/common/Task_t.inc>
 #include <srccoop_api/classdef/common/CEnvScreenOverlay.inc>
 #include <srccoop_api/classdef/common/CEventQueue.inc>
+#include <srccoop_api/classdef/common/CMovementSpeedMod.inc>
 
 //Black Mesa
 #include <srccoop_api/classdef/bms/CBlackMesaBaseCombatWeapon.inc>

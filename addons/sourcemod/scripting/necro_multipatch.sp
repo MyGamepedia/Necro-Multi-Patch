@@ -7,7 +7,7 @@
 #include <sdkhooks>
 #include <dhooks>
 #include <entity>
-#include <geoip>
+//#include <geoip>
 
 #include <sourcescramble>
 
@@ -42,7 +42,7 @@
 #include <necro_multipath/entities/item_weapon_snark>
 #include <necro_multipath/entities/misc_marionettist>
 #include <necro_multipath/entities/music_track>
-#include <necro_multipath/entities/newlight_point>
+//#include <necro_multipath/entities/newlight_point>
 #include <necro_multipath/entities/npc_barnacle>
 #include <necro_multipath/entities/npc_gargantua>
 #include <necro_multipath/entities/npc_human_medic>
@@ -88,6 +88,7 @@
 #include <necro_multipath/entities/classes/CBoneSetup>
 #include <necro_multipath/entities/classes/CMultiplayRules>
 #include <necro_multipath/entities/classes/CEventQueue>
+#include <necro_multipath/entities/classes/CFuncTank>
 
 #include <necro_multipath/entities/classes/CNPC_PlayerCompanion>
 #include <necro_multipath/entities/classes/CRecipientFilter>
@@ -107,6 +108,7 @@
 #include <necro_multipath/convars/necro_spectatorjointeamdelay>
 #include <necro_multipath/convars/jointeam>
 #include <necro_multipath/convars/say>
+//#include <necro_multipath/convars/chooseteam>
 
 #include <necro_multipath/functions/GetChild>
 #include <necro_multipath/functions/AddOutput>
@@ -206,6 +208,7 @@ public void OnPluginStart()
 	HookConVarChange(FindConVar("host_timescale"), OnHostTimeScaleChanged);
 	AddCommandListener(Listener_Jointeam, "jointeam"); //note: it was planned to use player_team event hook, but it doesn't store team nums (always 0)  
 	AddCommandListener(Listener_Say, "say");
+	//AddCommandListener(Listener_Chooseteam, "chooseteam");
 
 	//player sounds fixes
 	AddNormalSoundHook(PlayerSoundListener);
@@ -293,9 +296,21 @@ void LoadGameData()
 	HookEntityOutput("npc_barnacle", "OnGrab", Hook_Barnacle_OnGrab);
 	HookEntityOutput("npc_barnacle", "OnRelease", Hook_Barnacle_OnRelease);
 	#endif
+	
+	#if defined ENTPATCH_BM_FUNCBASETANK
+	HookEntityOutput("func_50cal", "OnLostController", Hook_BaseTank_OnLostController);
+	HookEntityOutput("func_tank", "OnLostController", Hook_BaseTank_OnLostController);
+	HookEntityOutput("func_tank_combine_cannon", "OnLostController", Hook_BaseTank_OnLostController);
+	HookEntityOutput("func_tankairboatgun", "OnLostController", Hook_BaseTank_OnLostController);
+	HookEntityOutput("func_tanklaser", "OnLostController", Hook_BaseTank_OnLostController);
+	HookEntityOutput("func_tankmortar", "OnLostController", Hook_BaseTank_OnLostController);
+	HookEntityOutput("func_tankphyscannister", "OnLostController", Hook_BaseTank_OnLostController);
+	HookEntityOutput("func_tow", "OnLostController", Hook_BaseTank_OnLostController);
+	HookEntityOutput("func_tow_mp", "OnLostController", Hook_BaseTank_OnLostController);
+	#endif
 }
 
-//Purpose: Load SourceCoop game config file offsets + some vars from memory
+//Purpose: Load SourceCoop game config file offsets + some vars from memory 
 void LoadGameData_Srccoop(const GameData pGameConfig)
 {
 	g_serverOS = view_as<OperatingSystem>(pGameConfig.GetOffset("_OS_Detector_"));
@@ -590,7 +605,7 @@ void MapStartCustomGameModes()
 
 void MapStartServerMessages()
 {
-	//CreateTimer(GUNGAME_VOTEINFO_DELAY, Timer_GunGameServerMessage, _, TIMER_FLAG_NO_MAPCHANGE); 
+	//CreateTimer(GUNGAME_VOTEINFO_DELAY, Timer_GunGameServerMessage, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void OnMapEnd()
@@ -695,6 +710,8 @@ public void OnClientPutInServer(int client)
 	//reset these vars
 	g_fClientFastRespawnDelay[client] = 0.0;
 	g_fClientSpectatorJoinTeamDelay[client] = 0.0;
+	g_bClientSpecJoinPending[client] = false;  
+	g_iClientTeamAtSpecRequest[client] = 0;
 
 	//disable "other players flashlight"
 	SendConVarValue(client, sv_cheats, "1"); //HACK! This thing needs cheats ON, enable cheats ON, disable the thing, set cheats OFF after 
@@ -708,7 +725,6 @@ public void OnClientPutInServer(int client)
 	#if defined SRCCOOP_BLACKMESA
 	CBasePlayer pPlayer = CBasePlayer(client);
 	pPlayer.SendCommand("cl_ammo_box_dlights 0");
-	pPlayer.SetUserData("m_flProtectionTime", -1.0);
 	#endif
 }
 
@@ -760,7 +776,7 @@ public Action Timer_GreetPlayerWelcome(Handle timer, int iClient)
 	//setup text
 	SetHudTextParamsEx(-1.0, 0.05, 15.0, col1, col2, 2, 5.0, 0.2, 0.2);
 
-	//get client user name
+	//get client user name 
 	char szClientName[MAX_NAME_LENGTH];
 	GetClientName(iClient, szClientName, sizeof(szClientName));
 
@@ -840,11 +856,13 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 	bool bIsNPC = pEntity.IsNPC();
 
-	//char szClassname[MAX_CLASSNAME];
-	//GetEntityClassname(iEntIndex, szClassname, sizeof(szClassname));
+	//if (strcmp(szClassname, "newlight_point", false) == 0)
+	//{
+	//	DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_NewLightPointAcceptInput);
+	//}
 
 	#if defined ENTPATCH_WATERBULLET
-	if(StrEqual(szClassname, "waterbullet"))
+	if (StrEqual(szClassname, "waterbullet"))
 	{
 		if (g_ConvarNecroWaterBulletEnable.BoolValue)
 		{
@@ -855,7 +873,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 	}
 	#endif
 
-	if(StrEqual(szClassname, "npc_snark"))
+	if (StrEqual(szClassname, "npc_snark"))
 	{
 		SDKHook(iEntIndex, SDKHook_SpawnPost, Snark_PathPost);
 		DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_SnarkUpdateOnRemove);
@@ -866,7 +884,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		return;
 	}
 
-	if(StrEqual(szClassname, "grenade_hornet"))
+	if (StrEqual(szClassname, "grenade_hornet"))
 	{
 		SDKHook(iEntIndex, SDKHook_SpawnPost, Hornet_PathPost);
 		DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_HornetUpdateOnRemove);
@@ -955,7 +973,7 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 
 	if (StrEqual(szClassname, "weapon_hivehand"))
 	{
-		PrecacheSound(")weapons/hivehand/pickup.wav"); //fix console spam
+		PrecacheSound(")weapons/hivehand/pickup.wav"); //fix console spam 
 		return;
 	}
 
@@ -1159,7 +1177,9 @@ public void OnEntityCreated(int iEntIndex, const char[] szClassname)
 		#if defined ENTPATCH_PLAYER_SPEEDMOD
 		if (strcmp(szClassname, "player_speedmod") == 0)
 		{
-			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_SpeedmodAcceptInput);
+			SDKHook(iEntIndex, SDKHook_SpawnPost, Hook_PlayerSpeedmodSpawnPost);
+			DHookEntity(hkAcceptInput, false, iEntIndex, _, Hook_PlayerSpeedmodAcceptInput);
+			DHookEntity(hkUpdateOnRemove, false, iEntIndex, _, Hook_PlayerSpeedmodUpdateOnRemove); 
 			return;
 		}
 		#endif

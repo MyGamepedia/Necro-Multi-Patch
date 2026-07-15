@@ -305,6 +305,11 @@ methodmap CBaseEntity
 		SetVariantInt(iValue);
 		return this.AcceptInput(szInput, pActivator, pCaller, iOutputID);
 	}
+	public bool AcceptInputFloat(const char[] szInput, const float fValue, const CBaseEntity pActivator = NULL_CBASEENTITY, const CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
+	{
+		SetVariantFloat(fValue);
+		return this.AcceptInput(szInput, pActivator, pCaller, iOutputID);
+	}
 	public bool AcceptInputVector(const char[] szInput, const float vec3Value[3], const CBaseEntity pActivator = NULL_CBASEENTITY, const CBaseEntity pCaller = NULL_CBASEENTITY, const int iOutputID = 0)
 	{
 		// ToDo: Should this use SetVariantPosVector3D or SetVariantVector3D?

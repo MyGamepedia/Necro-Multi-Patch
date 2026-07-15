@@ -126,7 +126,10 @@ DynamicHook hkUseSuicidePenalty;
 
 float g_fClientFastRespawnDelay[MAX_PLAYERS+1];
 float g_fClientSpectatorJoinTeamDelay[MAX_PLAYERS+1];
+float g_fProtectionTime[MAX_PLAYERS+1] = { -1.0, ... };
 
+bool g_bClientSpecJoinPending[MAX_PLAYERS+1];  
+int g_iClientTeamAtSpecRequest[MAX_PLAYERS+1];
 
 #define MAX_SNARKS 20
 #define MAX_HORNETS 20

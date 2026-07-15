@@ -352,12 +352,12 @@ public Action PlayerSoundListener(int iClients[MAXPLAYERS], int& iNumClients, ch
 //remove protection effects when the player attacks
 public MRESReturn Hook_NoteWeaponFired(int _this, DHookParam hParams)
 {
-	if (CBlackMesaPlayer(_this).GetUserData("m_flProtectionTime") != -1)
+	if (g_fProtectionTime[_this] != -1.0)
 	{
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(_this);
 		pPlayer.SetRenderColor(RGBA(255, 255, 255, 255));
 		pPlayer.SetRenderFx(RENDERFX_NONE);
-		pPlayer.SetUserData("m_flProtectionTime", -1);
+		g_fProtectionTime[_this] = -1.0;
 
 		SDKUnhook(_this, SDKHook_OnTakeDamage, Hook_OnTakeDamageProtection);
 	}
@@ -436,6 +436,31 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, DHookReturn hReturn, DHookPa
 			DHookSetReturn(hReturn, true);
 			return MRES_Supercede;
 		}
+		
+		if (strcmp(szInputType, "ForceJoinSpecTeam", false) == 0)  
+		{  
+			g_bClientSpecJoinPending[_this] = false;  
+		  
+			if (CMultiplayRules.IsTeamplay())  
+			{  
+				int currentTeam = GetEntProp(_this, Prop_Data, "m_iTeamNum");  
+				if (currentTeam != g_iClientTeamAtSpecRequest[_this])  
+				{  
+					PrintToChat(_this, "%t", "#Necro_SpecJoinDelayTeamChanged");  
+					DHookSetReturn(hReturn, true);  
+					return MRES_Supercede;  
+				}  
+			}  
+		  
+			// Set leave-spec delay (was previously set in Listener_Jointeam)  
+			g_fClientSpectatorJoinTeamDelay[_this] = GetGameTime() + g_fClientSpectatorJoinTeamDelay[0];  
+		  
+			// Directly change team — does NOT go through Listener_Jointeam  
+			ChangeClientTeam(_this, TEAM_SPECTATOR);  
+		  
+			DHookSetReturn(hReturn, true);  
+			return MRES_Supercede;  
+		}
 	}
 	return MRES_Ignored;
 }
@@ -443,14 +468,14 @@ public MRESReturn Hook_PlayerAcceptInput(int _this, DHookReturn hReturn, DHookPa
 public MRESReturn Hook_PlayerKilled(int _this, DHookParam hParams)
 {
 	//fixes transparent ragdolls
-	if (CBlackMesaPlayer(_this).GetUserData("m_flProtectionTime") != -1)
+	if (g_fProtectionTime[_this] != -1.0)
 	{
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(_this);
 		pPlayer.SetRenderColor(RGBA(255, 255, 255, 255));
 		pPlayer.SetRenderMode(RENDER_NORMAL);
 		pPlayer.SetRenderFx(RENDERFX_NONE);
 		pPlayer.SetRenderAlpha(255);
-		pPlayer.SetUserData("m_flProtectionTime", -1);
+		g_fProtectionTime[_this] = -1.0;
 
 		SDKUnhook(_this, SDKHook_OnTakeDamage, Hook_OnTakeDamageProtection);
 	}
@@ -907,7 +932,7 @@ public MRESReturn Hook_PlayerSpawnPost(int iClient, DHookReturn hReturn, DHookPa
 			g_ConvarNecroSpawnProtectionColorGreen.IntValue,
 			g_ConvarNecroSpawnProtectionColorAlpha.IntValue));
 		pPlayer.SetRenderFx(view_as<RenderFx>(g_ConvarNecroSpawnProtectionRenderFX.IntValue));
-		pPlayer.SetUserData("m_flProtectionTime", GetGameTime() + player_respawn_protection_time.FloatValue);
+		g_fProtectionTime[iClient] = GetGameTime() + player_respawn_protection_time.FloatValue;
 
 		SDKHook(iClient, SDKHook_OnTakeDamage, Hook_OnTakeDamageProtection);
 	}
@@ -1014,18 +1039,43 @@ public Action OnPlayerRunCmd(int iClient, int &iButtons, int &iImpulse, float fV
 		}
 	}
 
-	if (CBlackMesaPlayer(iClient).GetUserData("m_flProtectionTime") != -1)
+	#if defined ENTPATCH_PLAYER_SPEEDMOD
+	if (g_pPlayerSpeed[iClient].IsValid()) //i have a player_speedmod
+	{
+		CBasePlayer pPlayer = CBasePlayer(iClient);
+
+		//check if it wants attack delay and i'm valid for this
+		if (g_pPlayerSpeed[iClient].GetUserData("m_bSuppressAttack") == true && pPlayer.IsValid())
+		{
+			if (!pPlayer.IsAlive()) //i was killed smh before, disable it for me
+			{
+				g_pPlayerSpeed[iClient].AcceptInputFloat("ModifySpeed", 1.0, pPlayer, pPlayer);
+			}
+			else
+			{
+				CBaseCombatWeapon pWeapon = pPlayer.GetActiveWeapon();
+	
+				//i have active wpn, i should delay attack all the time so nothing can break it
+				if (pWeapon.IsValid())
+				{
+					pWeapon.SetNextPrimaryAttack(FLT_MAX);
+					pWeapon.SetNextSecondaryAttack(FLT_MAX);
+				}
+			}
+		}
+	}
+	#endif
+
+	//disable my protection effects
+	if (g_fProtectionTime[iClient] != -1.0 && g_fProtectionTime[iClient] <= GetGameTime())
 	{
 		CBlackMesaPlayer pPlayer = CBlackMesaPlayer(iClient);
-		
-		if (pPlayer.GetUserData("m_flProtectionTime") <= GetGameTime())
-		{
-			pPlayer.SetRenderColor(RGBA(255, 255, 255, 255));
-			pPlayer.SetRenderFx(RENDERFX_NONE);
-			pPlayer.SetUserData("m_flProtectionTime", -1);
 
-			SDKUnhook(iClient, SDKHook_OnTakeDamage, Hook_OnTakeDamageProtection);
-		}
+		pPlayer.SetRenderColor(RGBA(255, 255, 255, 255));
+		pPlayer.SetRenderFx(RENDERFX_NONE);
+		g_fProtectionTime[iClient] = -1.0;
+
+		SDKUnhook(iClient, SDKHook_OnTakeDamage, Hook_OnTakeDamageProtection);
 	}
 	
 	//send use command if we want to use a weapon
@@ -1157,27 +1207,38 @@ public void OnClientDisconnect(int client)
 //------------------------------------------------------
 public void PlayerPatch_OnClientDisconnect(CBasePlayer pPlayer)
 {
-	if (pPlayer.IsValid())
-	{
-		#if defined ENTPATCH_ENV_SCREENOVERLAY
-		if (g_pActiveScreenOverlay[0].IsValid())
-		{
-			//if my active screenoverlay is global screenoverlay, reset global vars so it works properly when i join again
-			g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
-			g_flNextOverlayTime[pPlayer.entindex] = 0.0;
-		}
-		else if (g_pActiveScreenOverlay[pPlayer.entindex].IsValid())
-		{
-			//if my screenoverlay isn't global but i have a local one, just stop it for me 
-			g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer, pPlayer);
-		}
-		#endif
+	if (!pPlayer.IsValid())
+		return;
 
-		//reset gungame stats
-		g_iNecroGunGameClientKills[pPlayer.entindex] = 0;
-		g_iNecroGunGameClientLevel[pPlayer.entindex] = 0;
-		g_iNecroGunGameLastTeam[pPlayer.entindex] = 0;
+	#if defined ENTPATCH_ENV_SCREENOVERLAY
+	if (g_pActiveScreenOverlay[0].IsValid())
+	{
+		//if my active screenoverlay is global screenoverlay, reset global vars so it works properly when i join again
+		g_iNextScreenOverlayIndex[pPlayer.entindex] = 0;
+		g_flNextOverlayTime[pPlayer.entindex] = 0.0;
 	}
+	else if (g_pActiveScreenOverlay[pPlayer.entindex].IsValid())
+	{
+		//if my screenoverlay isn't global but i have a local one, just stop it for me 
+		g_pActiveScreenOverlay[pPlayer.entindex].AcceptInput("StopOverlays", pPlayer, pPlayer);
+	}
+	#endif
+
+	#if defined ENTPATCH_PLAYER_SPEEDMOD
+	if (g_pPlayerSpeed[pPlayer.entindex].IsValid())
+	{
+		//no more attack delay
+		g_pPlayerSpeed[pPlayer.entindex].AcceptInputFloat("ModifySpeed", 1.0, pPlayer, pPlayer);
+	}
+	#endif
+
+	//reset gungame stats
+	g_iNecroGunGameClientKills[pPlayer.entindex] = 0;
+	g_iNecroGunGameClientLevel[pPlayer.entindex] = 0;
+	g_iNecroGunGameLastTeam[pPlayer.entindex] = 0;
+
+	//reset protection time
+	g_fProtectionTime[pPlayer.entindex] = -1.0;
 }
 
 public void OnClientDisconnect_Post(int client)
