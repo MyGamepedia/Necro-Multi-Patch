@@ -198,7 +198,9 @@ public void OnPluginStart()
 	g_ConvarNecroUseSuicidePenalty = CreateConVar("necro_usesuicidepenalty", "0", "Enable suicide penalty.", 0, true, 0.0, true, 1.0);
 	//g_ConvarNecroForceShotgunFireInReload = CreateConVar("necro_forceshotgunfireinreload", "1", "Force shotgun to fire even if in reload.", 0, true, 0.0, true, 1.0);
 	//g_ConvarNecroMp5ContactBlockSecondAttack = CreateConVar("necro_mp5contactblocksecondattack", "1", "Block secondary attack for MP5 contact grenade's owner if holding MP5 while the grenade is alive.", 0, true, 0.0, true, 1.0);
-
+	g_ConvarNecroTeamSpectatorJoinDelayMin = CreateConVar("necro_teamspectatorjoindelaymin", "2", "Min delay to join from a team to spectators.");
+	g_ConvarNecroTeamSpectatorJoinDelayMax = CreateConVar("necro_teamspectatorjoindelaymax", "5", "Max delay to join from a team to spectators.");
+	
 	//Load custom modes
 	LoadCustomGameModes();
 

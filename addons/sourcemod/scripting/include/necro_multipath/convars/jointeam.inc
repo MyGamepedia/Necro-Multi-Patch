@@ -60,7 +60,7 @@ public Action Listener_Jointeam(int client, const char[] command, int args)
 				return Plugin_Handled;  
 			}  
   
-			float fDelay = float(GetRandomInt(2, 5));  
+			float fDelay = float(GetRandomInt(g_ConvarNecroTeamSpectatorJoinDelayMin.IntValue, g_ConvarNecroTeamSpectatorJoinDelayMax.IntValue));  
 			g_bClientSpecJoinPending[client] = true;  
 			CBasePlayer pPlayer = CBasePlayer(client);  
 			CEventQueue.AddEvent(pPlayer, "ForceJoinSpecTeam", fDelay, pPlayer, pPlayer);  

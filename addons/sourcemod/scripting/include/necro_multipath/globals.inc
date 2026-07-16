@@ -75,6 +75,8 @@ ConVar g_ConvarNecroSpawnProtectionRenderFX;
 //ConVar g_ConvarNecroForceShotgunFireInReload;
 //ConVar g_ConvarNecroMp5ContactBlockSecondAttack;
 ConVar g_ConvarNecroUseSuicidePenalty;
+ConVar g_ConvarNecroTeamSpectatorJoinDelayMin;
+ConVar g_ConvarNecroTeamSpectatorJoinDelayMax;
 
 DynamicDetour hkBaseCombatWeaponPrecache;
 //DynamicDetour hkBaseCombatDefaultReload;
